@@ -1,0 +1,27 @@
+---
+const buildDate = new Date();
+const formattedDate = buildDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  timeZone: 'UTC',
+  timeZoneName: 'short'
+});
+---
+
+<div class="last-updated">
+  <p>Last updated: {formattedDate}</p>
+</div>
+
+<style>
+  .last-updated {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #eee;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+</style>

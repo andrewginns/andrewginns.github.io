@@ -1,0 +1,17 @@
+name: Update Build Status
+
+on:
+  workflow_run:
+    workflows: ["Deploy to GitHub Pages and Cloudflare Pages"]
+    types:
+      - completed
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'skipped'
+    steps:
+      - name: Update deployment status
+        run: |
+          echo "Deployment status: ${{ github.event.workflow_run.conclusion }}"
+          echo "Last updated: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"

@@ -1,0 +1,225 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCachedGitHubData } from '../lib/github';
+
+// Fetch GitHub data at build time
+const { pinnedRepos } = await getCachedGitHubData('andrewginns');
+
+// Map GitHub repos to project format
+const projects = pinnedRepos.map((repo: any) => ({
+  title: repo.name.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+  description: repo.description || 'No description available',
+  url: repo.html_url,
+  homepage: repo.homepage,
+  topics: repo.topics,
+  language: repo.language,
+  stars: repo.stargazers_count,
+  lastUpdated: new Date(repo.updated_at),
+}));
+
+// If no GitHub data, fall back to static content
+const staticProjects = [
+  {
+    title: "MLOps Pipeline Automation",
+    description: "Designed and implemented a comprehensive MLOps pipeline that reduced model deployment time from 0.5 days to just 2 hours. Built on Google Cloud Platform using Vertex AI, MLflow, and custom orchestration tools.",
+    topics: ["python", "gcp", "mlflow", "docker", "terraform"],
+    impact: "6x faster deployment, 90% reduction in manual intervention",
+  },
+  {
+    title: "Fleet Predictive Maintenance System",
+    description: "Led development of predictive models for vehicle maintenance optimization across a fleet of 100,000+ vehicles. Implemented ensemble models combining time-series analysis with deep learning approaches.",
+    topics: ["tensorflow", "pyspark", "bigquery", "kubernetes"],
+    impact: "25% reduction in unexpected breakdowns, $2M+ annual savings",
+  },
+  {
+    title: "Computer Vision for Document Processing",
+    description: "Developed an end-to-end document processing pipeline using computer vision and NLP for automated data extraction from complex financial documents.",
+    topics: ["pytorch", "opencv", "azure-ml", "spacy"],
+    impact: "85% accuracy in data extraction, 70% reduction in manual processing time",
+  },
+];
+
+const displayProjects = projects.length > 0 ? projects : staticProjects;
+---
+
+<BaseLayout title="Projects - Andrew Ginns">
+  <div class="projects-content">
+    <h1>Projects</h1>
+    <p class="intro">
+      {projects.length > 0 ? (
+        "My pinned GitHub repositories showcase my work in machine learning, MLOps, and data science. Each project demonstrates different aspects of my expertise in building scalable ML systems."
+      ) : (
+        "A selection of projects showcasing my work in machine learning, MLOps, and data science. Each project demonstrates different aspects of my expertise, from building scalable ML infrastructure to implementing cutting-edge AI techniques."
+      )}
+    </p>
+    
+    <div class="projects-grid">
+      {displayProjects.map((project: any) => (
+        <article class="project">
+          <h2>
+            {project.url ? (
+              <a href={project.url} target="_blank" rel="noopener noreferrer">
+                {project.title}
+              </a>
+            ) : (
+              project.title
+            )}
+          </h2>
+          
+          {project.language && (
+            <div class="project-meta">
+              <span class="language">{project.language}</span>
+              {project.stars !== undefined && (
+                <span class="stars">★ {project.stars}</span>
+              )}
+            </div>
+          )}
+          
+          <p>{project.description}</p>
+          
+          <div class="technologies">
+            {(project.topics || project.tags || []).map((tech: string) => (
+              <span>{tech}</span>
+            ))}
+          </div>
+          
+          {project.impact && (
+            <div class="impact">
+              <strong>Impact:</strong> {project.impact}
+            </div>
+          )}
+          
+          {project.homepage && (
+            <div class="links">
+              <a href={project.homepage} target="_blank" rel="noopener noreferrer">
+                View Demo →
+              </a>
+            </div>
+          )}
+        </article>
+      ))}
+    </div>
+    
+    <section class="open-source">
+      <h2>More on GitHub</h2>
+      <p>
+        These are just my highlighted projects. Check out my 
+        <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer"> full GitHub profile</a> 
+        for more open source contributions, experiments, and collaborations.
+      </p>
+      {projects.length > 0 && (
+        <p class="note">
+          <em>Projects are automatically synced from my GitHub pinned repositories.</em>
+        </p>
+      )}
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .projects-content {
+    max-width: 800px;
+  }
+  
+  .intro {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    color: var(--text-secondary);
+  }
+  
+  .projects-grid {
+    display: grid;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .project {
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+  }
+  
+  .project h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .project h2 a {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  
+  .project h2 a:hover {
+    color: var(--accent);
+  }
+  
+  .project-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  .language {
+    display: flex;
+    align-items: center;
+  }
+  
+  .language::before {
+    content: '●';
+    margin-right: 0.25rem;
+    color: var(--accent);
+  }
+  
+  .project p {
+    margin-bottom: 1rem;
+  }
+  
+  .technologies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .technologies span {
+    padding: 0.25rem 0.75rem;
+    background: white;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  
+  .impact {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  
+  .links a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+  
+  .links a:hover {
+    text-decoration: underline;
+  }
+  
+  .open-source {
+    margin-top: 3rem;
+  }
+  
+  .open-source h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .note {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+</style>

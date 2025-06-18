@@ -1,0 +1,148 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Experience - Andrew Ginns">
+  <div class="experience-content">
+    <h1>Professional Experience</h1>
+    
+    <section class="current-role">
+      <div class="role">
+        <h2>Lead Machine Learning Engineer</h2>
+        <div class="company">Motorway</div>
+        <div class="period">January 2024 - Present</div>
+        <ul class="responsibilities">
+          <li>Leading the development of advanced ML systems for automotive marketplace</li>
+          <li>Implementing cutting-edge MLOps practices and infrastructure</li>
+          <li>Driving technical strategy and team growth</li>
+        </ul>
+      </div>
+    </section>
+    
+    <section class="previous-roles">
+      <div class="role">
+        <h2>Senior Data Scientist</h2>
+        <div class="company">Michelin Connected Fleet</div>
+        <div class="period">July 2021 - December 2023</div>
+        <ul class="responsibilities">
+          <li>Scaled data science team from 2 to 16 members across 3 countries</li>
+          <li>Designed comprehensive data, training, and pipeline infrastructure on GCP</li>
+          <li>Reduced model deployment time from 0.5 days to 2 hours through MLOps best practices</li>
+          <li>Led development of predictive models for fleet optimization</li>
+        </ul>
+      </div>
+      
+      <div class="role">
+        <h2>Data Scientist Consultant</h2>
+        <div class="company">Accenture</div>
+        <div class="period">April 2019 - June 2021</div>
+        <ul class="responsibilities">
+          <li>Delivered 8+ client projects using ML and analytics for business optimization</li>
+          <li>Developed end-to-end DS pipelines on Azure</li>
+          <li>Led team of 4+ consultants on strategic engagements</li>
+          <li>Applied GANs, NLP, and computer vision to solve complex business problems</li>
+        </ul>
+      </div>
+      
+      <div class="role">
+        <h2>Technical Graduate Programme</h2>
+        <div class="company">Various Companies</div>
+        <div class="period">2018 - 2019</div>
+        <ul class="responsibilities">
+          <li>Machine Learning Engineer at Accenture (client: DWP)</li>
+          <li>Backend Engineer at Unruly (client: News UK)</li>
+          <li>Data Analyst at PwC (client: BAE Systems)</li>
+        </ul>
+      </div>
+    </section>
+    
+    <section class="education">
+      <h2>Education</h2>
+      
+      <div class="degree">
+        <h3>MSc Advanced Computing</h3>
+        <div class="institution">University of Bristol</div>
+        <div class="period">2017 - 2018</div>
+        <div class="grade">Distinction (76.83%)</div>
+        <p>Specialization: Machine Learning and Data Mining</p>
+      </div>
+      
+      <div class="degree">
+        <h3>B.Eng Computer Systems Engineering</h3>
+        <div class="institution">University of Birmingham</div>
+        <div class="period">2014 - 2017</div>
+        <div class="grade">First Class Honours (77.5%)</div>
+      </div>
+    </section>
+    
+    <section class="certifications">
+      <h2>Certifications</h2>
+      <ul>
+        <li>Google Cloud Associate Cloud Engineer</li>
+        <li>AWS Certified Cloud Practitioner</li>
+        <li>Microsoft Azure Data Scientist Associate</li>
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .experience-content {
+    max-width: 700px;
+  }
+  
+  section {
+    margin-bottom: 3rem;
+  }
+  
+  .role, .degree {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .role:last-child,
+  .degree:last-child {
+    border-bottom: none;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .company, .institution {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+  }
+  
+  .period, .grade {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  .responsibilities {
+    list-style-position: outside;
+    margin-left: 1.5rem;
+  }
+  
+  .responsibilities li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .certifications ul {
+    list-style-position: inside;
+    margin-left: 0;
+  }
+  
+  .certifications li {
+    margin-bottom: 0.5rem;
+  }
+</style>

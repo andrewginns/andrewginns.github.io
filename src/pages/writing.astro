@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('writing');
+const sortedPosts = posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="Writing - Andrew Ginns">
+  <div class="writing-content">
+    <h1>Writing</h1>
+    <p class="intro">
+      Thoughts on machine learning, MLOps, and building AI systems at scale. 
+      I write about practical experiences, technical deep-dives, and industry trends.
+    </p>
+    
+    {sortedPosts.length === 0 ? (
+      <div class="no-posts">
+        <p>Blog posts coming soon. Stay tuned for insights on:</p>
+        <ul>
+          <li>Building production-grade ML pipelines</li>
+          <li>Scaling data science teams effectively</li>
+          <li>MLOps best practices and lessons learned</li>
+          <li>Deep dives into LLMs and generative AI</li>
+          <li>Case studies from real-world projects</li>
+        </ul>
+      </div>
+    ) : (
+      <div class="posts-list">
+        {sortedPosts.map((post) => (
+          <article class="post-preview">
+            <h2>
+              <a href={`/writing/${post.slug}`}>{post.data.title}</a>
+            </h2>
+            <div class="post-meta">
+              <time datetime={post.data.date.toISOString()}>
+                {post.data.date.toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </time>
+              {post.data.tags && (
+                <div class="tags">
+                  {post.data.tags.map((tag) => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p>{post.data.description}</p>
+          </article>
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .writing-content {
+    max-width: 700px;
+  }
+  
+  .intro {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    color: var(--text-secondary);
+  }
+  
+  .no-posts {
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+  }
+  
+  .no-posts ul {
+    margin-top: 1rem;
+    margin-left: 1.5rem;
+  }
+  
+  .no-posts li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .post-preview {
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .post-preview:last-child {
+    border-bottom: none;
+  }
+  
+  .post-preview h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .post-preview h2 a {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  
+  .post-preview h2 a:hover {
+    color: var(--accent);
+  }
+  
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .tag {
+    padding: 0.2rem 0.6rem;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+</style>

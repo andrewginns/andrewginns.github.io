@@ -1,0 +1,21 @@
+{
+  "name": "andrewginns.github.io",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Andrew Ginns - Machine Learning Engineer Personal Website",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "keywords": ["machine-learning", "portfolio", "blog"],
+  "author": "Andrew Ginns",
+  "license": "MIT",
+  "dependencies": {
+    "@astrojs/check": "^0.9.4",
+    "astro": "^5.9.4",
+    "typescript": "^5.8.3"
+  }
+}

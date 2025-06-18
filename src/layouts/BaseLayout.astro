@@ -1,0 +1,210 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Andrew Ginns - Machine Learning Engineer" } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="sidebar">
+        <div class="sidebar-content">
+          <h1 class="site-title">Andrew Ginns</h1>
+          <div class="tagline">Machine Learning Engineer</div>
+          
+          <ul class="nav-links">
+            <li><a href="/" class={currentPath === "/" ? "active" : ""}>Home</a></li>
+            <li><a href="/experience" class={currentPath === "/experience" ? "active" : ""}>Experience</a></li>
+            <li><a href="/projects" class={currentPath === "/projects" ? "active" : ""}>Projects</a></li>
+            <li><a href="/writing" class={currentPath.startsWith("/writing") ? "active" : ""}>Writing</a></li>
+            <li><a href="/about" class={currentPath === "/about" ? "active" : ""}>About</a></li>
+            <li><a href="/contact" class={currentPath === "/contact" ? "active" : ""}>Contact</a></li>
+          </ul>
+          
+          <div class="social-links">
+            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+          </div>
+        </div>
+      </nav>
+      
+      <main class="content">
+        <slot />
+      </main>
+    </div>
+    
+    <style is:global>
+      :root {
+        --text-primary: #222;
+        --text-secondary: #666;
+        --bg-primary: #fff;
+        --bg-secondary: #f8f8f8;
+        --accent: #0066cc;
+        --sidebar-width: 280px;
+        --content-max-width: 720px;
+        --spacing-unit: 1.5rem;
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        line-height: 1.6;
+        color: var(--text-primary);
+        background: var(--bg-primary);
+      }
+      
+      .container {
+        display: flex;
+        min-height: 100vh;
+      }
+      
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: var(--sidebar-width);
+        height: 100vh;
+        background: var(--bg-secondary);
+        padding: calc(var(--spacing-unit) * 2);
+        overflow-y: auto;
+      }
+      
+      .sidebar-content {
+        max-width: 200px;
+      }
+      
+      .site-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      
+      .tagline {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: calc(var(--spacing-unit) * 2);
+      }
+      
+      .nav-links {
+        list-style: none;
+        margin-bottom: calc(var(--spacing-unit) * 2);
+      }
+      
+      .nav-links li {
+        margin-bottom: 0.75rem;
+      }
+      
+      .nav-links a {
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 1rem;
+        transition: color 0.2s ease;
+        position: relative;
+      }
+      
+      .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--accent);
+        transition: width 0.3s ease;
+      }
+      
+      .nav-links a:hover::after,
+      .nav-links a.active::after {
+        width: 100%;
+      }
+      
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--accent);
+      }
+      
+      .social-links {
+        padding-top: var(--spacing-unit);
+        border-top: 1px solid #ddd;
+      }
+      
+      .social-links a {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s ease;
+      }
+      
+      .social-links a:hover {
+        color: var(--accent);
+      }
+      
+      .content {
+        margin-left: var(--sidebar-width);
+        padding: calc(var(--spacing-unit) * 3);
+        width: 100%;
+        max-width: calc(var(--sidebar-width) + var(--content-max-width));
+      }
+      
+      h1, h2, h3, h4, h5, h6 {
+        margin-bottom: 1rem;
+        line-height: 1.2;
+      }
+      
+      p {
+        margin-bottom: 1.25rem;
+      }
+      
+      a {
+        color: var(--accent);
+      }
+      
+      /* Mobile responsiveness */
+      @media (max-width: 1024px) {
+        .sidebar {
+          position: relative;
+          width: 100%;
+          height: auto;
+          padding: var(--spacing-unit);
+        }
+        
+        .nav-links {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-bottom: var(--spacing-unit);
+        }
+        
+        .nav-links li {
+          margin-bottom: 0;
+        }
+        
+        .content {
+          margin-left: 0;
+          padding: var(--spacing-unit);
+          max-width: 100%;
+        }
+      }
+    </style>
+  </body>
+</html>
