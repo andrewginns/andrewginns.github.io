@@ -70,7 +70,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: production-files
-          path: dist
+          path: ./dist
+          
+      - name: List files (debug)
+        run: ls -la ./dist
           
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
@@ -78,6 +81,6 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: andrewginns
-          directory: dist
+          directory: ./dist
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           wranglerVersion: '3'
