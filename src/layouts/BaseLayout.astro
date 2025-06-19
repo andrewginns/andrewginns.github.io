@@ -140,14 +140,13 @@ const currentPath = Astro.url.pathname;
       
       .floating-element {
         position: fixed;
-        opacity: 0.08;
+        opacity: 0.58;
         animation: float 20s ease-in-out infinite;
         pointer-events: none;
-        border: 1px solid rgba(192, 0, 0, 0.15);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.08);
         transition: transform 0.1s ease-out, opacity 0.2s ease-out;
         overflow: hidden;
-        --shimmer-x: -100%;
         z-index: 1;
       }
       
@@ -155,16 +154,19 @@ const currentPath = Astro.url.pathname;
         content: '';
         position: absolute;
         top: 0;
-        left: var(--shimmer-x);
-        width: 100%;
+        left: -120%;
+        width: 120%;
         height: 100%;
         background: linear-gradient(
           90deg,
           transparent 0%,
-          rgba(255, 255, 255, 0.4) 50%,
+          rgba(255, 255, 255, 0.6) 40%,
+          rgba(255, 255, 255, 0.8) 50%,
+          rgba(255, 255, 255, 0.6) 60%,
           transparent 100%
         );
         pointer-events: none;
+        animation: shimmer 6s ease-in-out infinite;
       }
       
       .floating-element-1 {
@@ -172,11 +174,14 @@ const currentPath = Astro.url.pathname;
         height: 50px;
         top: 8%;
         right: 10%;
-        background: rgba(248, 249, 250, 0.8);
+        background: rgba(248, 249, 250, 0.95);
         border-radius: 8px;
-        transform: rotate(12deg);
         animation-delay: 0s;
         overflow: hidden;
+      }
+      
+      .floating-element-1::after {
+        animation-delay: 0s;
       }
       
       .floating-element-1::before {
@@ -196,11 +201,14 @@ const currentPath = Astro.url.pathname;
         height: 45px;
         top: 25%;
         right: 5%;
-        background: rgba(192, 0, 0, 0.1);
+        background: rgba(231, 76, 60, 0.15);
         border-radius: 6px;
-        transform: rotate(-8deg);
-        animation-delay: 2s;
+        animation-delay: 1s;
         overflow: hidden;
+      }
+      
+      .floating-element-2::after {
+        animation-delay: 0.6s;
       }
       
       .floating-element-2::before {
@@ -220,11 +228,14 @@ const currentPath = Astro.url.pathname;
         height: 55px;
         top: 45%;
         right: 8%;
-        background: rgba(248, 249, 250, 0.9);
+        background: rgba(248, 249, 250, 0.95);
         border-radius: 10px;
-        transform: rotate(15deg);
-        animation-delay: 4s;
+        animation-delay: 2s;
         overflow: hidden;
+      }
+      
+      .floating-element-3::after {
+        animation-delay: 1.2s;
       }
       
       .floating-element-3::before {
@@ -244,11 +255,14 @@ const currentPath = Astro.url.pathname;
         height: 40px;
         top: 65%;
         right: 15%;
-        background: rgba(192, 0, 0, 0.08);
+        background: rgba(231, 76, 60, 0.12);
         border-radius: 5px;
-        transform: rotate(-12deg);
-        animation-delay: 6s;
+        animation-delay: 3s;
         overflow: hidden;
+      }
+      
+      .floating-element-4::after {
+        animation-delay: 1.8s;
       }
       
       .floating-element-4::before {
@@ -268,11 +282,14 @@ const currentPath = Astro.url.pathname;
         height: 48px;
         top: 80%;
         right: 6%;
-        background: rgba(248, 249, 250, 0.85);
+        background: rgba(248, 249, 250, 0.95);
         border-radius: 7px;
-        transform: rotate(10deg);
-        animation-delay: 8s;
+        animation-delay: 4s;
         overflow: hidden;
+      }
+      
+      .floating-element-5::after {
+        animation-delay: 2.4s;
       }
       
       .floating-element-5::before {
@@ -292,11 +309,14 @@ const currentPath = Astro.url.pathname;
         height: 52px;
         top: 35%;
         right: 2%;
-        background: rgba(192, 0, 0, 0.12);
+        background: rgba(231, 76, 60, 0.18);
         border-radius: 9px;
-        transform: rotate(-15deg);
-        animation-delay: 10s;
+        animation-delay: 5s;
         overflow: hidden;
+      }
+      
+      .floating-element-6::after {
+        animation-delay: 3.0s;
       }
       
       .floating-element-6::before {
@@ -316,11 +336,14 @@ const currentPath = Astro.url.pathname;
         height: 42px;
         top: 55%;
         right: 3%;
-        background: rgba(248, 249, 250, 0.9);
+        background: rgba(248, 249, 250, 0.95);
         border-radius: 6px;
-        transform: rotate(18deg);
-        animation-delay: 12s;
+        animation-delay: 6s;
         overflow: hidden;
+      }
+      
+      .floating-element-7::after {
+        animation-delay: 3.6s;
       }
       
       .floating-element-7::before {
@@ -337,12 +360,21 @@ const currentPath = Astro.url.pathname;
       
       @keyframes float {
         0%, 100% { 
-          transform: translateY(0px);
-          opacity: 0.08;
+          transform: translateY(0px) translateX(0px);
+          opacity: 0.48;
         }
         50% { 
-          transform: translateY(-8px);
-          opacity: 0.12;
+          transform: translateY(-30px) translateX(-10px);
+          opacity: 0.72;
+        }
+      }
+      
+      @keyframes shimmer {
+        0% {
+          left: -120%;
+        }
+        100% {
+          left: 120%;
         }
       }
       
@@ -809,76 +841,6 @@ const currentPath = Astro.url.pathname;
       // Start typewriter after a short delay
       setTimeout(typeWriter, 1000);
       
-      // Cursor-responsive animation
-      let mouseX = 0;
-      let mouseY = 0;
-      let targetX = 0;
-      let targetY = 0;
-      let scrollProgress = 0;
-      
-      document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      });
-      
-      // Scroll-based animation
-      let ticking = false;
-      
-      function updateScrollProgress() {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-        scrollProgress = Math.min(scrollTop / Math.max(documentHeight, 1), 1);
-        ticking = false;
-      }
-      
-      function requestScrollUpdate() {
-        if (!ticking) {
-          requestAnimationFrame(updateScrollProgress);
-          ticking = true;
-        }
-      }
-      
-      window.addEventListener('scroll', requestScrollUpdate, { passive: true });
-      
-      // Initialize scroll progress
-      updateScrollProgress();
-      
-      function animateElements() {
-        targetX += (mouseX - targetX) * 0.02;
-        targetY += (mouseY - targetY) * 0.02;
-        
-        // Animate floating elements with parallax and scroll effects
-        const floatingElements = document.querySelectorAll('.floating-element');
-        floatingElements.forEach((element, index) => {
-          // Mouse parallax
-          const intensity = (index + 1) * 0.003;
-          const moveX = (targetX - window.innerWidth / 2) * intensity;
-          const moveY = (targetY - window.innerHeight / 2) * intensity;
-          
-          // Subtle scroll-based effects
-          const scrollOpacity = 0.25 + (scrollProgress * 0.15);
-          const scrollVertical = scrollProgress * 8 * (index % 3 === 0 ? 1 : -1);
-          
-          // Shimmer effect based on scroll
-          const shimmerProgress = (scrollProgress + (index * 0.1)) % 1;
-          const shimmerPosition = shimmerProgress * 200 - 100; // Move from -100% to 100%
-          
-          // Combine transforms - just translation, no rotation or scaling
-          const htmlElement = element as HTMLElement;
-          htmlElement.style.transform = `translate(${moveX}px, ${moveY + scrollVertical}px)`;
-          htmlElement.style.opacity = scrollOpacity.toString();
-          
-          // Apply shimmer position
-          htmlElement.style.setProperty('--shimmer-x', `${shimmerPosition}%`);
-        });
-        
-        requestAnimationFrame(animateElements);
-      }
-      
-      // Start animation loop only on desktop devices
-      if (window.innerWidth > 1024) {
-        animateElements();
-      }
       
       // Add hover effects to navigation items
       document.querySelectorAll('.nav-links a, .social-link').forEach(link => {
@@ -950,6 +912,203 @@ const currentPath = Astro.url.pathname;
           closeMobileMenu();
         }
       });
+      
+      // ========================================
+      // PHASE 2: ADVANCED INTERACTIONS
+      // ========================================
+      
+      // 2.1 Scroll-Triggered Animations with Intersection Observer
+      const observerOptions = {
+        threshold: [0.1, 0.3, 0.7],
+        rootMargin: '-50px 0px -50px 0px'
+      };
+      
+      const animatedElements = new Set();
+      
+      const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const element = entry.target;
+          const ratio = entry.intersectionRatio;
+          
+          if (ratio > 0.1 && !animatedElements.has(element)) {
+            // Staggered appearance animation
+            const delay = Array.from(element.parentElement?.children || []).indexOf(element) * 100;
+            
+            setTimeout(() => {
+              (element as HTMLElement).style.opacity = '1';
+              (element as HTMLElement).style.transform = 'translateY(0)';
+              element.classList.add('animate-in');
+            }, delay);
+            
+            animatedElements.add(element);
+          }
+          
+          // Progressive reveal based on scroll ratio
+        });
+      }, observerOptions);
+      
+      // Observe content sections for scroll animations
+      document.addEventListener('DOMContentLoaded', () => {
+        const sections = document.querySelectorAll('section, .hero-card, .last-updated, h2, p, ul, .project');
+        sections.forEach((section) => {
+          // Initial state for animation
+          (section as HTMLElement).style.opacity = '0';
+          (section as HTMLElement).style.transform = 'translateY(20px)';
+          (section as HTMLElement).style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+          
+          scrollObserver.observe(section);
+        });
+      });
+      
+      
+      // 2.3 Navigation Section Highlighting
+      function updateNavigationHighlight() {
+        // Highlight current section in navigation
+        const sections = document.querySelectorAll('section, .hero-card');
+        const navLinks = document.querySelectorAll('.nav-links a');
+        
+        let currentSection = '';
+        sections.forEach((section) => {
+          const rect = section.getBoundingClientRect();
+          if (rect.top <= 150 && rect.bottom >= 150) {
+            currentSection = section.id || 'home';
+          }
+        });
+        
+        navLinks.forEach((link) => {
+          const href = (link as HTMLAnchorElement).getAttribute('href');
+          if (href === `/${currentSection}` || (href === '/' && currentSection === 'home')) {
+            link.classList.add('current-section');
+          } else {
+            link.classList.remove('current-section');
+          }
+        });
+      }
+      
+      window.addEventListener('scroll', updateNavigationHighlight, { passive: true });
+      
+      // 2.2 Mobile Gesture Improvements
+      let touchStartY = 0;
+      let touchStartX = 0;
+      let isPulling = false;
+      
+      // Pull-to-refresh for mobile
+      document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      
+      document.addEventListener('touchmove', (e) => {
+        const touchY = e.touches[0].clientY;
+        const touchX = e.touches[0].clientX;
+        const deltaY = touchY - touchStartY;
+        const deltaX = touchX - touchStartX;
+        
+        // Pull to refresh at top of page
+        if (window.scrollY === 0 && deltaY > 50 && Math.abs(deltaX) < 30) {
+          isPulling = true;
+          document.body.style.transform = `translateY(${Math.min(deltaY * 0.5, 50)}px)`;
+          document.body.style.transition = 'none';
+        }
+        
+        // Haptic feedback simulation
+        if (Math.abs(deltaY) > 10 || Math.abs(deltaX) > 10) {
+          if ('vibrate' in navigator) {
+            navigator.vibrate(1);
+          }
+        }
+      }, { passive: true });
+      
+      document.addEventListener('touchend', () => {
+        if (isPulling) {
+          document.body.style.transform = '';
+          document.body.style.transition = 'transform 0.3s ease';
+          
+          // Simulate refresh animation
+          const refreshIndicator = document.createElement('div');
+          refreshIndicator.textContent = '✨ Content refreshed';
+          refreshIndicator.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+          `;
+          
+          document.body.appendChild(refreshIndicator);
+          requestAnimationFrame(() => {
+            refreshIndicator.style.opacity = '1';
+            setTimeout(() => {
+              refreshIndicator.style.opacity = '0';
+              setTimeout(() => document.body.removeChild(refreshIndicator), 300);
+            }, 2000);
+          });
+          
+          isPulling = false;
+        }
+      }, { passive: true });
+      
     </script>
+    
+    <style>
+      /* Phase 2 Animation Styles */
+      
+      .animate-in {
+        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+      
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      
+      .nav-links {
+        position: relative;
+      }
+      
+      
+      .current-section {
+        background: var(--bg-secondary) !important;
+        border-radius: 4px !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+      
+      /* Enhanced floating elements with performance optimizations */
+      .floating-element {
+        will-change: transform, opacity;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        contain: layout style paint;
+      }
+      
+      .floating-element::after {
+        will-change: transform;
+        backface-visibility: hidden;
+      }
+      
+      /* Mobile optimizations */
+      @media (max-width: 1024px) {
+        .floating-element {
+          transform: none !important;
+          filter: none !important;
+        }
+      }
+    </style>
   </body>
 </html>
