@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LastUpdated from '../components/LastUpdated.astro';
 import { getCachedGitHubData } from '../lib/github';
 
 // Fetch GitHub data at build time
@@ -113,6 +114,8 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
         </p>
       )}
     </section>
+    
+    <LastUpdated />
   </div>
 </BaseLayout>
 

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import LastUpdated from '../../components/LastUpdated.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('writing');
@@ -43,6 +44,8 @@ const { Content } = await post.render();
     <footer>
       <a href="/writing">← Back to Writing</a>
     </footer>
+    
+    <LastUpdated />
   </article>
 </BaseLayout>
 

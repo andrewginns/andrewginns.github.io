@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LastUpdated from '../components/LastUpdated.astro';
 import { getIntroContent } from '../lib/content.ts';
 
 const introContent = await getIntroContent();
@@ -61,6 +62,8 @@ const introContent = await getIntroContent();
         technical writing.
       </p>
     </section>
+    
+    <LastUpdated />
   </div>
 </BaseLayout>
 

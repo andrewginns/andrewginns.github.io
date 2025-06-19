@@ -93,13 +93,20 @@ const currentPath = Astro.url.pathname;
     
     <style is:global>
       :root {
-        --text-primary: #111111;
-        --text-secondary: #666666;
-        --text-light: #999999;
+        --text-primary: #2c3e50;
+        --text-secondary: #7f8c8d;
+        --text-light: #95a5a6;
         --bg-primary: #ffffff;
         --bg-secondary: #f8f9fa;
-        --accent-primary: #c00000;
-        --border-color: #e1e5e9;
+        --bg-tertiary: #ecf0f1;
+        --accent-primary: #e74c3c;
+        --accent-secondary: #3498db;
+        --accent-tertiary: #f39c12;
+        --success-color: #27ae60;
+        --border-color: #dfe6e9;
+        --shadow-light: rgba(0, 0, 0, 0.08);
+        --shadow-medium: rgba(0, 0, 0, 0.12);
+        --shadow-strong: rgba(0, 0, 0, 0.16);
         --sidebar-width: 240px;
         --content-max-width: 800px;
         --spacing-unit: 1rem;
@@ -415,10 +422,32 @@ const currentPath = Astro.url.pathname;
         font-size: 0.95rem;
         font-weight: 400;
         padding: 0.5rem 0;
-        transition: color 0.2s ease;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
-      .nav-links a:hover,
+      .nav-links a::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 1px;
+      }
+      
+      .nav-links a:hover {
+        color: var(--accent-primary);
+        transform: translateY(-1px);
+      }
+      
+      .nav-links a:hover::after,
+      .nav-links a.active::after {
+        width: 100%;
+      }
+      
       .nav-links a.active {
         color: var(--accent-primary);
       }
@@ -436,11 +465,30 @@ const currentPath = Astro.url.pathname;
         font-size: 0.85rem;
         font-weight: 400;
         padding: 0.25rem 0;
-        transition: color 0.2s ease;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       
       .social-link:hover {
         color: var(--accent-primary);
+        transform: translateX(4px) scale(1.02);
+      }
+      
+      .social-link::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 0;
+        background: var(--accent-primary);
+        transition: height 0.3s ease;
+        border-radius: 2px;
+      }
+      
+      .social-link:hover::before {
+        height: 100%;
       }
       
       .content {
@@ -637,16 +685,23 @@ const currentPath = Astro.url.pathname;
         font-size: 0.95rem;
         font-weight: 400;
         padding: 0.75rem 0;
-        transition: all 0.2s ease;
+        position: relative;
+        border-radius: 6px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
       .mobile-nav-links a:hover {
         color: var(--accent-primary);
-        text-decoration: underline;
+        background: var(--bg-secondary);
+        transform: translateX(8px);
+        padding-left: 1rem;
       }
       
       .mobile-nav-links a.active {
         color: var(--accent-primary);
+        background: var(--bg-secondary);
+        border-left: 3px solid var(--accent-primary);
+        padding-left: 1rem;
       }
       
       .mobile-social-links {
@@ -661,12 +716,16 @@ const currentPath = Astro.url.pathname;
         text-decoration: none;
         font-size: 0.85rem;
         font-weight: 400;
-        padding: 0.25rem 0;
-        transition: color 0.2s ease;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
       
       .mobile-social-link:hover {
         color: var(--accent-primary);
+        background: var(--bg-secondary);
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px var(--shadow-light);
       }
 
       /* Mobile and Tablet responsiveness */
