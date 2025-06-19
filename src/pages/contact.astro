@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LastUpdated from '../components/LastUpdated.astro';
 import { getCachedGitHubCompany } from '../lib/github.ts';
 
 // Fetch current company from GitHub profile
@@ -68,6 +69,8 @@ const currentCompany = await getCachedGitHubCompany('andrewginns');
         exciting project or opportunity, I'd be happy to chat.
       </p>
     </section>
+    
+    <LastUpdated />
   </div>
 </BaseLayout>
 

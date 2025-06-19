@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import LastUpdated from '../components/LastUpdated.astro';
 import { getCollection } from 'astro:content';
 
 const posts = await getCollection('writing');
@@ -53,6 +54,8 @@ const sortedPosts = posts.sort((a, b) => b.data.date.getTime() - a.data.date.get
         ))}
       </div>
     )}
+    
+    <LastUpdated />
   </div>
 </BaseLayout>
 

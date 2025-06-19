@@ -2,7 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
 import HeroCard from '../components/HeroCard.astro';
-import Footer from '../components/Footer.astro';
 import { getIntroContent } from '../lib/content.ts';
 
 const introContent = await getIntroContent();
@@ -63,7 +62,6 @@ const introContent = await getIntroContent();
     </section>
     
     <LastUpdated />
-    <Footer />
   </div>
 </BaseLayout>
 
