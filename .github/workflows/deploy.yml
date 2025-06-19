@@ -1,8 +1,8 @@
-name: Deploy to GitHub Pages and Cloudflare Pages
+name: Deploy to Cloudflare Pages (Production)
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   schedule:
     # Run every day at 00:00 UTC to fetch latest GitHub data
     - cron: '0 0 * * *'
@@ -10,8 +10,7 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
+  deployments: write
 
 jobs:
   build:
@@ -37,31 +36,17 @@ jobs:
           # Uncomment and add secret if needed:
           # GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
         
-      - name: Upload artifact for GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
-          
       - name: Upload artifact for Cloudflare Pages
         uses: actions/upload-artifact@v4
         with:
           name: production-files
           path: ./dist
 
-  deploy-github-pages:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
   deploy-cloudflare-pages:
     needs: build
     runs-on: ubuntu-latest
+    environment:
+      name: production
     permissions:
       contents: read
       deployments: write

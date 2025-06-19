@@ -22,8 +22,11 @@ const currentPath = Astro.url.pathname;
     <div class="container">
       <nav class="sidebar">
         <div class="sidebar-content">
-          <h1 class="site-title">Andrew Ginns</h1>
-          <div class="tagline">Machine Learning Engineer</div>
+          <div class="profile-section">
+            <img src="/andrew-headshot.jpeg" alt="Andrew Ginns" class="profile-image" />
+            <h1 class="site-title">Andrew Ginns</h1>
+            <div class="tagline" id="typewriter">GenAI Solution Architect</div>
+          </div>
           
           <ul class="nav-links">
             <li><a href="/" class={currentPath === "/" ? "active" : ""}>Home</a></li>
@@ -35,27 +38,73 @@ const currentPath = Astro.url.pathname;
           </ul>
           
           <div class="social-links">
-            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer" class="social-link">GitHub</a>
+            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
+          </div>
+        </div>
+      </nav>
+      
+      <!-- Mobile hamburger menu button -->
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      
+      <!-- Mobile navigation overlay -->
+      <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+      
+      <!-- Mobile navigation pane -->
+      <nav class="mobile-nav-pane" id="mobile-nav-pane">
+        <div class="mobile-nav-content">
+          <div class="mobile-profile-section">
+            <img src="/andrew-headshot.jpeg" alt="Andrew Ginns" class="mobile-profile-image" />
+            <h1 class="mobile-site-title">Andrew Ginns</h1>
+            <div class="mobile-tagline" id="mobile-typewriter">GenAI Solution Architect</div>
+          </div>
+          
+          <ul class="mobile-nav-links">
+            <li><a href="/" class={currentPath === "/" ? "active" : ""}>Home</a></li>
+            <li><a href="/experience" class={currentPath === "/experience" ? "active" : ""}>Experience</a></li>
+            <li><a href="/projects" class={currentPath === "/projects" ? "active" : ""}>Projects</a></li>
+            <li><a href="/writing" class={currentPath.startsWith("/writing") ? "active" : ""}>Writing</a></li>
+            <li><a href="/about" class={currentPath === "/about" ? "active" : ""}>About</a></li>
+            <li><a href="/contact" class={currentPath === "/contact" ? "active" : ""}>Contact</a></li>
+          </ul>
+          
+          <div class="mobile-social-links">
+            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer" class="mobile-social-link">GitHub</a>
+            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer" class="mobile-social-link">LinkedIn</a>
           </div>
         </div>
       </nav>
       
       <main class="content">
+        <div class="floating-elements">
+          <div class="floating-element floating-element-1"></div>
+          <div class="floating-element floating-element-2"></div>
+          <div class="floating-element floating-element-3"></div>
+          <div class="floating-element floating-element-4"></div>
+          <div class="floating-element floating-element-5"></div>
+          <div class="floating-element floating-element-6"></div>
+          <div class="floating-element floating-element-7"></div>
+        </div>
         <slot />
       </main>
     </div>
     
     <style is:global>
       :root {
-        --text-primary: #222;
-        --text-secondary: #666;
-        --bg-primary: #fff;
-        --bg-secondary: #f8f8f8;
-        --accent: #0066cc;
-        --sidebar-width: 280px;
-        --content-max-width: 720px;
-        --spacing-unit: 1.5rem;
+        --text-primary: #111111;
+        --text-secondary: #666666;
+        --text-light: #999999;
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8f9fa;
+        --accent-primary: #c00000;
+        --border-color: #e1e5e9;
+        --sidebar-width: 240px;
+        --content-max-width: 800px;
+        --spacing-unit: 1rem;
       }
       
       * {
@@ -65,10 +114,231 @@ const currentPath = Astro.url.pathname;
       }
       
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
         line-height: 1.6;
         color: var(--text-primary);
         background: var(--bg-primary);
+        min-height: 100vh;
+        font-size: 16px;
+        overflow-x: hidden;
+      }
+      
+      .floating-elements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        pointer-events: none;
+        z-index: -1;
+      }
+      
+      .floating-element {
+        position: fixed;
+        opacity: 0.25;
+        animation: float 10s ease-in-out infinite;
+        pointer-events: none;
+        border: 1px solid rgba(192, 0, 0, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.1s ease-out, opacity 0.2s ease-out;
+        overflow: hidden;
+        --shimmer-x: -100%;
+        z-index: 1;
+      }
+      
+      .floating-element::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: var(--shimmer-x);
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(255, 255, 255, 0.4) 50%,
+          transparent 100%
+        );
+        pointer-events: none;
+      }
+      
+      .floating-element-1 {
+        width: 100px;
+        height: 50px;
+        top: 8%;
+        right: 10%;
+        background: rgba(248, 249, 250, 0.8);
+        border-radius: 8px;
+        transform: rotate(12deg);
+        animation-delay: 0s;
+        overflow: hidden;
+      }
+      
+      .floating-element-1::before {
+        content: "MLOps";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      
+      .floating-element-2 {
+        width: 90px;
+        height: 45px;
+        top: 25%;
+        right: 5%;
+        background: rgba(192, 0, 0, 0.1);
+        border-radius: 6px;
+        transform: rotate(-8deg);
+        animation-delay: 2s;
+        overflow: hidden;
+      }
+      
+      .floating-element-2::before {
+        content: "GenAI";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 15px;
+        color: var(--accent-primary);
+        font-weight: 600;
+      }
+      
+      .floating-element-3 {
+        width: 110px;
+        height: 55px;
+        top: 45%;
+        right: 8%;
+        background: rgba(248, 249, 250, 0.9);
+        border-radius: 10px;
+        transform: rotate(15deg);
+        animation-delay: 4s;
+        overflow: hidden;
+      }
+      
+      .floating-element-3::before {
+        content: "Python";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      
+      .floating-element-4 {
+        width: 85px;
+        height: 40px;
+        top: 65%;
+        right: 15%;
+        background: rgba(192, 0, 0, 0.08);
+        border-radius: 5px;
+        transform: rotate(-12deg);
+        animation-delay: 6s;
+        overflow: hidden;
+      }
+      
+      .floating-element-4::before {
+        content: "CI/CD";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      
+      .floating-element-5 {
+        width: 95px;
+        height: 48px;
+        top: 80%;
+        right: 6%;
+        background: rgba(248, 249, 250, 0.85);
+        border-radius: 7px;
+        transform: rotate(10deg);
+        animation-delay: 8s;
+        overflow: hidden;
+      }
+      
+      .floating-element-5::before {
+        content: "Data";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      
+      .floating-element-6 {
+        width: 120px;
+        height: 52px;
+        top: 35%;
+        right: 2%;
+        background: rgba(192, 0, 0, 0.12);
+        border-radius: 9px;
+        transform: rotate(-15deg);
+        animation-delay: 10s;
+        overflow: hidden;
+      }
+      
+      .floating-element-6::before {
+        content: "Edge ML";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: var(--accent-primary);
+        font-weight: 600;
+      }
+      
+      .floating-element-7 {
+        width: 80px;
+        height: 42px;
+        top: 55%;
+        right: 3%;
+        background: rgba(248, 249, 250, 0.9);
+        border-radius: 6px;
+        transform: rotate(18deg);
+        animation-delay: 12s;
+        overflow: hidden;
+      }
+      
+      .floating-element-7::before {
+        content: "AI";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+      
+      @keyframes float {
+        0%, 100% { 
+          transform: translateY(0px) scale(1);
+          opacity: 0.12;
+        }
+        50% { 
+          transform: translateY(-12px) scale(1.02);
+          opacity: 0.18;
+        }
       }
       
       .container {
@@ -82,129 +352,551 @@ const currentPath = Astro.url.pathname;
         left: 0;
         width: var(--sidebar-width);
         height: 100vh;
-        background: var(--bg-secondary);
+        background: var(--bg-primary);
+        border-right: 1px solid var(--border-color);
         padding: calc(var(--spacing-unit) * 2);
         overflow-y: auto;
       }
       
       .sidebar-content {
-        max-width: 200px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .profile-section {
+        margin-bottom: calc(var(--spacing-unit) * 2);
+        padding-bottom: calc(var(--spacing-unit) * 1.5);
+        border-bottom: 1px solid var(--border-color);
+      }
+      
+      .profile-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1rem;
       }
       
       .site-title {
         font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--text-primary);
       }
       
       .tagline {
         font-size: 0.9rem;
         color: var(--text-secondary);
-        margin-bottom: calc(var(--spacing-unit) * 2);
+        font-weight: 400;
+        margin-bottom: 0;
+        min-height: 1.3em;
+        position: relative;
+      }
+      
+      .tagline::after {
+        content: '|';
+        color: var(--accent-primary);
+        animation: blink 1s infinite;
+        font-weight: 400;
+      }
+      
+      @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
       }
       
       .nav-links {
         list-style: none;
         margin-bottom: calc(var(--spacing-unit) * 2);
+        flex-grow: 1;
       }
       
       .nav-links li {
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.25rem;
       }
       
       .nav-links a {
+        display: block;
         color: var(--text-primary);
         text-decoration: none;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        font-weight: 400;
+        padding: 0.5rem 0;
         transition: color 0.2s ease;
-        position: relative;
-      }
-      
-      .nav-links a::after {
-        content: '';
-        position: absolute;
-        bottom: -2px;
-        left: 0;
-        width: 0;
-        height: 2px;
-        background: var(--accent);
-        transition: width 0.3s ease;
-      }
-      
-      .nav-links a:hover::after,
-      .nav-links a.active::after {
-        width: 100%;
       }
       
       .nav-links a:hover,
       .nav-links a.active {
-        color: var(--accent);
+        color: var(--accent-primary);
       }
       
       .social-links {
         padding-top: var(--spacing-unit);
-        border-top: 1px solid #ddd;
+        border-top: 1px solid var(--border-color);
       }
       
-      .social-links a {
+      .social-link {
         display: block;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
         color: var(--text-secondary);
         text-decoration: none;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 400;
+        padding: 0.25rem 0;
         transition: color 0.2s ease;
       }
       
-      .social-links a:hover {
-        color: var(--accent);
+      .social-link:hover {
+        color: var(--accent-primary);
       }
       
       .content {
         margin-left: var(--sidebar-width);
         padding: calc(var(--spacing-unit) * 3);
-        width: 100%;
-        max-width: calc(var(--sidebar-width) + var(--content-max-width));
+        max-width: var(--content-max-width);
+        background: var(--bg-primary);
+        min-height: 100vh;
       }
       
       h1, h2, h3, h4, h5, h6 {
         margin-bottom: 1rem;
-        line-height: 1.2;
+        line-height: 1.3;
+        color: var(--text-primary);
+        font-weight: 700;
+      }
+      
+      h1 {
+        font-size: 2.25rem;
+        margin-bottom: 1.5rem;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+        color: var(--accent-primary);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        margin-top: 3rem;
+      }
+      
+      h2:first-child {
+        margin-top: 0;
       }
       
       p {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.7;
       }
       
       a {
-        color: var(--accent);
+        color: var(--accent-primary);
+        text-decoration: none;
+        transition: color 0.2s ease;
       }
       
-      /* Mobile responsiveness */
+      a:hover {
+        text-decoration: underline;
+      }
+      
+      /* Mobile hamburger menu and navigation */
+      .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1001;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.3s ease;
+      }
+      
+      .mobile-menu-toggle:hover {
+        border-color: var(--accent-primary);
+        background: var(--bg-secondary);
+      }
+      
+      .hamburger-line {
+        width: 20px;
+        height: 2px;
+        background: var(--text-primary);
+        transition: all 0.3s ease;
+        border-radius: 2px;
+      }
+      
+      .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+      }
+      
+      .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+        opacity: 0;
+      }
+      
+      .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+        transform: rotate(-45deg) translate(7px, -6px);
+      }
+      
+      .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      .mobile-nav-overlay.active {
+        opacity: 1;
+      }
+      
+      .mobile-nav-pane {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 300px;
+        height: 100vh;
+        background: var(--bg-primary);
+        border-right: 1px solid var(--border-color);
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        overflow-y: auto;
+      }
+      
+      .mobile-nav-pane.active {
+        transform: translateX(0);
+      }
+      
+      .mobile-nav-content {
+        padding: calc(var(--spacing-unit) * 2);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .mobile-profile-section {
+        margin-bottom: calc(var(--spacing-unit) * 2);
+        padding-bottom: calc(var(--spacing-unit) * 1.5);
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+      }
+      
+      .mobile-profile-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 1rem;
+      }
+      
+      .mobile-site-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: var(--text-primary);
+      }
+      
+      .mobile-tagline {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        font-weight: 400;
+        min-height: 1.3em;
+        position: relative;
+      }
+      
+      .mobile-tagline::after {
+        content: '|';
+        color: var(--accent-primary);
+        animation: blink 1s infinite;
+        font-weight: 400;
+      }
+      
+      .mobile-nav-links {
+        list-style: none;
+        margin-bottom: calc(var(--spacing-unit) * 2);
+        flex-grow: 1;
+      }
+      
+      .mobile-nav-links li {
+        margin-bottom: 0.25rem;
+      }
+      
+      .mobile-nav-links a {
+        display: block;
+        color: var(--text-primary);
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 400;
+        padding: 0.75rem 0;
+        transition: all 0.2s ease;
+      }
+      
+      .mobile-nav-links a:hover {
+        color: var(--accent-primary);
+        text-decoration: underline;
+      }
+      
+      .mobile-nav-links a.active {
+        color: var(--accent-primary);
+      }
+      
+      .mobile-social-links {
+        padding-top: var(--spacing-unit);
+        border-top: 1px solid var(--border-color);
+      }
+      
+      .mobile-social-link {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 400;
+        padding: 0.25rem 0;
+        transition: color 0.2s ease;
+      }
+      
+      .mobile-social-link:hover {
+        color: var(--accent-primary);
+      }
+
+      /* Mobile and Tablet responsiveness */
       @media (max-width: 1024px) {
         .sidebar {
-          position: relative;
-          width: 100%;
-          height: auto;
-          padding: var(--spacing-unit);
+          display: none;
         }
         
-        .nav-links {
+        .mobile-menu-toggle,
+        .mobile-nav-overlay,
+        .mobile-nav-pane {
+          display: block;
+        }
+        
+        .mobile-menu-toggle {
           display: flex;
-          flex-wrap: wrap;
-          gap: 1rem;
-          margin-bottom: var(--spacing-unit);
-        }
-        
-        .nav-links li {
-          margin-bottom: 0;
         }
         
         .content {
           margin-left: 0;
-          padding: var(--spacing-unit);
+          padding: calc(var(--spacing-unit) * 1.5);
           max-width: 100%;
+          min-height: auto;
+        }
+        
+        h1 {
+          font-size: 1.75rem;
+        }
+        
+        /* Hide floating elements on mobile and tablet */
+        .floating-element {
+          display: none !important;
         }
       }
+      
     </style>
+    
+    <script>
+      // Auto-typing tagline animation
+      const titles = [
+        "ML Engineer",
+        "Data Scientist", 
+        "GenAI Solution Architect",
+      ];
+      
+      let currentTitleIndex = 0;
+      let currentCharIndex = 0;
+      let isDeleting = false;
+      const typewriterElement = document.getElementById('typewriter');
+      const mobileTypewriterElement = document.getElementById('mobile-typewriter');
+      
+      function typeWriter() {
+        const currentTitle = titles[currentTitleIndex];
+        
+        if (isDeleting) {
+          const text = currentTitle.substring(0, currentCharIndex - 1);
+          if (typewriterElement) typewriterElement.textContent = text;
+          if (mobileTypewriterElement) mobileTypewriterElement.textContent = text;
+          currentCharIndex--;
+        } else {
+          const text = currentTitle.substring(0, currentCharIndex + 1);
+          if (typewriterElement) typewriterElement.textContent = text;
+          if (mobileTypewriterElement) mobileTypewriterElement.textContent = text;
+          currentCharIndex++;
+        }
+        
+        let typeSpeed = isDeleting ? 50 : 100;
+        
+        if (!isDeleting && currentCharIndex === currentTitle.length) {
+          typeSpeed = 2000; // Pause at end
+          isDeleting = true;
+        } else if (isDeleting && currentCharIndex === 0) {
+          isDeleting = false;
+          currentTitleIndex = (currentTitleIndex + 1) % titles.length;
+          typeSpeed = 300; // Pause before starting new word
+        }
+        
+        setTimeout(typeWriter, typeSpeed);
+      }
+      
+      // Start typewriter after a short delay
+      setTimeout(typeWriter, 1000);
+      
+      // Cursor-responsive animation
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let scrollProgress = 0;
+      
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+      
+      // Scroll-based animation
+      let ticking = false;
+      
+      function updateScrollProgress() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
+        scrollProgress = Math.min(scrollTop / Math.max(documentHeight, 1), 1);
+        ticking = false;
+      }
+      
+      function requestScrollUpdate() {
+        if (!ticking) {
+          requestAnimationFrame(updateScrollProgress);
+          ticking = true;
+        }
+      }
+      
+      window.addEventListener('scroll', requestScrollUpdate, { passive: true });
+      
+      // Initialize scroll progress
+      updateScrollProgress();
+      
+      function animateElements() {
+        targetX += (mouseX - targetX) * 0.02;
+        targetY += (mouseY - targetY) * 0.02;
+        
+        // Animate floating elements with parallax and scroll effects
+        const floatingElements = document.querySelectorAll('.floating-element');
+        floatingElements.forEach((element, index) => {
+          // Mouse parallax
+          const intensity = (index + 1) * 0.003;
+          const moveX = (targetX - window.innerWidth / 2) * intensity;
+          const moveY = (targetY - window.innerHeight / 2) * intensity;
+          
+          // Subtle scroll-based effects
+          const scrollOpacity = 0.25 + (scrollProgress * 0.15);
+          const scrollVertical = scrollProgress * 8 * (index % 3 === 0 ? 1 : -1);
+          
+          // Shimmer effect based on scroll
+          const shimmerProgress = (scrollProgress + (index * 0.1)) % 1;
+          const shimmerPosition = shimmerProgress * 200 - 100; // Move from -100% to 100%
+          
+          // Combine transforms - just translation, no rotation or scaling
+          const htmlElement = element as HTMLElement;
+          htmlElement.style.transform = `translate(${moveX}px, ${moveY + scrollVertical}px)`;
+          htmlElement.style.opacity = scrollOpacity.toString();
+          
+          // Apply shimmer position
+          htmlElement.style.setProperty('--shimmer-x', `${shimmerPosition}%`);
+        });
+        
+        requestAnimationFrame(animateElements);
+      }
+      
+      // Start animation loop only on desktop devices
+      if (window.innerWidth > 1024) {
+        animateElements();
+      }
+      
+      // Add hover effects to navigation items
+      document.querySelectorAll('.nav-links a, .social-link').forEach(link => {
+        link.addEventListener('mouseenter', function(this: HTMLElement) {
+          this.style.transform = 'translateY(-2px)';
+          this.style.transition = 'transform 0.2s ease';
+        });
+        
+        link.addEventListener('mouseleave', function(this: HTMLElement) {
+          this.style.transform = 'translateY(0)';
+        });
+      });
+      
+      // Mobile menu functionality
+      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+      const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+      const mobileNavPane = document.getElementById('mobile-nav-pane');
+      const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a, .mobile-social-link');
+      
+      function toggleMobileMenu() {
+        if (!mobileNavPane) return;
+        const isActive = mobileNavPane.classList.contains('active');
+        
+        if (isActive) {
+          closeMobileMenu();
+        } else {
+          openMobileMenu();
+        }
+      }
+      
+      function openMobileMenu() {
+        if (mobileMenuToggle) mobileMenuToggle.classList.add('active');
+        if (mobileNavOverlay) mobileNavOverlay.classList.add('active');
+        if (mobileNavPane) mobileNavPane.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
+      }
+      
+      function closeMobileMenu() {
+        if (mobileMenuToggle) mobileMenuToggle.classList.remove('active');
+        if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
+        if (mobileNavPane) mobileNavPane.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+      }
+      
+      // Event listeners
+      if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+      }
+      
+      if (mobileNavOverlay) {
+        mobileNavOverlay.addEventListener('click', closeMobileMenu);
+      }
+      
+      // Close menu when navigation link is clicked
+      mobileNavLinks.forEach(link => {
+        link.addEventListener('click', closeMobileMenu);
+      });
+      
+      // Close menu on escape key press
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileNavPane && mobileNavPane.classList.contains('active')) {
+          closeMobileMenu();
+        }
+      });
+      
+      // Handle window resize - close menu if switching to desktop
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 1024 && mobileNavPane && mobileNavPane.classList.contains('active')) {
+          closeMobileMenu();
+        }
+      });
+    </script>
   </body>
 </html>

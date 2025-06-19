@@ -10,12 +10,20 @@
     "preview": "astro preview",
     "astro": "astro"
   },
-  "keywords": ["machine-learning", "portfolio", "blog"],
+  "keywords": [
+    "machine-learning",
+    "portfolio",
+    "blog"
+  ],
   "author": "Andrew Ginns",
   "license": "MIT",
   "dependencies": {
     "@astrojs/check": "^0.9.4",
     "astro": "^5.9.4",
     "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.1",
+    "@types/node": "^24.0.3"
   }
 }

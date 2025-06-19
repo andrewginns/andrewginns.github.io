@@ -82,7 +82,13 @@ The site will be available at `http://localhost:4321`
 
 ### Dynamic GitHub Integration
 
-The website automatically pulls content from GitHub to minimize maintenance:
+The website automatically pulls content from GitHub to minimise maintenance:
+
+#### Profile Information
+- **Company**: Automatically fetched from your GitHub profile company field
+- **Role/Title**: Extracted from your GitHub bio using pattern matching
+- **Unified caching**: Single API call per build for optimal performance
+- **Fallback values**: Graceful degradation if GitHub API is unavailable
 
 #### Projects
 - **Automatic sync**: Projects are pulled from your GitHub pinned repositories
@@ -110,6 +116,13 @@ You can manage blog posts in two ways:
 
 ### GitHub API Configuration
 
+The website uses a unified caching mechanism for all GitHub API calls to optimise performance:
+
+#### Core Functions
+- `getCachedGitHubProfile()` - Fetches profile, company, and role information
+- `getCachedGitHubData()` - Fetches repository and project data
+- `getCachedGitHubGists()` - Fetches blog post content from gists
+
 For better API rate limits and access to GraphQL (pinned repos):
 
 1. Create a GitHub Personal Access Token with `public_repo` scope
@@ -119,14 +132,14 @@ For better API rate limits and access to GraphQL (pinned repos):
    ```
 3. The build process will use this token when fetching data
 
-**Note**: The site works without a token but may hit rate limits or not show pinned repos.
+**Note**: The site works without a token but may hit rate limits or not show pinned repos. All GitHub API calls include graceful error handling with fallback values.
 
 ## Deployment
 
 The site automatically deploys to both GitHub Pages and Cloudflare Pages:
 
 ### Automatic Triggers
-- **On push**: Deploys when code is pushed to `main` or `master` branch
+- **On push**: Deploys when code is pushed to `main` branch
 - **Daily rebuild**: Runs at 00:00 UTC to fetch latest GitHub data
 - **Manual trigger**: Can be triggered manually from GitHub Actions tab
 

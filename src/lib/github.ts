@@ -164,9 +164,55 @@ export async function getGitHubGists(username: string) {
   }
 }
 
+// Fetch profile information from GitHub (company, role, etc.)
+export async function getGitHubProfile(username: string) {
+  const headers: HeadersInit = {
+    'Accept': 'application/vnd.github.v3+json',
+  };
+  
+  const token = import.meta.env.GITHUB_TOKEN;
+  if (token) {
+    headers['Authorization'] = `token ${token}`;
+  }
+
+  try {
+    const response = await fetch(`https://api.github.com/users/${username}`, { headers });
+    if (!response.ok) throw new Error('Failed to fetch profile');
+    
+    const profile = await response.json();
+    const bio = profile.bio || "";
+    
+    // Extract role from bio (look for common patterns)
+    const roleMatch = bio.match(/(?:I'm\s+(?:a\s+)?|I\s+am\s+(?:a\s+)?|Currently\s+(?:a\s+)?|Working\s+as\s+(?:a\s+)?)([^.]+(?:Engineer|Scientist|Developer|Manager|Architect|Lead|Director|Consultant))/i);
+    const role = roleMatch ? roleMatch[1].trim() : "Lead Machine Learning Engineer";
+    
+    return {
+      company: profile.company || 'Motorway',
+      role: role,
+      bio: bio,
+      profile: profile
+    };
+  } catch (error) {
+    console.error('Error fetching GitHub profile:', error);
+    return {
+      company: 'Motorway',
+      role: 'Lead Machine Learning Engineer',
+      bio: '',
+      profile: null
+    };
+  }
+}
+
+// Legacy function for backward compatibility
+export async function getGitHubCompany(username: string): Promise<string> {
+  const profileData = await getGitHubProfile(username);
+  return profileData.company;
+}
+
 // Cache the data at build time
 let cachedData: any = null;
 let cachedGists: any = null;
+let cachedProfile: any = null;
 
 export async function getCachedGitHubData(username: string) {
   if (!cachedData) {
@@ -180,4 +226,17 @@ export async function getCachedGitHubGists(username: string) {
     cachedGists = await getGitHubGists(username);
   }
   return cachedGists;
+}
+
+export async function getCachedGitHubProfile(username: string) {
+  if (!cachedProfile) {
+    cachedProfile = await getGitHubProfile(username);
+  }
+  return cachedProfile;
+}
+
+// Legacy function for backward compatibility
+export async function getCachedGitHubCompany(username: string): Promise<string> {
+  const profile = await getCachedGitHubProfile(username);
+  return profile.company;
 }
