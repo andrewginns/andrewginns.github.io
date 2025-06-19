@@ -701,10 +701,32 @@ const currentPath = Astro.url.pathname;
         h1 {
           font-size: 1.75rem;
         }
+
+        body {
+          line-height: 1.7;
+        }
+
+        p {
+          margin-bottom: 1.75rem;
+        }
         
         /* Hide floating elements on mobile and tablet */
         .floating-element {
           display: none !important;
+        }
+      }
+
+      /* Smaller mobile specific adjustments */
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 1.65rem; /* Slightly smaller h1 for smaller mobiles */
+        }
+      }
+
+      @media (max-width: 480px) {
+        .content {
+          /* Adjust content padding for very small screens */
+          padding: calc(var(--spacing-unit) * 1.25);
         }
       }
       

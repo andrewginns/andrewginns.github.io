@@ -28,14 +28,16 @@ const introContent = await getIntroContent();
         Some of the pieces of work I've done include:
       </p>
       <ul class="work-list">
-        <li>Designed and implemented a machine learning platform</li>
-        <li>Lead and scaled data science teams</li>
-        <li>Workshops and talks on applied GenAI techniques/showcases</li>
-        <li>Built MLOps infrastructure for rapid model deployment</li>
-        <li>Applied cutting-edge GenAI techniques to solve real-world problems</li>
+        <li><span class="li-icon">⚙️</span>Designed and implemented a machine learning platform</li>
+        <li><span class="li-icon">👥</span>Lead and scaled data science teams</li>
+        <li><span class="li-icon">🗣️</span>Workshops and talks on applied GenAI techniques/showcases</li>
+        <li><span class="li-icon">🚀</span>Built MLOps infrastructure for rapid model deployment</li>
+        <li><span class="li-icon">✨</span>Applied cutting-edge GenAI techniques to solve real-world problems</li>
       </ul>
     </section>
     
+    <hr class="mobile-separator" />
+
     <section class="focus-section">
       <h2>Recent Focus</h2>
       <p>
@@ -44,6 +46,8 @@ const introContent = await getIntroContent();
       </p>
     </section>
     
+    <hr class="mobile-separator" />
+
     <section class="connect-section">
       <h2>Let's Connect</h2>
       <p>
@@ -85,16 +89,17 @@ const introContent = await getIntroContent();
   }
   
   .work-list li {
-    margin-bottom: 0.5rem;
-    padding-left: 1rem;
-    position: relative;
+    margin-bottom: 0.75rem; /* Adjusted margin slightly for better spacing with icons */
+    display: flex;
+    align-items: flex-start;
   }
-  
-  .work-list li::before {
-    content: '•';
+
+  .work-list .li-icon {
+    margin-right: 0.75rem;
     color: var(--accent-primary);
-    position: absolute;
-    left: 0;
+    font-size: 1.1em;
+    line-height: inherit; /* Start with inherit, adjust if needed */
+    padding-top: 0.1em; /* Slight nudge for better visual alignment */
   }
   
   /* Mobile responsiveness */
@@ -105,6 +110,18 @@ const introContent = await getIntroContent();
     
     .intro {
       font-size: 1rem;
+    }
+  }
+
+  .mobile-separator {
+    display: none; /* Hidden by default */
+    border-top: 1px solid var(--border-color);
+    margin: 2rem 0; /* Adjust margin as needed */
+  }
+
+  @media (max-width: 1024px) {
+    .mobile-separator {
+      display: block; /* Visible on mobile/tablet */
     }
   }
 </style>
