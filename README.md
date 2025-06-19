@@ -139,7 +139,7 @@ For better API rate limits and access to GraphQL (pinned repos):
 The site automatically deploys to both GitHub Pages and Cloudflare Pages:
 
 ### Automatic Triggers
-- **On push**: Deploys when code is pushed to `main` or `master` branch
+- **On push**: Deploys when code is pushed to `main` branch
 - **Daily rebuild**: Runs at 00:00 UTC to fetch latest GitHub data
 - **Manual trigger**: Can be triggered manually from GitHub Actions tab
 
