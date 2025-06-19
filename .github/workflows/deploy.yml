@@ -65,4 +65,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ./dist --project-name=andrewginns --compatibility-date=2024-09-23
+          command: pages deploy ./dist --project-name=andrewginns --compatibility-date=2025-06-01
