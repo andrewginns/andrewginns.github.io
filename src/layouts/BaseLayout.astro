@@ -166,7 +166,7 @@ const currentPath = Astro.url.pathname;
           transparent 100%
         );
         pointer-events: none;
-        animation: shimmer 4s ease-in-out infinite;
+        animation: shimmer 6s ease-in-out infinite;
       }
       
       .floating-element-1 {
@@ -176,7 +176,6 @@ const currentPath = Astro.url.pathname;
         right: 10%;
         background: rgba(248, 249, 250, 0.95);
         border-radius: 8px;
-        transform: rotate(12deg);
         animation-delay: 0s;
         overflow: hidden;
       }
@@ -204,13 +203,12 @@ const currentPath = Astro.url.pathname;
         right: 5%;
         background: rgba(231, 76, 60, 0.15);
         border-radius: 6px;
-        transform: rotate(-8deg);
-        animation-delay: 2s;
+        animation-delay: 1s;
         overflow: hidden;
       }
       
       .floating-element-2::after {
-        animation-delay: 0.8s;
+        animation-delay: 0.6s;
       }
       
       .floating-element-2::before {
@@ -232,13 +230,12 @@ const currentPath = Astro.url.pathname;
         right: 8%;
         background: rgba(248, 249, 250, 0.95);
         border-radius: 10px;
-        transform: rotate(15deg);
-        animation-delay: 4s;
+        animation-delay: 2s;
         overflow: hidden;
       }
       
       .floating-element-3::after {
-        animation-delay: 1.6s;
+        animation-delay: 1.2s;
       }
       
       .floating-element-3::before {
@@ -260,13 +257,12 @@ const currentPath = Astro.url.pathname;
         right: 15%;
         background: rgba(231, 76, 60, 0.12);
         border-radius: 5px;
-        transform: rotate(-12deg);
-        animation-delay: 6s;
+        animation-delay: 3s;
         overflow: hidden;
       }
       
       .floating-element-4::after {
-        animation-delay: 2.4s;
+        animation-delay: 1.8s;
       }
       
       .floating-element-4::before {
@@ -288,13 +284,12 @@ const currentPath = Astro.url.pathname;
         right: 6%;
         background: rgba(248, 249, 250, 0.95);
         border-radius: 7px;
-        transform: rotate(10deg);
-        animation-delay: 8s;
+        animation-delay: 4s;
         overflow: hidden;
       }
       
       .floating-element-5::after {
-        animation-delay: 3.2s;
+        animation-delay: 2.4s;
       }
       
       .floating-element-5::before {
@@ -316,13 +311,12 @@ const currentPath = Astro.url.pathname;
         right: 2%;
         background: rgba(231, 76, 60, 0.18);
         border-radius: 9px;
-        transform: rotate(-15deg);
-        animation-delay: 10s;
+        animation-delay: 5s;
         overflow: hidden;
       }
       
       .floating-element-6::after {
-        animation-delay: 1.2s;
+        animation-delay: 3.0s;
       }
       
       .floating-element-6::before {
@@ -344,13 +338,12 @@ const currentPath = Astro.url.pathname;
         right: 3%;
         background: rgba(248, 249, 250, 0.95);
         border-radius: 6px;
-        transform: rotate(18deg);
-        animation-delay: 12s;
+        animation-delay: 6s;
         overflow: hidden;
       }
       
       .floating-element-7::after {
-        animation-delay: 2.0s;
+        animation-delay: 3.6s;
       }
       
       .floating-element-7::before {
@@ -367,12 +360,12 @@ const currentPath = Astro.url.pathname;
       
       @keyframes float {
         0%, 100% { 
-          transform: translateY(0px);
-          opacity: 0.58;
+          transform: translateY(0px) translateX(0px);
+          opacity: 0.48;
         }
         50% { 
-          transform: translateY(-4px);
-          opacity: 0.22;
+          transform: translateY(-30px) translateX(-10px);
+          opacity: 0.72;
         }
       }
       
@@ -994,7 +987,7 @@ const currentPath = Astro.url.pathname;
       
       window.addEventListener('scroll', updateNavigationHighlight, { passive: true });
       
-      // 2.4 Mobile Gesture Improvements
+      // 2.2 Mobile Gesture Improvements
       let touchStartY = 0;
       let touchStartX = 0;
       let isPulling = false;
