@@ -5,17 +5,24 @@ import LastUpdated from '../components/LastUpdated.astro';
 
 <BaseLayout title="Andrew Ginns - Machine Learning Engineer">
   <div class="home-content">
-    <h1>Hi, I'm Andrew Ginns</h1>
+    <div class="hero-section">
+      <h1>Hi, I'm Andrew Ginns</h1>
+      
+      <p class="intro">
+        I'm a Lead Machine Learning Engineer with 7+ years of experience building scalable ML systems 
+        and leading data science teams. Currently working at Motorway, where I'm focused on developing 
+        innovative MLOps solutions and production-grade machine learning pipelines.
+      </p>
+    </div>
     
-    <p class="intro">
-      I'm a Lead Machine Learning Engineer with 7+ years of experience building scalable ML systems 
-      and leading data science teams. Currently working at Motorway, where I'm focused on developing 
-      innovative MLOps solutions and production-grade machine learning pipelines.
-    </p>
-    
-    <section class="highlights">
+    <section class="work-section">
       <h2>What I Do</h2>
-      <ul>
+      <p>
+        I work as a Lead Machine Learning Engineer focused on building sustainable growth
+        programs and scalable ML systems. My expertise is in providing clarity and momentum
+        on complex technical projects.
+      </p>
+      <ul class="work-list">
         <li>Design and implement end-to-end machine learning pipelines</li>
         <li>Lead and scale data science teams</li>
         <li>Build MLOps infrastructure for rapid model deployment</li>
@@ -23,21 +30,24 @@ import LastUpdated from '../components/LastUpdated.astro';
       </ul>
     </section>
     
-    <section class="recent">
+    <section class="focus-section">
       <h2>Recent Focus</h2>
       <p>
         I'm particularly interested in Large Language Models, generative AI, and building robust 
-        MLOps workflows. My work has reduced deployment times from half a day to just 2 hours, 
-        and I've successfully scaled teams from 2 to 16 members while maintaining technical excellence.
+        MLOps workflows. My work has <strong>reduced deployment times from half a day to just 2 hours</strong>, 
+        and I've successfully <strong>scaled teams from 2 to 16 members</strong> while maintaining technical excellence.
       </p>
     </section>
     
-    <section class="cta">
-      <h2>Get in Touch</h2>
+    <section class="connect-section">
+      <h2>Let's Connect</h2>
       <p>
-        Explore my <a href="/projects">projects</a> to see what I've built, 
-        read my <a href="/writing">thoughts on ML and technology</a>, 
-        or <a href="/contact">reach out</a> if you'd like to connect.
+        Ready to explore what we can build together? Check out my work and get in touch.
+      </p>
+      <p>
+        <a href="/projects">View Projects</a> • 
+        <a href="/writing">Read Writing</a> • 
+        <a href="/contact">Get in Touch</a>
       </p>
     </section>
     
@@ -46,33 +56,50 @@ import LastUpdated from '../components/LastUpdated.astro';
 </BaseLayout>
 
 <style>
-  .home-content {
-    max-width: 600px;
+  .hero-section {
+    margin-bottom: 3rem;
   }
   
   .intro {
-    font-size: 1.25rem;
-    line-height: 1.8;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 0;
+    color: var(--text-secondary);
+  }
+  
+  .work-section,
+  .focus-section,
+  .connect-section {
     margin-bottom: 3rem;
   }
   
-  .highlights,
-  .recent,
-  .cta {
-    margin-bottom: 3rem;
-  }
-  
-  .highlights ul {
-    list-style-position: inside;
+  .work-list {
+    list-style: none;
+    padding: 0;
     margin-left: 0;
   }
   
-  .highlights li {
-    margin-bottom: 0.75rem;
+  .work-list li {
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+    position: relative;
   }
   
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+  .work-list li::before {
+    content: '•';
+    color: var(--accent-primary);
+    position: absolute;
+    left: 0;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .hero-section {
+      margin-bottom: 2rem;
+    }
+    
+    .intro {
+      font-size: 1rem;
+    }
   }
 </style>
