@@ -1,0 +1,51 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <p class="footer-text">
+      © {currentYear} Andrew Ginns. Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer">Astro</a> and deployed on <a href="https://pages.cloudflare.com" target="_blank" rel="noopener noreferrer">Cloudflare Pages</a>.
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+  
+  .footer-content {
+    text-align: center;
+  }
+  
+  .footer-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+  
+  .footer-text a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+  
+  .footer-text a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 768px) {
+    .site-footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+    }
+    
+    .footer-text {
+      font-size: 0.8rem;
+    }
+  }
+</style>

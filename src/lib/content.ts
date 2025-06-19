@@ -16,6 +16,6 @@ export async function getIntroContent() {
     role: githubProfile.role,
     company: githubProfile.company,
     yearsOfExperience,
-    introText: `I'm a ${githubProfile.role} with ${yearsOfExperience}+ years of experience building scalable ML systems and leading data science teams. Currently working at ${githubProfile.company}, where I'm focused on GenAI as well as supporting our various ML teams to develop MLOps solutions and production-grade ML pipelines.`
+    introText: `I'm a ${githubProfile.role} with ${yearsOfExperience}+ years of experience building scalable ML systems and leading Data Science teams. Currently working at ${githubProfile.company}, where I'm focused on GenAI as well as supporting our various ML teams to develop MLOps solutions and production-grade ML pipelines.`
   };
 }

@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
+import HeroCard from '../components/HeroCard.astro';
+import Footer from '../components/Footer.astro';
 import { getIntroContent } from '../lib/content.ts';
 
 const introContent = await getIntroContent();
@@ -8,16 +10,20 @@ const introContent = await getIntroContent();
 
 <BaseLayout title="Andrew Ginns - Machine Learning Engineer">
   <div class="home-content">
-    <div class="hero-section">
-      <h1>Hi, I'm Andrew 👋🏼</h1>
-      
-      <p class="intro">
-        {introContent.introText}
-      </p>
-    </div>
+    <HeroCard
+      name="Hi, I'm Andrew"
+      title={introContent.role}
+      description={`Building scalable ML systems and supporting Data Science teams at ${introContent.company}. Focused on GenAI, MLOps, and production-grade pipelines.`}
+      imageUrl="/andrew-headshot.jpeg"
+      imageAlt="Andrew Ginns - Headshot"
+      tagline="Feel free to look around ✨"
+    />
     
     <section class="work-section">
       <h2>What I Do</h2>
+      <p>
+        {introContent.introText}
+      </p>
       <p>
         I have proven track record as an accomplished individual contributor,
         excelling in technical mentorship, establishing team workflows and patterns,
@@ -29,7 +35,7 @@ const introContent = await getIntroContent();
       </p>
       <ul class="work-list">
         <li>Designed and implemented a machine learning platform</li>
-        <li>Lead and scaled data science teams</li>
+        <li>Lead and scaled Data Science teams</li>
         <li>Workshops and talks on applied GenAI techniques/showcases</li>
         <li>Built MLOps infrastructure for rapid model deployment</li>
         <li>Applied cutting-edge GenAI techniques to solve real-world problems</li>
@@ -57,21 +63,11 @@ const introContent = await getIntroContent();
     </section>
     
     <LastUpdated />
+    <Footer />
   </div>
 </BaseLayout>
 
 <style>
-  .hero-section {
-    margin-bottom: 3rem;
-  }
-  
-  .intro {
-    font-size: 1.1rem;
-    line-height: 1.7;
-    margin-bottom: 0;
-    color: var(--text-secondary);
-  }
-  
   .work-section,
   .focus-section,
   .connect-section {
@@ -97,14 +93,4 @@ const introContent = await getIntroContent();
     left: 0;
   }
   
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    .hero-section {
-      margin-bottom: 2rem;
-    }
-    
-    .intro {
-      font-size: 1rem;
-    }
-  }
 </style>
