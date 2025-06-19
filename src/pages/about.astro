@@ -1,5 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getIntroContent } from '../lib/content.ts';
+
+const introContent = await getIntroContent();
 ---
 
 <BaseLayout title="About - Andrew Ginns">
@@ -8,11 +11,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     
     <section class="intro">
       <p>
-        I'm Andrew Ginns, a Lead Machine Learning Engineer passionate about building 
-        intelligent systems that solve real-world problems. With over 7 years of experience 
-        in ML and data science, I've had the privilege of working on diverse projects 
-        ranging from predictive maintenance for vehicle fleets to implementing cutting-edge 
-        generative AI solutions.
+        {introContent.introText}
       </p>
     </section>
     
@@ -51,7 +50,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <section class="current">
       <h2>What I'm Up To</h2>
       <p>
-        Currently, I'm leading ML initiatives at Motorway, where we're revolutionizing 
+        Currently, I'm leading ML initiatives at {introContent.company}, where we're revolutionizing 
         the automotive marketplace through intelligent systems. I'm particularly excited 
         about our work with Large Language Models and how we're applying them to create 
         better user experiences.

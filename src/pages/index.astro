@@ -1,48 +1,53 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
+import { getIntroContent } from '../lib/content.ts';
+
+const introContent = await getIntroContent();
 ---
 
 <BaseLayout title="Andrew Ginns - Machine Learning Engineer">
   <div class="home-content">
     <div class="hero-section">
-      <h1>Hi, I'm Andrew Ginns</h1>
+      <h1>Hi, I'm Andrew 👋🏼</h1>
       
       <p class="intro">
-        I'm a Lead Machine Learning Engineer with 7+ years of experience building scalable ML systems 
-        and leading data science teams. Currently working at Motorway, where I'm focused on developing 
-        innovative MLOps solutions and production-grade machine learning pipelines.
+        {introContent.introText}
       </p>
     </div>
     
     <section class="work-section">
       <h2>What I Do</h2>
       <p>
-        I work as a Lead Machine Learning Engineer focused on building sustainable growth
-        programs and scalable ML systems. My expertise is in providing clarity and momentum
-        on complex technical projects.
+        I have proven track record as an accomplished individual contributor,
+        excelling in technical mentorship, establishing team workflows and patterns,
+        and collaborating effectively with senior technical and non-technical stakeholders.
+        <br></br>
+        My experience in the full DS and ML stack and end-to-end projects, as well as expertise
+        in GenAI make me an effective support to teams both as a mentor and an extra pair of hands where needed.
+        Some of the pieces of work I've done include:
       </p>
       <ul class="work-list">
-        <li>Design and implement end-to-end machine learning pipelines</li>
-        <li>Lead and scale data science teams</li>
-        <li>Build MLOps infrastructure for rapid model deployment</li>
-        <li>Apply cutting-edge AI techniques to solve real-world problems</li>
+        <li>Designed and implemented a machine learning platform</li>
+        <li>Lead and scaled data science teams</li>
+        <li>Workshops and talks on applied GenAI techniques/showcases</li>
+        <li>Built MLOps infrastructure for rapid model deployment</li>
+        <li>Applied cutting-edge GenAI techniques to solve real-world problems</li>
       </ul>
     </section>
     
     <section class="focus-section">
       <h2>Recent Focus</h2>
       <p>
-        I'm particularly interested in Large Language Models, generative AI, and building robust 
-        MLOps workflows. My work has <strong>reduced deployment times from half a day to just 2 hours</strong>, 
-        and I've successfully <strong>scaled teams from 2 to 16 members</strong> while maintaining technical excellence.
+        I'm particularly interested in Large Language Models, Agentic System, and building robust 
+        MLOps workflows.
       </p>
     </section>
     
     <section class="connect-section">
       <h2>Let's Connect</h2>
       <p>
-        Ready to explore what we can build together? Check out my work and get in touch.
+        Interested in working with me? Check out my work and get in touch.
       </p>
       <p>
         <a href="/projects">View Projects</a> • 

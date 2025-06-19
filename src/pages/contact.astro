@@ -1,5 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCachedGitHubCompany } from '../lib/github.ts';
+
+// Fetch current company from GitHub profile
+const currentCompany = await getCachedGitHubCompany('andrewginns');
 ---
 
 <BaseLayout title="Contact - Andrew Ginns">
@@ -35,7 +39,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <h2>Email</h2>
         <p>
           For professional inquiries, please reach out via LinkedIn or through 
-          my current company channels at Motorway.
+          my current company channels at {currentCompany}.
         </p>
       </div>
       
@@ -59,7 +63,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <section class="availability">
       <h2>Current Status</h2>
       <p>
-        I'm currently fully engaged in my role at Motorway but am always open to 
+        I'm currently fully engaged in my role at {currentCompany} but am always open to 
         interesting conversations about the future of ML and AI. If you have an 
         exciting project or opportunity, I'd be happy to chat.
       </p>
