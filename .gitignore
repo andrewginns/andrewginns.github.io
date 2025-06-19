@@ -31,3 +31,4 @@ pnpm-debug.log*
 /blob-report/
 /playwright/.cache/
 reference_files/*
+scripts/screenshots/*

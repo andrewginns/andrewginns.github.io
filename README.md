@@ -6,7 +6,7 @@ A modern, minimalist personal website for Andrew Ginns, Machine Learning Enginee
 
 This website serves as a digital resume, project showcase, and writing platform, featuring:
 - Professional experience and background
-- Project portfolio highlighting ML and data science work
+- Project portfolio highlighting ML and Data Science work
 - Blog for technical writing and industry insights
 - Clean, text-centric design inspired by modern minimalism
 
