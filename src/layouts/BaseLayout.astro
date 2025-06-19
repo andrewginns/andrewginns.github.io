@@ -371,7 +371,7 @@ const currentPath = Astro.url.pathname;
           opacity: 0.58;
         }
         50% { 
-          transform: translateY(-40px);
+          transform: translateY(-4px);
           opacity: 0.22;
         }
       }
@@ -848,42 +848,6 @@ const currentPath = Astro.url.pathname;
       // Start typewriter after a short delay
       setTimeout(typeWriter, 1000);
       
-      // Scroll progress tracking
-      let scrollProgress = 0;
-      
-      // Scroll-based animation with improved throttling
-      let ticking = false;
-      let lastScrollTime = 0;
-      const scrollThrottleDelay = 16; // ~60fps
-      
-      function updateScrollProgress() {
-        const now = performance.now();
-        if (now - lastScrollTime < scrollThrottleDelay) {
-          ticking = false;
-          return;
-        }
-        
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-        scrollProgress = Math.min(scrollTop / Math.max(documentHeight, 1), 1);
-        
-        lastScrollTime = now;
-        ticking = false;
-      }
-      
-      function requestScrollUpdate() {
-        if (!ticking) {
-          requestAnimationFrame(updateScrollProgress);
-          ticking = true;
-        }
-      }
-      
-      window.addEventListener('scroll', requestScrollUpdate, { passive: true });
-      
-      // Initialize scroll progress
-      updateScrollProgress();
-      
-      // Mouse parallax animation removed - floating elements now use only CSS animations
       
       // Add hover effects to navigation items
       document.querySelectorAll('.nav-links a, .social-link').forEach(link => {
@@ -978,15 +942,15 @@ const currentPath = Astro.url.pathname;
             const delay = Array.from(element.parentElement?.children || []).indexOf(element) * 100;
             
             setTimeout(() => {
-              element.style.opacity = '1';
-              element.style.transform = 'translateY(0)';
+              (element as HTMLElement).style.opacity = '1';
+              (element as HTMLElement).style.transform = 'translateY(0)';
               element.classList.add('animate-in');
             }, delay);
             
             animatedElements.add(element);
           }
           
-          // Progressive reveal based on scroll ratio - blur removed
+          // Progressive reveal based on scroll ratio
         });
       }, observerOptions);
       
@@ -995,17 +959,16 @@ const currentPath = Astro.url.pathname;
         const sections = document.querySelectorAll('section, .hero-card, .last-updated, h2, p, ul, .project');
         sections.forEach((section) => {
           // Initial state for animation
-          section.style.opacity = '0';
-          section.style.transform = 'translateY(20px)';
-          section.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+          (section as HTMLElement).style.opacity = '0';
+          (section as HTMLElement).style.transform = 'translateY(20px)';
+          (section as HTMLElement).style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
           
           scrollObserver.observe(section);
         });
       });
       
-      // 2.2 Mouse parallax animation removed - floating elements now use only CSS animations
       
-      // 2.3 Navigation Section Highlighting (progress bar removed)
+      // 2.3 Navigation Section Highlighting
       function updateNavigationHighlight() {
         // Highlight current section in navigation
         const sections = document.querySelectorAll('section, .hero-card');
@@ -1098,8 +1061,6 @@ const currentPath = Astro.url.pathname;
           isPulling = false;
         }
       }, { passive: true });
-      
-      // 2.5 Particle system removed for performance
       
     </script>
     
