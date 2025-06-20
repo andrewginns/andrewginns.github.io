@@ -6,21 +6,27 @@ import LastUpdated from '../components/LastUpdated.astro';
 <BaseLayout title="Experience - Andrew Ginns">
   <div class="experience-content">
     <h1>Professional Experience</h1>
-    
+
     <section class="current-role">
       <div class="role">
         <h2>Lead Machine Learning Engineer</h2>
         <div class="company">Motorway</div>
         <div class="period">January 2024 - Present</div>
         <ul class="responsibilities">
-          <li>Leading the deployment, monitoring, and maintenance of ML models in production to ensure optimal performance and scalability</li>
-          <li>Spearheading GenAI initiatives focussing on vendor evaluations and projects integrating enterprise grade LLMs in production</li>
+          <li>
+            Leading the deployment, monitoring, and maintenance of ML models in production to ensure
+            optimal performance and scalability
+          </li>
+          <li>
+            Spearheading GenAI initiatives focussing on vendor evaluations and projects integrating
+            enterprise grade LLMs in production
+          </li>
           <li>Supporting cutting-edge MLOps practices and infrastructure across multiple teams</li>
           <li>Driving technical strategy and team growth</li>
         </ul>
       </div>
     </section>
-    
+
     <section class="previous-roles">
       <div class="role">
         <h2>Senior Data Scientist</h2>
@@ -29,24 +35,28 @@ import LastUpdated from '../components/LastUpdated.astro';
         <ul class="responsibilities">
           <li>Scaled Data Science team from 2 to 18 members across 3 countries</li>
           <li>Designed and built an ML platform from the ground up on AWS</li>
-          <li>Reduced model deployment time from 0.5 days to 2 hours through MLOps best practices</li>
+          <li>
+            Reduced model deployment time from 0.5 days to 2 hours through MLOps best practices
+          </li>
           <li>Led development of predictive models for tyre wear and telematics use-cases</li>
           <li>Kickstarted research into RAG + LLM systems using Chroma and Llama 2-based models</li>
         </ul>
       </div>
-      
+
       <div class="role">
         <h2>Data Scientist Consultant</h2>
         <div class="company">Accenture</div>
         <div class="period">April 2019 - June 2021</div>
         <ul class="responsibilities">
-          <li>Delivered 5+ client projects using ML and analytics/li>
+          <li>Delivered 5+ client projects using ML and analytics</li>
           <li>Developed end-to-end DS pipelines on Azure, AWS, and GCP</li>
           <li>Led team of consultants on strategic engagement</li>
-          <li>Applied HMMs, NLP, and computer vision to solve complex business problems for clients</li>
+          <li>
+            Applied HMMs, NLP, and computer vision to solve complex business problems for clients
+          </li>
         </ul>
       </div>
-      
+
       <div class="role">
         <h2>Internships</h2>
         <div class="company">Various Companies</div>
@@ -58,10 +68,10 @@ import LastUpdated from '../components/LastUpdated.astro';
         </ul>
       </div>
     </section>
-    
+
     <section class="education">
       <h2>Education</h2>
-      
+
       <div class="degree">
         <h3>MSc Advanced Computing</h3>
         <div class="institution">University of Bristol</div>
@@ -69,7 +79,7 @@ import LastUpdated from '../components/LastUpdated.astro';
         <div class="grade">Thesis on GAN deployment and optimisation awarded a Distinction</div>
         <p>Specialisation: ML, HPC, and Data Mining</p>
       </div>
-      
+
       <div class="degree">
         <h3>B.Eng Computer Systems Engineering</h3>
         <div class="institution">University of Birmingham</div>
@@ -77,7 +87,7 @@ import LastUpdated from '../components/LastUpdated.astro';
         <div class="grade">First Class Honours</div>
       </div>
     </section>
-    
+
     <section class="certifications">
       <h2>Certifications</h2>
       <ul>
@@ -86,7 +96,7 @@ import LastUpdated from '../components/LastUpdated.astro';
         <li>Microsoft Azure Data Scientist Associate</li>
       </ul>
     </section>
-    
+
     <LastUpdated />
   </div>
 </BaseLayout>
@@ -95,58 +105,61 @@ import LastUpdated from '../components/LastUpdated.astro';
   .experience-content {
     max-width: 700px;
   }
-  
+
   section {
     margin-bottom: 3rem;
   }
-  
-  .role, .degree {
+
+  .role,
+  .degree {
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid #eee;
   }
-  
+
   .role:last-child,
   .degree:last-child {
     border-bottom: none;
   }
-  
+
   h2 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
   }
-  
+
   h3 {
     font-size: 1.25rem;
     margin-bottom: 0.5rem;
   }
-  
-  .company, .institution {
+
+  .company,
+  .institution {
     font-size: 1.1rem;
     color: var(--text-secondary);
     margin-bottom: 0.25rem;
   }
-  
-  .period, .grade {
+
+  .period,
+  .grade {
     font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 1rem;
   }
-  
+
   .responsibilities {
     list-style-position: outside;
     margin-left: 1.5rem;
   }
-  
+
   .responsibilities li {
     margin-bottom: 0.5rem;
   }
-  
+
   .certifications ul {
     list-style-position: inside;
     margin-left: 0;
   }
-  
+
   .certifications li {
     margin-bottom: 0.5rem;
   }

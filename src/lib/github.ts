@@ -12,9 +12,9 @@ export interface GitHubRepo {
 
 export async function getGitHubData(username: string) {
   const headers: HeadersInit = {
-    'Accept': 'application/vnd.github.v3+json',
+    Accept: 'application/vnd.github.v3+json',
   };
-  
+
   // Optional: Add GitHub token for higher rate limits
   const token = import.meta.env.GITHUB_TOKEN;
   if (token) {
@@ -28,14 +28,17 @@ export async function getGitHubData(username: string) {
     const profile = await profileResponse.json();
 
     // Fetch repositories
-    const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&sort=updated`, { headers });
+    const reposResponse = await fetch(
+      `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
+      { headers }
+    );
     if (!reposResponse.ok) throw new Error('Failed to fetch repositories');
     const repos: GitHubRepo[] = await reposResponse.json();
 
     // For pinned repos, we'll use a GraphQL query (requires authentication)
     // Alternatively, we can use the most starred/recent repos as a fallback
     let pinnedRepos: GitHubRepo[] = [];
-    
+
     if (token) {
       // Use GraphQL to get pinned repos
       const graphqlQuery = `
@@ -77,24 +80,24 @@ export async function getGitHubData(username: string) {
       });
 
       if (graphqlResponse.ok) {
-        const data = await graphqlResponse.json();
-        pinnedRepos = data.data.user.pinnedItems.nodes.map((repo: any) => ({
+        const data: GitHubGraphQLResponse = await graphqlResponse.json();
+        pinnedRepos = data.data.user.pinnedItems.nodes.map((repo) => ({
           name: repo.name,
           description: repo.description,
           html_url: repo.url,
           homepage: repo.homepageUrl,
-          topics: repo.repositoryTopics.nodes.map((t: any) => t.topic.name),
+          topics: repo.repositoryTopics.nodes.map((t) => t.topic.name),
           language: repo.primaryLanguage?.name || 'Unknown',
           stargazers_count: repo.stargazerCount,
           updated_at: repo.updatedAt,
         }));
       }
     }
-    
+
     // Fallback: Use most starred repos if no pinned repos or no token
     if (pinnedRepos.length === 0) {
       pinnedRepos = repos
-        .filter(repo => !repo.fork && repo.description)
+        .filter((repo) => !repo.fork && repo.description)
         .sort((a, b) => b.stargazers_count - a.stargazers_count)
         .slice(0, 6);
     }
@@ -115,12 +118,100 @@ export async function getGitHubData(username: string) {
   }
 }
 
+interface GitHubGraphQLResponse {
+  data: {
+    user: {
+      pinnedItems: {
+        nodes: Array<{
+          name: string;
+          description: string;
+          url: string;
+          homepageUrl: string;
+          repositoryTopics: {
+            nodes: Array<{
+              topic: {
+                name: string;
+              };
+            }>;
+          };
+          primaryLanguage?: {
+            name: string;
+          };
+          stargazerCount: number;
+          updatedAt: string;
+        }>;
+      };
+    };
+  };
+}
+
+interface GitHubGist {
+  id: string;
+  description: string;
+  html_url: string;
+  created_at: string;
+  updated_at: string;
+  files: Record<
+    string,
+    {
+      filename: string;
+      raw_url: string;
+    }
+  >;
+}
+
+interface GitHubProfile {
+  login: string;
+  id: number;
+  node_id: string;
+  avatar_url: string;
+  gravatar_id: string | null;
+  url: string;
+  html_url: string;
+  name: string | null;
+  company: string | null;
+  blog: string | null;
+  location: string | null;
+  email: string | null;
+  bio: string | null;
+  twitter_username: string | null;
+  public_repos: number;
+  public_gists: number;
+  followers: number;
+  following: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface BlogPost {
+  id: string;
+  title: string;
+  url: string;
+  created_at: string;
+  updated_at: string;
+  filename: string;
+  raw_url: string;
+}
+
+interface CachedData {
+  profile: GitHubProfile | null;
+  repos: GitHubRepo[];
+  pinnedRepos: GitHubRepo[];
+}
+
+interface CachedProfileData {
+  company: string;
+  role: string;
+  bio: string;
+  profile: GitHubProfile;
+}
+
 // Fetch gists for blog posts
 export async function getGitHubGists(username: string) {
   const headers: HeadersInit = {
-    'Accept': 'application/vnd.github.v3+json',
+    Accept: 'application/vnd.github.v3+json',
   };
-  
+
   const token = import.meta.env.GITHUB_TOKEN;
   if (token) {
     headers['Authorization'] = `token ${token}`;
@@ -129,23 +220,26 @@ export async function getGitHubGists(username: string) {
   try {
     const response = await fetch(`https://api.github.com/users/${username}/gists`, { headers });
     if (!response.ok) throw new Error('Failed to fetch gists');
-    
+
     const gists = await response.json();
-    
+
     // Filter for blog posts (gists with .md files and specific tags)
-    const blogPosts = gists
-      .filter((gist: any) => {
+    const blogPosts: BlogPost[] = gists
+      .filter((gist: GitHubGist) => {
         const files = Object.values(gist.files);
-        return files.some((file: any) => 
-          file.filename.endsWith('.md') && 
-          (gist.description?.includes('[blog]') || gist.description?.includes('[post]'))
+        return files.some(
+          (file) =>
+            file.filename.endsWith('.md') &&
+            (gist.description?.includes('[blog]') || gist.description?.includes('[post]'))
         );
       })
-      .map((gist: any) => {
-        const mdFile = Object.values(gist.files).find((file: any) => 
-          file.filename.endsWith('.md')
-        ) as any;
-        
+      .map((gist: GitHubGist) => {
+        const mdFile = Object.values(gist.files).find((file) => file.filename.endsWith('.md'));
+
+        if (!mdFile) {
+          throw new Error('No markdown file found in gist');
+        }
+
         return {
           id: gist.id,
           title: gist.description.replace(/\[blog\]|\[post\]/gi, '').trim(),
@@ -156,7 +250,7 @@ export async function getGitHubGists(username: string) {
           raw_url: mdFile.raw_url,
         };
       });
-    
+
     return blogPosts;
   } catch (error) {
     console.error('Error fetching gists:', error);
@@ -167,9 +261,9 @@ export async function getGitHubGists(username: string) {
 // Fetch profile information from GitHub (company, role, etc.)
 export async function getGitHubProfile(username: string) {
   const headers: HeadersInit = {
-    'Accept': 'application/vnd.github.v3+json',
+    Accept: 'application/vnd.github.v3+json',
   };
-  
+
   const token = import.meta.env.GITHUB_TOKEN;
   if (token) {
     headers['Authorization'] = `token ${token}`;
@@ -178,27 +272,53 @@ export async function getGitHubProfile(username: string) {
   try {
     const response = await fetch(`https://api.github.com/users/${username}`, { headers });
     if (!response.ok) throw new Error('Failed to fetch profile');
-    
-    const profile = await response.json();
-    const bio = profile.bio || "";
-    
+
+    const profile: GitHubProfile = await response.json();
+    const bio = profile.bio || '';
+
     // Extract role from bio (look for common patterns)
-    const roleMatch = bio.match(/(?:I'm\s+(?:a\s+)?|I\s+am\s+(?:a\s+)?|Currently\s+(?:a\s+)?|Working\s+as\s+(?:a\s+)?)([^.]+(?:Engineer|Scientist|Developer|Manager|Architect|Lead|Director|Consultant))/i);
-    const role = roleMatch ? roleMatch[1].trim() : "Lead Machine Learning Engineer";
-    
+    const roleMatch = bio.match(
+      /(?:I'm\s+(?:a\s+)?|I\s+am\s+(?:a\s+)?|Currently\s+(?:a\s+)?|Working\s+as\s+(?:a\s+)?)([^.]+(?:Engineer|Scientist|Developer|Manager|Architect|Lead|Director|Consultant))/i
+    );
+    const role = roleMatch ? roleMatch[1].trim() : 'Lead Machine Learning Engineer';
+
     return {
       company: profile.company || 'Motorway',
       role: role,
       bio: bio,
-      profile: profile
+      profile: profile,
     };
   } catch (error) {
     console.error('Error fetching GitHub profile:', error);
+    // Return a default profile structure when there's an error
+    const defaultProfile: GitHubProfile = {
+      login: username,
+      id: 0,
+      node_id: '',
+      avatar_url: '/andrew-headshot.jpeg', // Fallback to local image
+      gravatar_id: null,
+      url: `https://api.github.com/users/${username}`,
+      html_url: `https://github.com/${username}`,
+      name: 'Andrew Ginns',
+      company: 'Motorway',
+      blog: null,
+      location: null,
+      email: null,
+      bio: '',
+      twitter_username: null,
+      public_repos: 0,
+      public_gists: 0,
+      followers: 0,
+      following: 0,
+      created_at: '',
+      updated_at: '',
+    };
+
     return {
       company: 'Motorway',
       role: 'Lead Machine Learning Engineer',
       bio: '',
-      profile: null
+      profile: defaultProfile,
     };
   }
 }
@@ -210,9 +330,9 @@ export async function getGitHubCompany(username: string): Promise<string> {
 }
 
 // Cache the data at build time
-let cachedData: any = null;
-let cachedGists: any = null;
-let cachedProfile: any = null;
+let cachedData: CachedData | null = null;
+let cachedGists: BlogPost[] | null = null;
+let cachedProfile: CachedProfileData | null = null;
 
 export async function getCachedGitHubData(username: string) {
   if (!cachedData) {

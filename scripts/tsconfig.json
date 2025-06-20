@@ -13,6 +13,11 @@
     "checkJs": true,
     "outDir": "./dist",
     "rootDir": "./",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "inlineSourceMap": false,
+    "sourceRoot": "../",
     "types": ["node"]
   },
   "include": ["**/*.ts", "**/*.js"],

@@ -4,11 +4,11 @@ export interface Props {
   description?: string;
 }
 
-const { title, description = "Andrew Ginns - Machine Learning Engineer" } = Astro.props;
+const { title, description = 'Andrew Ginns - Machine Learning Engineer' } = Astro.props;
 const currentPath = Astro.url.pathname;
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -26,33 +26,64 @@ const currentPath = Astro.url.pathname;
             <h1 class="site-title">Andrew Ginns</h1>
             <div class="tagline" id="typewriter">GenAI Solution Architect</div>
           </div>
-          
+
           <ul class="nav-links">
-            <li><a href="/" class={currentPath === "/" ? "active" : ""}>Home</a></li>
-            <li><a href="/experience" class={currentPath === "/experience" ? "active" : ""}>Experience</a></li>
-            <li><a href="/projects_github" class={currentPath === "/projects_github" ? "active" : ""}>Projects</a></li>
-            <li><a href="/writing" class={currentPath.startsWith("/writing") ? "active" : ""}>Writing</a></li>
-            <li><a href="/about_me" class={currentPath === "/about_me" ? "active" : ""}>About</a></li>
-            <li><a href="/contact_me" class={currentPath === "/contact_me" ? "active" : ""}>Contact</a></li>
+            <li><a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a></li>
+            <li>
+              <a href="/experience" class={currentPath === '/experience' ? 'active' : ''}
+                >Experience</a
+              >
+            </li>
+            <li>
+              <a href="/projects_github" class={currentPath === '/projects_github' ? 'active' : ''}
+                >Projects</a
+              >
+            </li>
+            <li>
+              <a href="/writing" class={currentPath.startsWith('/writing') ? 'active' : ''}
+                >Writing</a
+              >
+            </li>
+            <li>
+              <a href="/about_me" class={currentPath === '/about_me' ? 'active' : ''}>About</a>
+            </li>
+            <li>
+              <a href="/contact_me" class={currentPath === '/contact_me' ? 'active' : ''}>Contact</a
+              >
+            </li>
           </ul>
-          
+
           <div class="social-links">
-            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer" class="social-link">GitHub</a>
-            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer" class="social-link">LinkedIn</a>
+            <a
+              href="https://github.com/andrewginns"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="social-link">GitHub</a
+            >
+            <a
+              href="https://linkedin.com/in/andrewginns"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="social-link">LinkedIn</a
+            >
           </div>
         </div>
       </nav>
-      
+
       <!-- Mobile hamburger menu button -->
-      <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu">
+      <button
+        class="mobile-menu-toggle"
+        id="mobile-menu-toggle"
+        aria-label="Toggle navigation menu"
+      >
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
       </button>
-      
+
       <!-- Mobile navigation overlay -->
       <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
-      
+
       <!-- Mobile navigation pane -->
       <nav class="mobile-nav-pane" id="mobile-nav-pane">
         <div class="mobile-nav-content">
@@ -60,23 +91,50 @@ const currentPath = Astro.url.pathname;
             <h1 class="mobile-site-title">Andrew Ginns</h1>
             <div class="mobile-tagline" id="mobile-typewriter">GenAI Solution Architect</div>
           </div>
-          
+
           <ul class="mobile-nav-links">
-            <li><a href="/" class={currentPath === "/" ? "active" : ""}>Home</a></li>
-            <li><a href="/experience" class={currentPath === "/experience" ? "active" : ""}>Experience</a></li>
-            <li><a href="/projects_github" class={currentPath === "/projects_github" ? "active" : ""}>Projects</a></li>
-            <li><a href="/writing" class={currentPath.startsWith("/writing") ? "active" : ""}>Writing</a></li>
-            <li><a href="/about_me" class={currentPath === "/about_me" ? "active" : ""}>About</a></li>
-            <li><a href="/contact_me" class={currentPath === "/contact_me" ? "active" : ""}>Contact</a></li>
+            <li><a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a></li>
+            <li>
+              <a href="/experience" class={currentPath === '/experience' ? 'active' : ''}
+                >Experience</a
+              >
+            </li>
+            <li>
+              <a href="/projects_github" class={currentPath === '/projects_github' ? 'active' : ''}
+                >Projects</a
+              >
+            </li>
+            <li>
+              <a href="/writing" class={currentPath.startsWith('/writing') ? 'active' : ''}
+                >Writing</a
+              >
+            </li>
+            <li>
+              <a href="/about_me" class={currentPath === '/about_me' ? 'active' : ''}>About</a>
+            </li>
+            <li>
+              <a href="/contact_me" class={currentPath === '/contact_me' ? 'active' : ''}>Contact</a
+              >
+            </li>
           </ul>
-          
+
           <div class="mobile-social-links">
-            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer" class="mobile-social-link">GitHub</a>
-            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer" class="mobile-social-link">LinkedIn</a>
+            <a
+              href="https://github.com/andrewginns"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mobile-social-link">GitHub</a
+            >
+            <a
+              href="https://linkedin.com/in/andrewginns"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mobile-social-link">LinkedIn</a
+            >
           </div>
         </div>
       </nav>
-      
+
       <main class="content">
         <div class="floating-elements">
           <div class="floating-element floating-element-1"></div>
@@ -90,7 +148,7 @@ const currentPath = Astro.url.pathname;
         <slot />
       </main>
     </div>
-    
+
     <style is:global>
       :root {
         --text-primary: #2c3e50;
@@ -111,15 +169,17 @@ const currentPath = Astro.url.pathname;
         --content-max-width: 800px;
         --spacing-unit: 1rem;
       }
-      
+
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
-      
+
       body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+          sans-serif;
         line-height: 1.6;
         color: var(--text-primary);
         background: var(--bg-primary);
@@ -127,7 +187,7 @@ const currentPath = Astro.url.pathname;
         font-size: 16px;
         overflow-x: hidden;
       }
-      
+
       .floating-elements {
         position: fixed;
         top: 0;
@@ -137,7 +197,7 @@ const currentPath = Astro.url.pathname;
         pointer-events: none;
         z-index: -1;
       }
-      
+
       .floating-element {
         position: fixed;
         opacity: 0.58;
@@ -145,11 +205,13 @@ const currentPath = Astro.url.pathname;
         pointer-events: none;
         border: 1px solid rgba(231, 76, 60, 0.2);
         box-shadow: 0 2px 8px rgba(231, 76, 60, 0.08);
-        transition: transform 0.1s ease-out, opacity 0.2s ease-out;
+        transition:
+          transform 0.1s ease-out,
+          opacity 0.2s ease-out;
         overflow: hidden;
         z-index: 1;
       }
-      
+
       .floating-element::after {
         content: '';
         position: absolute;
@@ -168,7 +230,7 @@ const currentPath = Astro.url.pathname;
         pointer-events: none;
         animation: shimmer 6s ease-in-out infinite;
       }
-      
+
       .floating-element-1 {
         width: 100px;
         height: 50px;
@@ -179,13 +241,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 0s;
         overflow: hidden;
       }
-      
+
       .floating-element-1::after {
         animation-delay: 0s;
       }
-      
+
       .floating-element-1::before {
-        content: "MLOps";
+        content: 'MLOps';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -195,7 +257,7 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         font-weight: 600;
       }
-      
+
       .floating-element-2 {
         width: 90px;
         height: 45px;
@@ -206,13 +268,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 1s;
         overflow: hidden;
       }
-      
+
       .floating-element-2::after {
         animation-delay: 0.6s;
       }
-      
+
       .floating-element-2::before {
-        content: "GenAI";
+        content: 'GenAI';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -222,7 +284,7 @@ const currentPath = Astro.url.pathname;
         color: var(--accent-primary);
         font-weight: 600;
       }
-      
+
       .floating-element-3 {
         width: 110px;
         height: 55px;
@@ -233,13 +295,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 2s;
         overflow: hidden;
       }
-      
+
       .floating-element-3::after {
         animation-delay: 1.2s;
       }
-      
+
       .floating-element-3::before {
-        content: "Python";
+        content: 'Python';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -249,7 +311,7 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         font-weight: 600;
       }
-      
+
       .floating-element-4 {
         width: 85px;
         height: 40px;
@@ -260,13 +322,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 3s;
         overflow: hidden;
       }
-      
+
       .floating-element-4::after {
         animation-delay: 1.8s;
       }
-      
+
       .floating-element-4::before {
-        content: "CI/CD";
+        content: 'CI/CD';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -276,7 +338,7 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         font-weight: 600;
       }
-      
+
       .floating-element-5 {
         width: 95px;
         height: 48px;
@@ -287,13 +349,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 4s;
         overflow: hidden;
       }
-      
+
       .floating-element-5::after {
         animation-delay: 2.4s;
       }
-      
+
       .floating-element-5::before {
-        content: "Data";
+        content: 'Data';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -303,7 +365,7 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         font-weight: 600;
       }
-      
+
       .floating-element-6 {
         width: 120px;
         height: 52px;
@@ -314,13 +376,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 5s;
         overflow: hidden;
       }
-      
+
       .floating-element-6::after {
-        animation-delay: 3.0s;
+        animation-delay: 3s;
       }
-      
+
       .floating-element-6::before {
-        content: "Edge ML";
+        content: 'Edge ML';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -330,7 +392,7 @@ const currentPath = Astro.url.pathname;
         color: var(--accent-primary);
         font-weight: 600;
       }
-      
+
       .floating-element-7 {
         width: 80px;
         height: 42px;
@@ -341,13 +403,13 @@ const currentPath = Astro.url.pathname;
         animation-delay: 6s;
         overflow: hidden;
       }
-      
+
       .floating-element-7::after {
         animation-delay: 3.6s;
       }
-      
+
       .floating-element-7::before {
-        content: "AI";
+        content: 'AI';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -357,18 +419,19 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         font-weight: 600;
       }
-      
+
       @keyframes float {
-        0%, 100% { 
+        0%,
+        100% {
           transform: translateY(0px) translateX(0px);
           opacity: 0.48;
         }
-        50% { 
+        50% {
           transform: translateY(-30px) translateX(-10px);
           opacity: 0.72;
         }
       }
-      
+
       @keyframes shimmer {
         0% {
           left: -120%;
@@ -377,12 +440,12 @@ const currentPath = Astro.url.pathname;
           left: 120%;
         }
       }
-      
+
       .container {
         display: flex;
         min-height: 100vh;
       }
-      
+
       .sidebar {
         position: fixed;
         top: 0;
@@ -394,20 +457,19 @@ const currentPath = Astro.url.pathname;
         padding: calc(var(--spacing-unit) * 2);
         overflow-y: auto;
       }
-      
+
       .sidebar-content {
         height: 100%;
         display: flex;
         flex-direction: column;
       }
-      
+
       .profile-section {
         margin-bottom: calc(var(--spacing-unit) * 2);
         padding-bottom: calc(var(--spacing-unit) * 1.5);
         border-bottom: 1px solid var(--border-color);
       }
-      
-      
+
       .site-title {
         font-size: 1.75rem;
         font-weight: 700;
@@ -415,7 +477,7 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         letter-spacing: -0.02em;
       }
-      
+
       .tagline {
         font-size: 0.9rem;
         color: var(--text-secondary);
@@ -424,29 +486,35 @@ const currentPath = Astro.url.pathname;
         min-height: 1.3em;
         position: relative;
       }
-      
+
       .tagline::after {
         content: '|';
         color: var(--accent-primary);
         animation: blink 1s infinite;
         font-weight: 400;
       }
-      
+
       @keyframes blink {
-        0%, 50% { opacity: 1; }
-        51%, 100% { opacity: 0; }
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0;
+        }
       }
-      
+
       .nav-links {
         list-style: none;
         margin-bottom: calc(var(--spacing-unit) * 2);
         flex-grow: 1;
       }
-      
+
       .nav-links li {
         margin-bottom: 0.25rem;
       }
-      
+
       .nav-links a {
         display: block;
         color: var(--text-primary);
@@ -457,7 +525,7 @@ const currentPath = Astro.url.pathname;
         position: relative;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      
+
       .nav-links a::after {
         content: '';
         position: absolute;
@@ -469,26 +537,26 @@ const currentPath = Astro.url.pathname;
         transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         border-radius: 1px;
       }
-      
+
       .nav-links a:hover {
         color: var(--accent-primary);
         transform: translateY(-1px);
       }
-      
+
       .nav-links a:hover::after,
       .nav-links a.active::after {
         width: 100%;
       }
-      
+
       .nav-links a.active {
         color: var(--accent-primary);
       }
-      
+
       .social-links {
         padding-top: var(--spacing-unit);
         border-top: 1px solid var(--border-color);
       }
-      
+
       .social-link {
         display: block;
         margin-bottom: 0.25rem;
@@ -500,12 +568,12 @@ const currentPath = Astro.url.pathname;
         position: relative;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
-      
+
       .social-link:hover {
         color: var(--accent-primary);
         transform: translateX(4px) scale(1.02);
       }
-      
+
       .social-link::before {
         content: '';
         position: absolute;
@@ -518,11 +586,11 @@ const currentPath = Astro.url.pathname;
         transition: height 0.3s ease;
         border-radius: 2px;
       }
-      
+
       .social-link:hover::before {
         height: 100%;
       }
-      
+
       .content {
         margin-left: var(--sidebar-width);
         padding: calc(var(--spacing-unit) * 3);
@@ -530,26 +598,32 @@ const currentPath = Astro.url.pathname;
         background: var(--bg-primary);
         min-height: 100vh;
       }
-      
-      /* Center content on ultra-wide displays */
-      @media (min-width: 1600px) {
+
+      /* Center content on wide displays */
+      @media (min-width: 1200px) {
         .content {
-          margin-left: calc(var(--sidebar-width) + (100vw - var(--sidebar-width) - var(--content-max-width)) / 2);
+          margin-left: max(var(--sidebar-width), calc((100vw - var(--content-max-width)) / 2));
+          margin-right: auto;
         }
       }
-      
-      h1, h2, h3, h4, h5, h6 {
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
         margin-bottom: 1rem;
         line-height: 1.3;
         color: var(--text-primary);
         font-weight: 700;
       }
-      
+
       h1 {
         font-size: 2.25rem;
         margin-bottom: 1.5rem;
       }
-      
+
       h2 {
         font-size: 1.5rem;
         color: var(--accent-primary);
@@ -560,26 +634,26 @@ const currentPath = Astro.url.pathname;
         margin-bottom: 1.5rem;
         margin-top: 3rem;
       }
-      
+
       h2:first-child {
         margin-top: 0;
       }
-      
+
       p {
         margin-bottom: 1.5rem;
         line-height: 1.7;
       }
-      
+
       a {
         color: var(--accent-primary);
         text-decoration: none;
         transition: color 0.2s ease;
       }
-      
+
       a:hover {
         text-decoration: underline;
       }
-      
+
       /* Mobile hamburger menu and navigation */
       .mobile-menu-toggle {
         display: none;
@@ -600,12 +674,12 @@ const currentPath = Astro.url.pathname;
         transition: all 0.3s ease;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       }
-      
+
       .mobile-menu-toggle:hover {
         border-color: var(--accent-primary);
         background: var(--bg-secondary);
       }
-      
+
       .hamburger-line {
         width: 20px;
         height: 2px;
@@ -613,19 +687,19 @@ const currentPath = Astro.url.pathname;
         transition: all 0.3s ease;
         border-radius: 2px;
       }
-      
+
       .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
         transform: rotate(45deg) translate(5px, 5px);
       }
-      
+
       .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
         opacity: 0;
       }
-      
+
       .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
         transform: rotate(-45deg) translate(7px, -6px);
       }
-      
+
       .mobile-nav-overlay {
         display: none;
         position: fixed;
@@ -638,11 +712,11 @@ const currentPath = Astro.url.pathname;
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
+
       .mobile-nav-overlay.active {
         opacity: 1;
       }
-      
+
       .mobile-nav-pane {
         display: none;
         position: fixed;
@@ -657,26 +731,25 @@ const currentPath = Astro.url.pathname;
         transition: transform 0.3s ease;
         overflow-y: auto;
       }
-      
+
       .mobile-nav-pane.active {
         transform: translateX(0);
       }
-      
+
       .mobile-nav-content {
         padding: calc(var(--spacing-unit) * 2);
         height: 100%;
         display: flex;
         flex-direction: column;
       }
-      
+
       .mobile-profile-section {
         margin-bottom: calc(var(--spacing-unit) * 2);
         padding-bottom: calc(var(--spacing-unit) * 1.5);
         border-bottom: 1px solid var(--border-color);
         text-align: center;
       }
-      
-      
+
       .mobile-site-title {
         font-size: 1.75rem;
         font-weight: 700;
@@ -684,7 +757,7 @@ const currentPath = Astro.url.pathname;
         color: var(--text-primary);
         letter-spacing: -0.02em;
       }
-      
+
       .mobile-tagline {
         font-size: 0.9rem;
         color: var(--text-secondary);
@@ -692,24 +765,24 @@ const currentPath = Astro.url.pathname;
         min-height: 1.3em;
         position: relative;
       }
-      
+
       .mobile-tagline::after {
         content: '|';
         color: var(--accent-primary);
         animation: blink 1s infinite;
         font-weight: 400;
       }
-      
+
       .mobile-nav-links {
         list-style: none;
         margin-bottom: calc(var(--spacing-unit) * 2);
         flex-grow: 1;
       }
-      
+
       .mobile-nav-links li {
         margin-bottom: 0.25rem;
       }
-      
+
       .mobile-nav-links a {
         display: block;
         color: var(--text-primary);
@@ -721,26 +794,26 @@ const currentPath = Astro.url.pathname;
         border-radius: 6px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      
+
       .mobile-nav-links a:hover {
         color: var(--accent-primary);
         background: var(--bg-secondary);
         transform: translateX(8px);
         padding-left: 1rem;
       }
-      
+
       .mobile-nav-links a.active {
         color: var(--accent-primary);
         background: var(--bg-secondary);
         border-left: 3px solid var(--accent-primary);
         padding-left: 1rem;
       }
-      
+
       .mobile-social-links {
         padding-top: var(--spacing-unit);
         border-top: 1px solid var(--border-color);
       }
-      
+
       .mobile-social-link {
         display: block;
         margin-bottom: 0.25rem;
@@ -752,7 +825,7 @@ const currentPath = Astro.url.pathname;
         border-radius: 6px;
         transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       }
-      
+
       .mobile-social-link:hover {
         color: var(--accent-primary);
         background: var(--bg-secondary);
@@ -765,53 +838,48 @@ const currentPath = Astro.url.pathname;
         .sidebar {
           display: none;
         }
-        
+
         .mobile-menu-toggle,
         .mobile-nav-overlay,
         .mobile-nav-pane {
           display: block;
         }
-        
+
         .mobile-menu-toggle {
           display: flex;
         }
-        
+
         .content {
           margin-left: 0;
           padding: calc(var(--spacing-unit) * 1.5);
           max-width: 100%;
           min-height: auto;
         }
-        
+
         h1 {
           font-size: 1.75rem;
         }
-        
+
         /* Hide floating elements on mobile and tablet */
         .floating-element {
           display: none !important;
         }
       }
-      
     </style>
-    
+
     <script>
       // Auto-typing tagline animation
-      const titles = [
-        "ML Engineer",
-        "Data Scientist", 
-        "GenAI Solution Architect",
-      ];
-      
+      const titles = ['ML Engineer', 'Data Scientist', 'GenAI Solution Architect'];
+
       let currentTitleIndex = 0;
       let currentCharIndex = 0;
       let isDeleting = false;
       const typewriterElement = document.getElementById('typewriter');
       const mobileTypewriterElement = document.getElementById('mobile-typewriter');
-      
+
       function typeWriter() {
         const currentTitle = titles[currentTitleIndex];
-        
+
         if (isDeleting) {
           const text = currentTitle.substring(0, currentCharIndex - 1);
           if (typewriterElement) typewriterElement.textContent = text;
@@ -823,9 +891,9 @@ const currentPath = Astro.url.pathname;
           if (mobileTypewriterElement) mobileTypewriterElement.textContent = text;
           currentCharIndex++;
         }
-        
+
         let typeSpeed = isDeleting ? 50 : 100;
-        
+
         if (!isDeleting && currentCharIndex === currentTitle.length) {
           typeSpeed = 2000; // Pause at end
           isDeleting = true;
@@ -834,139 +902,143 @@ const currentPath = Astro.url.pathname;
           currentTitleIndex = (currentTitleIndex + 1) % titles.length;
           typeSpeed = 300; // Pause before starting new word
         }
-        
+
         setTimeout(typeWriter, typeSpeed);
       }
-      
+
       // Start typewriter after a short delay
       setTimeout(typeWriter, 1000);
-      
-      
+
       // Add hover effects to navigation items
-      document.querySelectorAll('.nav-links a, .social-link').forEach(link => {
-        link.addEventListener('mouseenter', function(this: HTMLElement) {
+      document.querySelectorAll('.nav-links a, .social-link').forEach((link) => {
+        link.addEventListener('mouseenter', function (this: HTMLElement) {
           this.style.transform = 'translateY(-2px)';
           this.style.transition = 'transform 0.2s ease';
         });
-        
-        link.addEventListener('mouseleave', function(this: HTMLElement) {
+
+        link.addEventListener('mouseleave', function (this: HTMLElement) {
           this.style.transform = 'translateY(0)';
         });
       });
-      
+
       // Mobile menu functionality
       const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
       const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
       const mobileNavPane = document.getElementById('mobile-nav-pane');
       const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a, .mobile-social-link');
-      
+
       function toggleMobileMenu() {
         if (!mobileNavPane) return;
         const isActive = mobileNavPane.classList.contains('active');
-        
+
         if (isActive) {
           closeMobileMenu();
         } else {
           openMobileMenu();
         }
       }
-      
+
       function openMobileMenu() {
         if (mobileMenuToggle) mobileMenuToggle.classList.add('active');
         if (mobileNavOverlay) mobileNavOverlay.classList.add('active');
         if (mobileNavPane) mobileNavPane.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
       }
-      
+
       function closeMobileMenu() {
         if (mobileMenuToggle) mobileMenuToggle.classList.remove('active');
         if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
         if (mobileNavPane) mobileNavPane.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
       }
-      
+
       // Event listeners
       if (mobileMenuToggle) {
         mobileMenuToggle.addEventListener('click', toggleMobileMenu);
       }
-      
+
       if (mobileNavOverlay) {
         mobileNavOverlay.addEventListener('click', closeMobileMenu);
       }
-      
+
       // Close menu when navigation link is clicked
-      mobileNavLinks.forEach(link => {
+      mobileNavLinks.forEach((link) => {
         link.addEventListener('click', closeMobileMenu);
       });
-      
+
       // Close menu on escape key press
-      document.addEventListener('keydown', function(e) {
+      document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && mobileNavPane && mobileNavPane.classList.contains('active')) {
           closeMobileMenu();
         }
       });
-      
+
       // Handle window resize - close menu if switching to desktop
-      window.addEventListener('resize', function() {
-        if (window.innerWidth > 1024 && mobileNavPane && mobileNavPane.classList.contains('active')) {
+      window.addEventListener('resize', function () {
+        if (
+          window.innerWidth > 1024 &&
+          mobileNavPane &&
+          mobileNavPane.classList.contains('active')
+        ) {
           closeMobileMenu();
         }
       });
-      
+
       // ========================================
       // PHASE 2: ADVANCED INTERACTIONS
       // ========================================
-      
+
       // 2.1 Scroll-Triggered Animations with Intersection Observer
       const observerOptions = {
         threshold: [0.1, 0.3, 0.7],
-        rootMargin: '-50px 0px -50px 0px'
+        rootMargin: '-50px 0px -50px 0px',
       };
-      
+
       const animatedElements = new Set();
-      
+
       const scrollObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const element = entry.target;
           const ratio = entry.intersectionRatio;
-          
+
           if (ratio > 0.1 && !animatedElements.has(element)) {
             // Staggered appearance animation
             const delay = Array.from(element.parentElement?.children || []).indexOf(element) * 100;
-            
+
             setTimeout(() => {
               (element as HTMLElement).style.opacity = '1';
               (element as HTMLElement).style.transform = 'translateY(0)';
               element.classList.add('animate-in');
             }, delay);
-            
+
             animatedElements.add(element);
           }
-          
+
           // Progressive reveal based on scroll ratio
         });
       }, observerOptions);
-      
+
       // Observe content sections for scroll animations
       document.addEventListener('DOMContentLoaded', () => {
-        const sections = document.querySelectorAll('section, .hero-card, .last-updated, h2, p, ul, .project');
+        const sections = document.querySelectorAll(
+          'section, .hero-card, .last-updated, h2, p, ul, .project'
+        );
         sections.forEach((section) => {
           // Initial state for animation
           (section as HTMLElement).style.opacity = '0';
           (section as HTMLElement).style.transform = 'translateY(20px)';
           (section as HTMLElement).style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-          
+
           scrollObserver.observe(section);
         });
       });
-      
-      
+
       // 2.3 Navigation Section Highlighting
       function updateNavigationHighlight() {
         // Highlight current section in navigation
         const sections = document.querySelectorAll('section, .hero-card');
         const navLinks = document.querySelectorAll('.nav-links a');
-        
+
         let currentSection = '';
         sections.forEach((section) => {
           const rect = section.getBoundingClientRect();
@@ -974,7 +1046,7 @@ const currentPath = Astro.url.pathname;
             currentSection = section.id || 'home';
           }
         });
-        
+
         navLinks.forEach((link) => {
           const href = (link as HTMLAnchorElement).getAttribute('href');
           if (href === `/${currentSection}` || (href === '/' && currentSection === 'home')) {
@@ -984,50 +1056,60 @@ const currentPath = Astro.url.pathname;
           }
         });
       }
-      
+
       window.addEventListener('scroll', updateNavigationHighlight, { passive: true });
-      
+
       // 2.2 Mobile Gesture Improvements
       let touchStartY = 0;
       let touchStartX = 0;
       let isPulling = false;
-      
+
       // Pull-to-refresh for mobile
-      document.addEventListener('touchstart', (e) => {
-        touchStartY = e.touches[0].clientY;
-        touchStartX = e.touches[0].clientX;
-      }, { passive: true });
-      
-      document.addEventListener('touchmove', (e) => {
-        const touchY = e.touches[0].clientY;
-        const touchX = e.touches[0].clientX;
-        const deltaY = touchY - touchStartY;
-        const deltaX = touchX - touchStartX;
-        
-        // Pull to refresh at top of page
-        if (window.scrollY === 0 && deltaY > 50 && Math.abs(deltaX) < 30) {
-          isPulling = true;
-          document.body.style.transform = `translateY(${Math.min(deltaY * 0.5, 50)}px)`;
-          document.body.style.transition = 'none';
-        }
-        
-        // Haptic feedback simulation
-        if (Math.abs(deltaY) > 10 || Math.abs(deltaX) > 10) {
-          if ('vibrate' in navigator) {
-            navigator.vibrate(1);
+      document.addEventListener(
+        'touchstart',
+        (e) => {
+          touchStartY = e.touches[0].clientY;
+          touchStartX = e.touches[0].clientX;
+        },
+        { passive: true }
+      );
+
+      document.addEventListener(
+        'touchmove',
+        (e) => {
+          const touchY = e.touches[0].clientY;
+          const touchX = e.touches[0].clientX;
+          const deltaY = touchY - touchStartY;
+          const deltaX = touchX - touchStartX;
+
+          // Pull to refresh at top of page
+          if (window.scrollY === 0 && deltaY > 50 && Math.abs(deltaX) < 30) {
+            isPulling = true;
+            document.body.style.transform = `translateY(${Math.min(deltaY * 0.5, 50)}px)`;
+            document.body.style.transition = 'none';
           }
-        }
-      }, { passive: true });
-      
-      document.addEventListener('touchend', () => {
-        if (isPulling) {
-          document.body.style.transform = '';
-          document.body.style.transition = 'transform 0.3s ease';
-          
-          // Simulate refresh animation
-          const refreshIndicator = document.createElement('div');
-          refreshIndicator.textContent = '✨ Content refreshed';
-          refreshIndicator.style.cssText = `
+
+          // Haptic feedback simulation
+          if (Math.abs(deltaY) > 10 || Math.abs(deltaX) > 10) {
+            if ('vibrate' in navigator) {
+              navigator.vibrate(1);
+            }
+          }
+        },
+        { passive: true }
+      );
+
+      document.addEventListener(
+        'touchend',
+        () => {
+          if (isPulling) {
+            document.body.style.transform = '';
+            document.body.style.transition = 'transform 0.3s ease';
+
+            // Simulate refresh animation
+            const refreshIndicator = document.createElement('div');
+            refreshIndicator.textContent = '✨ Content refreshed';
+            refreshIndicator.style.cssText = `
             position: fixed;
             top: 20px;
             left: 50%;
@@ -1041,29 +1123,30 @@ const currentPath = Astro.url.pathname;
             opacity: 0;
             transition: opacity 0.3s ease;
           `;
-          
-          document.body.appendChild(refreshIndicator);
-          requestAnimationFrame(() => {
-            refreshIndicator.style.opacity = '1';
-            setTimeout(() => {
-              refreshIndicator.style.opacity = '0';
-              setTimeout(() => document.body.removeChild(refreshIndicator), 300);
-            }, 2000);
-          });
-          
-          isPulling = false;
-        }
-      }, { passive: true });
-      
+
+            document.body.appendChild(refreshIndicator);
+            requestAnimationFrame(() => {
+              refreshIndicator.style.opacity = '1';
+              setTimeout(() => {
+                refreshIndicator.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(refreshIndicator), 300);
+              }, 2000);
+            });
+
+            isPulling = false;
+          }
+        },
+        { passive: true }
+      );
     </script>
-    
+
     <style>
       /* Phase 2 Animation Styles */
-      
+
       .animate-in {
         animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
       }
-      
+
       @keyframes slideInUp {
         from {
           opacity: 0;
@@ -1074,20 +1157,18 @@ const currentPath = Astro.url.pathname;
           transform: translateY(0);
         }
       }
-      
-      
+
       .nav-links {
         position: relative;
       }
-      
-      
+
       .current-section {
         background: var(--bg-secondary) !important;
         border-radius: 4px !important;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
       }
-      
+
       /* Enhanced floating elements with performance optimizations */
       .floating-element {
         will-change: transform, opacity;
@@ -1096,12 +1177,12 @@ const currentPath = Astro.url.pathname;
         -webkit-transform-style: preserve-3d;
         contain: layout style paint;
       }
-      
+
       .floating-element::after {
         will-change: transform;
         backface-visibility: hidden;
       }
-      
+
       /* Mobile optimizations */
       @media (max-width: 1024px) {
         .floating-element {

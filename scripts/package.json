@@ -5,6 +5,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
