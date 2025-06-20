@@ -16,11 +16,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: development
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,15 +35,24 @@ jobs:
         env:
           # GitHub token for API access (automatically provided by Actions)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Optional: Personal Access Token for higher rate limits
-          # Uncomment and add secret if needed:
-          # GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
         
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-          
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+      pull-requests: write
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

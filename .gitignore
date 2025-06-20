@@ -32,3 +32,4 @@ pnpm-debug.log*
 /playwright/.cache/
 reference_files/*
 scripts/screenshots/*
+memory-bank/*

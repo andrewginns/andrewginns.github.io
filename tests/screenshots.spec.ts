@@ -1,17 +1,23 @@
 import { test } from '@playwright/test';
+import type { Page, Browser } from '@playwright/test';
+
+interface PageInfo {
+  name: string;
+  url: string;
+}
 
 test.describe('Website Screenshots', () => {
-  const pages = [
+  const pages: PageInfo[] = [
     { name: 'home', url: '/' },
     { name: 'experience', url: '/experience' },
-    { name: 'projects', url: '/projects' },
+    { name: 'projects', url: '/projects_github' },
     { name: 'writing', url: '/writing' },
-    { name: 'about', url: '/about' },
-    { name: 'contact', url: '/contact' }
+    { name: 'about', url: '/about_me' },
+    { name: 'contact', url: '/contact_me' }
   ];
 
   for (const page of pages) {
-    test(`Screenshot: ${page.name} page`, async ({ page: playwright }) => {
+    test(`Screenshot: ${page.name} page`, async ({ page: playwright }: { page: Page }) => {
       await playwright.goto(page.url);
       
       // Wait for the page to be fully loaded
@@ -28,7 +34,7 @@ test.describe('Website Screenshots', () => {
     });
   }
 
-  test('Screenshot: Mobile home page', async ({ browser }) => {
+  test('Screenshot: Mobile home page', async ({ browser }: { browser: Browser }) => {
     const context = await browser.newContext({
       viewport: { width: 375, height: 812 }
     });
