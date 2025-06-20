@@ -31,22 +31,25 @@ const currentPath = Astro.url.pathname;
             <li><a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a></li>
             <li>
               <a href="/experience" class={currentPath === '/experience' ? 'active' : ''}
-                >Experience</a>
+                >Experience</a
+              >
             </li>
             <li>
               <a href="/projects_github" class={currentPath === '/projects_github' ? 'active' : ''}
-                >Projects</a>
+                >Projects</a
+              >
             </li>
             <li>
               <a href="/writing" class={currentPath.startsWith('/writing') ? 'active' : ''}
-                >Writing</a>
+                >Writing</a
+              >
             </li>
             <li>
               <a href="/about_me" class={currentPath === '/about_me' ? 'active' : ''}>About</a>
             </li>
             <li>
-              <a href="/contact_me" class={currentPath === '/contact_me' ? 'active' : ''}
-                >Contact</a>
+              <a href="/contact_me" class={currentPath === '/contact_me' ? 'active' : ''}>Contact</a
+              >
             </li>
           </ul>
 
@@ -93,22 +96,25 @@ const currentPath = Astro.url.pathname;
             <li><a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a></li>
             <li>
               <a href="/experience" class={currentPath === '/experience' ? 'active' : ''}
-                >Experience</a>
+                >Experience</a
+              >
             </li>
             <li>
               <a href="/projects_github" class={currentPath === '/projects_github' ? 'active' : ''}
-                >Projects</a>
+                >Projects</a
+              >
             </li>
             <li>
               <a href="/writing" class={currentPath.startsWith('/writing') ? 'active' : ''}
-                >Writing</a>
+                >Writing</a
+              >
             </li>
             <li>
               <a href="/about_me" class={currentPath === '/about_me' ? 'active' : ''}>About</a>
             </li>
             <li>
-              <a href="/contact_me" class={currentPath === '/contact_me' ? 'active' : ''}
-                >Contact</a>
+              <a href="/contact_me" class={currentPath === '/contact_me' ? 'active' : ''}>Contact</a
+              >
             </li>
           </ul>
 
@@ -593,8 +599,8 @@ const currentPath = Astro.url.pathname;
         min-height: 100vh;
       }
 
-      /* Center content on ultra-wide displays */
-      @media (min-width: 1600px) {
+      /* Center content on wide displays */
+      @media (min-width: 1200px) {
         .content {
           margin-left: max(var(--sidebar-width), calc((100vw - var(--content-max-width)) / 2));
           margin-right: auto;
