@@ -1,7 +1,8 @@
 import { test } from '@playwright/test';
+import type { Page, Browser } from '@playwright/test';
 
 test.describe('Reference Website Screenshots', () => {
-  test('Screenshot: tomcritchlow.com homepage', async ({ page }) => {
+  test('Screenshot: tomcritchlow.com homepage', async ({ page }: { page: Page }) => {
     await page.goto('https://tomcritchlow.com/');
     
     // Wait for the page to be fully loaded
@@ -17,7 +18,7 @@ test.describe('Reference Website Screenshots', () => {
     });
   });
 
-  test('Screenshot: tomcritchlow.com mobile', async ({ browser }) => {
+  test('Screenshot: tomcritchlow.com mobile', async ({ browser }: { browser: Browser }) => {
     const context = await browser.newContext({
       viewport: { width: 375, height: 812 }
     });

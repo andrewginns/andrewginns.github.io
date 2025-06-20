@@ -4,6 +4,7 @@ import LastUpdated from '../components/LastUpdated.astro';
 import { getCachedGitHubCompany } from '../lib/github.ts';
 
 // Fetch current company from GitHub profile
+// Force rebuild: 2025-06-20
 const currentCompany = await getCachedGitHubCompany('andrewginns');
 ---
 

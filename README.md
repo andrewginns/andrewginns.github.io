@@ -6,7 +6,7 @@ A modern, minimalist personal website for Andrew Ginns, Machine Learning Enginee
 
 This website serves as a digital resume, project showcase, and writing platform, featuring:
 - Professional experience and background
-- Project portfolio highlighting ML and Data Science work
+- Projects highlighting ML and Data Science work
 - Blog for technical writing and industry insights
 - Clean, text-centric design inspired by modern minimalism
 
@@ -37,7 +37,7 @@ This website serves as a digital resume, project showcase, and writing platform,
 │   │   ├── projects.astro  # Auto-fetches from GitHub
 │   │   ├── writing.astro
 │   │   ├── writing/[...slug].astro
-│   │   ├── about.astro
+  │   │   ├── about.astro
 │   │   └── contact.astro
 │   └── content.config.ts # Content schemas
 ├── public/               # Static assets

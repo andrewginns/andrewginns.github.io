@@ -1,9 +1,15 @@
-const { chromium } = require('playwright');
+import { chromium } from 'playwright';
 
-async function captureViewports() {
+interface Viewport {
+  name: string;
+  width: number;
+  height: number;
+}
+
+async function captureViewports(): Promise<void> {
   const browser = await chromium.launch();
   
-  const viewports = [
+  const viewports: Viewport[] = [
     { name: 'mobile-small', width: 375, height: 667 }, // iPhone SE
     { name: 'mobile-medium', width: 390, height: 844 }, // iPhone 12/13
     { name: 'tablet-portrait', width: 768, height: 1024 }, // iPad portrait

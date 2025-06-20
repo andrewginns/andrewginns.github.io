@@ -1,20 +1,21 @@
-const { chromium } = require('playwright');
+import { chromium } from 'playwright';
+import type { Browser, BrowserContext, Page } from 'playwright';
 
-async function captureScreenshots() {
-  const browser = await chromium.launch();
+async function captureScreenshots(): Promise<void> {
+  const browser: Browser = await chromium.launch();
   
   // Desktop viewport
-  const desktopContext = await browser.newContext({
+  const desktopContext: BrowserContext = await browser.newContext({
     viewport: { width: 1920, height: 1080 }
   });
-  const desktopPage = await desktopContext.newPage();
+  const desktopPage: Page = await desktopContext.newPage();
   
   // Mobile viewport
-  const mobileContext = await browser.newContext({
+  const mobileContext: BrowserContext = await browser.newContext({
     viewport: { width: 375, height: 812 },
     userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1'
   });
-  const mobilePage = await mobileContext.newPage();
+  const mobilePage: Page = await mobileContext.newPage();
   
   // Capture reference site (tomcritchlow.com)
   console.log('Capturing reference site screenshots...');

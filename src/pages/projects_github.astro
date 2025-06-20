@@ -6,8 +6,8 @@ import { getCachedGitHubData } from '../lib/github';
 // Fetch GitHub data at build time
 const { pinnedRepos } = await getCachedGitHubData('andrewginns');
 
-// Map GitHub repos to project format
-const projects = pinnedRepos.map((repo: any) => ({
+// Map GitHub repos to portfolio format
+const portfolioItems = pinnedRepos.map((repo: any) => ({
   title: repo.name.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
   description: repo.description || 'No description available',
   url: repo.html_url,
@@ -19,7 +19,7 @@ const projects = pinnedRepos.map((repo: any) => ({
 }));
 
 // If no GitHub data, fall back to static content
-const staticProjects = [
+const staticPortfolioItems = [
   {
     title: "MLOps Pipeline Automation",
     description: "Designed and implemented a comprehensive MLOps pipeline that reduced model deployment time from 0.5 days to just 2 hours. Built on Google Cloud Platform using Vertex AI, MLflow, and custom orchestration tools.",
@@ -40,23 +40,24 @@ const staticProjects = [
   },
 ];
 
-const displayProjects = projects.length > 0 ? projects : staticProjects;
+const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : staticPortfolioItems;
 ---
 
-<BaseLayout title="Projects - Andrew Ginns">
-  <div class="projects-content">
-    <h1>Projects</h1>
+<BaseLayout title="Portfolio - Andrew Ginns">
+  <div class="portfolio-content">
+    <h1>Portfolio</h1>
+    
     <p class="intro">
-      {projects.length > 0 ? (
+      {portfolioItems.length > 0 ? (
         "My pinned GitHub repositories showcase my work in machine learning, MLOps, GenAI, and Data Science. Each project reflects different aspects of my expertise and interest in the field."
       ) : (
-        "A selection of projects showcasing my work in machine learning, MLOps, GenAI, and Data Science. Each project demonstrates different aspects of my expertise, from building scalable ML infrastructure to implementing cutting-edge AI techniques."
+        "A selection of work showcasing my expertise in machine learning, MLOps, GenAI, and Data Science. Each project demonstrates different aspects of my experience, from building scalable ML infrastructure to implementing cutting-edge AI techniques."
       )}
     </p>
     
-    <div class="projects-grid">
-      {displayProjects.map((project: any) => (
-        <article class="project">
+    <div class="portfolio-grid">
+      {displayPortfolioItems.map((project: any) => (
+        <article class="portfolio-item">
           <h2>
             {project.url ? (
               <a href={project.url} target="_blank" rel="noopener noreferrer">
@@ -68,7 +69,7 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
           </h2>
           
           {project.language && (
-            <div class="project-meta">
+            <div class="portfolio-meta">
               <span class="language">{project.language}</span>
               {project.stars !== undefined && (
                 <span class="stars">★ {project.stars}</span>
@@ -104,13 +105,13 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
     <section class="open-source">
       <h2>More on GitHub</h2>
       <p>
-        These are just my highlighted projects. Check out my 
+        These are just my highlighted work. Check out my 
         <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer"> full GitHub profile</a> 
         for more open source contributions, experiments, and collaborations.
       </p>
-      {projects.length > 0 && (
+      {portfolioItems.length > 0 && (
         <p class="note">
-          <em>Projects are automatically synced from my GitHub pinned repositories.</em>
+          <em>Portfolio items are automatically synced from my GitHub pinned repositories.</em>
         </p>
       )}
     </section>
@@ -120,7 +121,7 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
 </BaseLayout>
 
 <style>
-  .projects-content {
+  .portfolio-content {
     max-width: 800px;
   }
   
@@ -131,33 +132,33 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
     color: var(--text-secondary);
   }
   
-  .projects-grid {
+  .portfolio-grid {
     display: grid;
     gap: 2rem;
     margin-bottom: 3rem;
   }
   
-  .project {
+  .portfolio-item {
     padding: 2rem;
     background: var(--bg-secondary);
     border-radius: 8px;
   }
   
-  .project h2 {
+  .portfolio-item h2 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
   }
   
-  .project h2 a {
+  .portfolio-item h2 a {
     color: var(--text-primary);
     text-decoration: none;
   }
   
-  .project h2 a:hover {
+  .portfolio-item h2 a:hover {
     color: var(--accent);
   }
   
-  .project-meta {
+  .portfolio-meta {
     display: flex;
     gap: 1rem;
     font-size: 0.9rem;
@@ -176,7 +177,7 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
     color: var(--accent);
   }
   
-  .project p {
+  .portfolio-item p {
     margin-bottom: 1rem;
   }
   
@@ -225,4 +226,4 @@ const displayProjects = projects.length > 0 ? projects : staticProjects;
     font-size: 0.9rem;
     color: var(--text-secondary);
   }
-</style>
+</style> 
