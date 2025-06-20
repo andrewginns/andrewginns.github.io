@@ -34,11 +34,11 @@ This website serves as a digital resume, project showcase, and writing platform,
 │   ├── pages/            # Route pages
 │   │   ├── index.astro
 │   │   ├── experience.astro
-│   │   ├── projects.astro  # Auto-fetches from GitHub
+│   │   ├── projects_github.astro  # Auto-fetches from GitHub
 │   │   ├── writing.astro
 │   │   ├── writing/[...slug].astro
-  │   │   ├── about.astro
-│   │   └── contact.astro
+│   │   ├── about_me.astro
+│   │   └── contact_me.astro
 │   └── content.config.ts # Content schemas
 ├── public/               # Static assets
 │   └── favicon.svg
