@@ -13,7 +13,7 @@ test.describe('Website Screenshots', () => {
     { name: 'projects', url: '/projects_github' },
     { name: 'writing', url: '/writing' },
     { name: 'about', url: '/about_me' },
-    { name: 'contact', url: '/contact' }
+    { name: 'contact', url: '/contact_me' }
   ];
 
   for (const page of pages) {
