@@ -9,43 +9,58 @@ const introContent = await getIntroContent();
 <BaseLayout title="About - Andrew Ginns">
   <div class="about-content">
     <h1>About Me</h1>
-    
+
     <section class="intro">
       <p>
         {introContent.introText}
       </p>
       <p>
-        I bridge the gap between hands-on development and strategic leadership.
-        I specialise in mentoring technical teams, establishing robust MLOps workflows,
-        and translating complex AI concepts for senior stakeholders.
-        My focus is on building scalable, end-to-end ML solutions, from platform
-        infrastructure to cutting-edge GenAI applications.
-        <br></br>
-        I am an effective support to teams both as a mentor and an extra pair of hands when needed.
-        Some of the pieces of work I've done include:
+        I bridge the gap between hands-on development and strategic leadership. I specialise in
+        mentoring technical teams, establishing robust MLOps workflows, and translating complex AI
+        concepts for senior stakeholders. My focus is on building scalable, end-to-end ML solutions,
+        from platform infrastructure to cutting-edge GenAI applications.
+        <br />
+        I am an effective support to teams both as a mentor and an extra pair of hands when needed. Some
+        of the pieces of work I've done include:
       </p>
       <ul class="work-list">
-        <li>Architecting and building a scalable ML platform to accelerate the model development lifecycle</li>
+        <li>
+          Architecting and building a scalable ML platform to accelerate the model development
+          lifecycle
+        </li>
         <li>Leading and scaling Data Science teams to deliver revenue generating products</li>
-        <li>Championing AI adoption by developing and delivering technical workshops to both engineering and business teams.</li>
-        <li>Engineering robust MLOps infrastructure that accelerated model deployment time from hours to minutes</li>
-        <li>Applying cutting-edge GenAI techniques to solve real-world problems like cost estimation and structured data extraction from video </li>
+        <li>
+          Championing AI adoption by developing and delivering technical workshops to both
+          engineering and business teams.
+        </li>
+        <li>
+          Engineering robust MLOps infrastructure that accelerated model deployment time from hours
+          to minutes
+        </li>
+        <li>
+          Applying cutting-edge GenAI techniques to solve real-world problems like cost estimation
+          and structured data extraction from video
+        </li>
       </ul>
     </section>
-    
+
     <section class="interests">
       <h2>Beyond Work</h2>
-      <p>
-        Outside of machine learning, I have diverse interests that keep life interesting:
-      </p>
+      <p>Outside of machine learning, I have diverse interests that keep life interesting:</p>
       <ul>
-        <li><strong>Travel:</strong> Exploring new cultures and cuisines, particularly in Southeast Asia and Europe</li>
+        <li>
+          <strong>Travel:</strong> Exploring new cultures and cuisines, particularly in Southeast Asia
+          and Europe
+        </li>
         <li><strong>Technology:</strong> Home automation, homelabbing, and electronics projects</li>
-        <li><strong>Creative Pursuits:</strong> Photography, cooking, and experimenting with generative art</li>
+        <li>
+          <strong>Creative Pursuits:</strong> Photography, cooking, and experimenting with generative
+          art
+        </li>
         <li><strong>Outdoors:</strong> Hiking, camping, and beach days</li>
       </ul>
     </section>
-    
+
     <LastUpdated />
   </div>
 </BaseLayout>
@@ -54,31 +69,31 @@ const introContent = await getIntroContent();
   .about-content {
     max-width: 700px;
   }
-  
+
   section {
     margin-bottom: 3rem;
   }
-  
+
   h2 {
     font-size: 1.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   p {
     margin-bottom: 1.25rem;
     line-height: 1.8;
   }
-  
+
   ul {
     list-style-position: outside;
     margin-left: 1.5rem;
   }
-  
+
   li {
     margin-bottom: 0.75rem;
     line-height: 1.6;
   }
-  
+
   strong {
     color: var(--text-primary);
   }
