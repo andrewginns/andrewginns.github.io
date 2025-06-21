@@ -1,0 +1,185 @@
+---
+import type { GitHubRepo } from '../lib/github.ts';
+
+interface Props {
+  project: GitHubRepo;
+  loading?: boolean;
+}
+
+const { project, loading = false } = Astro.props;
+---
+
+<article class="project-card" transition:name={`project-${project.name}`}>
+  {
+    loading ? (
+      <div class="project-skeleton">
+        <div class="skeleton-title" />
+        <div class="skeleton-description" />
+        <div class="skeleton-meta" />
+      </div>
+    ) : (
+      <>
+        <header class="project-header">
+          <h3 class="project-title">
+            <a href={project.html_url} target="_blank" rel="noopener noreferrer">
+              {project.name}
+            </a>
+          </h3>
+          {project.homepage && (
+            <a
+              href={project.homepage}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="project-demo"
+            >
+              Demo
+            </a>
+          )}
+        </header>
+
+        <p class="project-description">{project.description}</p>
+
+        <footer class="project-meta">
+          <span class="project-language">{project.language}</span>
+          <span class="project-stars">⭐ {project.stargazers_count}</span>
+          {project.topics && project.topics.length > 0 && (
+            <div class="project-topics">
+              {project.topics.slice(0, 3).map((topic) => (
+                <span class="topic-tag">{topic}</span>
+              ))}
+            </div>
+          )}
+        </footer>
+      </>
+    )
+  }
+</article>
+
+<style>
+  .project-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .project-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--shadow-medium);
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .project-title {
+    margin: 0;
+    font-size: 1.2rem;
+    flex: 1;
+  }
+
+  .project-title a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .project-title a:hover {
+    color: var(--accent-primary);
+  }
+
+  .project-demo {
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+  }
+
+  .project-demo:hover {
+    background: var(--accent-secondary);
+  }
+
+  .project-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    flex: 1;
+  }
+
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .project-language {
+    font-weight: 500;
+  }
+
+  .project-topics {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .topic-tag {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  /* Skeleton loading styles */
+  .project-skeleton {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .skeleton-title,
+  .skeleton-description,
+  .skeleton-meta {
+    background: var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .skeleton-title {
+    height: 1.5rem;
+    width: 70%;
+  }
+
+  .skeleton-description {
+    height: 3rem;
+    width: 100%;
+  }
+
+  .skeleton-meta {
+    height: 1rem;
+    width: 50%;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>

@@ -6,6 +6,11 @@ export default defineConfig({
   site: 'https://andrew.ginns.uk',
   output: 'static',
   build: {
-    format: 'directory'
-  }
+    format: 'directory',
+    inlineStylesheets: 'auto',
+  },
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'viewport',
+  },
 });

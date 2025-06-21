@@ -1,4 +1,6 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
+
 export interface Props {
   title: string;
   description?: string;
@@ -17,6 +19,7 @@ const currentPath = Astro.url.pathname;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <ViewTransitions />
   </head>
   <body>
     <div class="container">
@@ -27,7 +30,7 @@ const currentPath = Astro.url.pathname;
             <div class="tagline" id="typewriter">GenAI Solution Architect</div>
           </div>
 
-          <ul class="nav-links">
+          <ul class="nav-links" transition:name="navigation">
             <li><a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a></li>
             <li>
               <a href="/experience" class={currentPath === '/experience' ? 'active' : ''}

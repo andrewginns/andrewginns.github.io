@@ -1,0 +1,91 @@
+---
+interface Props {
+  count?: number;
+}
+
+const { count = 1 } = Astro.props;
+---
+
+{
+  Array.from({ length: count }, (_, i) => (
+    <div class="skeleton-card">
+      <div class="skeleton-header">
+        <div class="skeleton-title" />
+        <div class="skeleton-demo" />
+      </div>
+      <div class="skeleton-description" />
+      <div class="skeleton-meta">
+        <div class="skeleton-language" />
+        <div class="skeleton-stars" />
+      </div>
+    </div>
+  ))
+}
+
+<style>
+  .skeleton-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 200px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .skeleton-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+
+  .skeleton-title,
+  .skeleton-demo,
+  .skeleton-description,
+  .skeleton-language,
+  .skeleton-stars {
+    background: var(--border-color);
+    border-radius: 4px;
+  }
+
+  .skeleton-title {
+    height: 1.5rem;
+    width: 60%;
+  }
+
+  .skeleton-demo {
+    height: 1.5rem;
+    width: 3rem;
+  }
+
+  .skeleton-description {
+    height: 3rem;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .skeleton-meta {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .skeleton-language {
+    height: 1rem;
+    width: 4rem;
+  }
+
+  .skeleton-stars {
+    height: 1rem;
+    width: 2rem;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+</style>
