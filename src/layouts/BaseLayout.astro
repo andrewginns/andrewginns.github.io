@@ -714,10 +714,12 @@ const currentPath = Astro.url.pathname;
         z-index: 999;
         opacity: 0;
         transition: opacity 0.3s ease;
+        pointer-events: none !important;
       }
 
       .mobile-nav-overlay.active {
         opacity: 1;
+        pointer-events: auto !important;
       }
 
       .mobile-nav-pane {
@@ -963,20 +965,9 @@ const currentPath = Astro.url.pathname;
           document.body.style.overflow = '';
         }
 
-        // Remove existing event listeners to prevent duplicates
-        const newToggle = mobileMenuToggle.cloneNode(true);
-        if (mobileMenuToggle.parentNode) {
-          mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
-        }
-
-        const newOverlay = mobileNavOverlay.cloneNode(true);
-        if (mobileNavOverlay.parentNode) {
-          mobileNavOverlay.parentNode.replaceChild(newOverlay, mobileNavOverlay);
-        }
-
-        // Add event listeners to new elements
-        newToggle.addEventListener('click', toggleMobileMenu);
-        newOverlay.addEventListener('click', closeMobileMenu);
+        // Add event listeners
+        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+        mobileNavOverlay.addEventListener('click', closeMobileMenu);
 
         // Close menu when navigation link is clicked
         mobileNavLinks.forEach((link) => {
