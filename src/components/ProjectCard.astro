@@ -42,10 +42,19 @@ const { project, loading = false } = Astro.props;
             class="project-github-icon"
             aria-label="View on GitHub"
           >
-            GH <!-- TEMPORARILY REPLACED SVG WITH TEXT FOR DEBUGGING -->
+            {/* GH TEXT FOR DEBUGGING - Temporarily moved out of header */}
           </a>
         </header>
 
+        <a
+          href={project.html_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="project-github-icon"
+          aria-label="View on GitHub (moved for debug)"
+        >
+          GH (Moved) <!-- TEXT FOR DEBUGGING -->
+        </a>
         <p class="project-description">{project.description}</p>
 
         <footer class="project-meta">
@@ -118,11 +127,6 @@ const { project, loading = false } = Astro.props;
 
   .project-demo:hover {
     background: var(--accent-secondary);
-  }
-
-  .project-demo {
-    /* ... existing styles ... */
-    flex-shrink: 0; /* Prevent demo button from shrinking */
   }
 
   .project-description {
@@ -205,32 +209,11 @@ const { project, loading = false } = Astro.props;
     font-weight: bold !important;
     text-decoration: none !important;
     border: 1px solid black !important; /* Add border */
-    transition: color 0.2s ease; /* Original transition */
-    flex-shrink: 0; /* Prevent icon from shrinking */
-    margin-left: 0.5rem; /* Ensure some spacing */
+    flex-shrink: 0; /* Prevent icon from shrinking if in flex */
+    margin-left: 0.5rem; /* Ensure some spacing if in flex */
   }
 
   .project-github-icon:hover {
-    color: var(--accent-primary); /* Original hover color, might be overridden by !important */
     background-color: pink !important; /* Hover background */
   }
-
-  /* Styles for SVG are not relevant now as SVG is removed for this test */
-  /* .project-github-icon svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-  } */
-
-  /* MEDIA QUERY TEMPORARILY REMOVED FOR DEBUGGING */
-  /* @media (max-width: 1024px) {
-    .project-header > .project-github-icon {
-      display: inline-block;
-      margin-left: 0.5rem;
-    }
-
-    .project-header {
-      align-items: center;
-    }
-  } */
 </style>
