@@ -122,6 +122,11 @@ const { project, loading = false } = Astro.props;
     background: var(--accent-secondary);
   }
 
+  .project-demo {
+    /* ... existing styles ... */
+    flex-shrink: 0; /* Prevent demo button from shrinking */
+  }
+
   .project-description {
     color: var(--text-secondary);
     line-height: 1.6;
@@ -198,6 +203,7 @@ const { project, loading = false } = Astro.props;
     display: none; /* Hidden by default */
     color: var(--text-secondary);
     transition: color 0.2s ease;
+    flex-shrink: 0; /* Prevent icon from shrinking */
   }
 
   .project-github-icon:hover {
@@ -207,11 +213,13 @@ const { project, loading = false } = Astro.props;
   .project-github-icon svg {
     width: 20px; /* Adjust size as needed */
     height: 20px; /* Adjust size as needed */
+    display: block; /* Ensure SVG respects sizing */
   }
 
   /* Show on mobile - assuming mobile is less than 768px */
   @media (max-width: 767px) {
-    .project-github-icon {
+    /* More specific selector for the icon within the header on mobile */
+    .project-header > .project-github-icon {
       display: inline-block; /* Show the icon */
       margin-left: 0.5rem; /* Add some space next to the demo button or title */
     }
