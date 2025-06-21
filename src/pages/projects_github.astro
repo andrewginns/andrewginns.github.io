@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import LoadingSpinner from '../components/LoadingSpinner.astro';
 import { getCachedGitHubData, type GitHubRepo } from '../lib/github.ts';
 
 interface PortfolioItem {
@@ -247,4 +249,3 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
     color: var(--text-secondary);
   }
 </style>
-

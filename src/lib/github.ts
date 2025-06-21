@@ -21,14 +21,25 @@ export async function getGitHubData(username: string) {
     headers['Authorization'] = `token ${token}`;
   }
 
+  const fetchWithTimeout = (url: string, options: RequestInit, timeout = 5000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise<Response>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), timeout)
+      ),
+    ]);
+  };
+
   try {
-    // Fetch user profile
-    const profileResponse = await fetch(`https://api.github.com/users/${username}`, { headers });
+    // Fetch user profile with timeout
+    const profileResponse = await fetchWithTimeout(`https://api.github.com/users/${username}`, {
+      headers,
+    });
     if (!profileResponse.ok) throw new Error('Failed to fetch profile');
     const profile = await profileResponse.json();
 
-    // Fetch repositories
-    const reposResponse = await fetch(
+    // Fetch repositories with timeout
+    const reposResponse = await fetchWithTimeout(
       `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
       { headers }
     );

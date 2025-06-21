@@ -1,4 +1,6 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
+
 export interface Props {
   title: string;
   description?: string;
@@ -15,8 +17,14 @@ const currentPath = Astro.url.pathname;
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://api.github.com" />
+    <link rel="dns-prefetch" href="https://github.com" />
+    <link rel="preconnect" href="https://pages.dev" />
+    <link rel="preconnect" href="https://github.io" />
+    <link rel="dns-prefetch" href="https://cloudflare.com" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <ViewTransitions />
   </head>
   <body>
     <div class="container">
@@ -27,7 +35,7 @@ const currentPath = Astro.url.pathname;
             <div class="tagline" id="typewriter">GenAI Solution Architect</div>
           </div>
 
-          <ul class="nav-links">
+          <ul class="nav-links" transition:name="navigation">
             <li><a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a></li>
             <li>
               <a href="/experience" class={currentPath === '/experience' ? 'active' : ''}
@@ -711,10 +719,12 @@ const currentPath = Astro.url.pathname;
         z-index: 999;
         opacity: 0;
         transition: opacity 0.3s ease;
+        pointer-events: none !important;
       }
 
       .mobile-nav-overlay.active {
         opacity: 1;
+        pointer-events: auto !important;
       }
 
       .mobile-nav-pane {
@@ -921,67 +931,96 @@ const currentPath = Astro.url.pathname;
         });
       });
 
-      // Mobile menu functionality
-      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
-      const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
-      const mobileNavPane = document.getElementById('mobile-nav-pane');
-      const mobileNavLinks = document.querySelectorAll('.mobile-nav-links a, .mobile-social-link');
+      // Mobile menu functionality - compatible with ViewTransitions
+      function initializeMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+        const mobileNavPane = document.getElementById('mobile-nav-pane');
+        const mobileNavLinks = document.querySelectorAll(
+          '.mobile-nav-links a, .mobile-social-link'
+        );
 
-      function toggleMobileMenu() {
-        if (!mobileNavPane) return;
-        const isActive = mobileNavPane.classList.contains('active');
-
-        if (isActive) {
-          closeMobileMenu();
-        } else {
-          openMobileMenu();
+        if (!mobileMenuToggle || !mobileNavOverlay || !mobileNavPane) {
+          return false;
         }
-      }
 
-      function openMobileMenu() {
-        if (mobileMenuToggle) mobileMenuToggle.classList.add('active');
-        if (mobileNavOverlay) mobileNavOverlay.classList.add('active');
-        if (mobileNavPane) mobileNavPane.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling when menu is open
-      }
+        // Define functions inline to avoid scoping issues
+        function toggleMobileMenu() {
+          if (!mobileNavPane) return;
+          const isActive = mobileNavPane.classList.contains('active');
 
-      function closeMobileMenu() {
-        if (mobileMenuToggle) mobileMenuToggle.classList.remove('active');
-        if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
-        if (mobileNavPane) mobileNavPane.classList.remove('active');
-        document.body.style.overflow = ''; // Restore scrolling
-      }
-
-      // Event listeners
-      if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-      }
-
-      if (mobileNavOverlay) {
-        mobileNavOverlay.addEventListener('click', closeMobileMenu);
-      }
-
-      // Close menu when navigation link is clicked
-      mobileNavLinks.forEach((link) => {
-        link.addEventListener('click', closeMobileMenu);
-      });
-
-      // Close menu on escape key press
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && mobileNavPane && mobileNavPane.classList.contains('active')) {
-          closeMobileMenu();
+          if (isActive) {
+            closeMobileMenu();
+          } else {
+            openMobileMenu();
+          }
         }
-      });
 
-      // Handle window resize - close menu if switching to desktop
-      window.addEventListener('resize', function () {
-        if (
-          window.innerWidth > 1024 &&
-          mobileNavPane &&
-          mobileNavPane.classList.contains('active')
-        ) {
-          closeMobileMenu();
+        function openMobileMenu() {
+          if (mobileMenuToggle) mobileMenuToggle.classList.add('active');
+          if (mobileNavOverlay) mobileNavOverlay.classList.add('active');
+          if (mobileNavPane) mobileNavPane.classList.add('active');
+          document.body.style.overflow = 'hidden';
         }
+
+        function closeMobileMenu() {
+          if (mobileMenuToggle) mobileMenuToggle.classList.remove('active');
+          if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
+          if (mobileNavPane) mobileNavPane.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+
+        // Clear any existing event listeners by cloning and replacing elements
+        const newToggle = mobileMenuToggle.cloneNode(true) as HTMLElement;
+        if (mobileMenuToggle.parentNode) {
+          mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
+        }
+
+        const newOverlay = mobileNavOverlay.cloneNode(true) as HTMLElement;
+        if (mobileNavOverlay.parentNode) {
+          mobileNavOverlay.parentNode.replaceChild(newOverlay, mobileNavOverlay);
+        }
+
+        // Add event listeners to the new elements
+        newToggle.addEventListener('click', toggleMobileMenu);
+        newOverlay.addEventListener('click', closeMobileMenu);
+
+        // Close menu when navigation link is clicked
+        mobileNavLinks.forEach((link) => {
+          link.addEventListener('click', closeMobileMenu);
+        });
+
+        // Close menu on escape key press
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && mobileNavPane && mobileNavPane.classList.contains('active')) {
+            closeMobileMenu();
+          }
+        });
+
+        // Handle window resize - close menu if switching to desktop
+        window.addEventListener('resize', function () {
+          if (
+            window.innerWidth > 1024 &&
+            mobileNavPane &&
+            mobileNavPane.classList.contains('active')
+          ) {
+            closeMobileMenu();
+          }
+        });
+
+        return true;
+      }
+
+      // Initialize on DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeMobileMenu);
+      } else {
+        initializeMobileMenu();
+      }
+
+      // Re-initialize after ViewTransitions
+      document.addEventListener('astro:page-load', function () {
+        setTimeout(initializeMobileMenu, 100);
       });
 
       // ========================================
