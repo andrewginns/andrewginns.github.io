@@ -936,10 +936,10 @@ const currentPath = Astro.url.pathname;
         );
 
         if (!mobileMenuToggle || !mobileNavOverlay || !mobileNavPane) {
-          console.log('Mobile menu elements not found, retrying...');
           return false;
         }
 
+        // Define functions inline to avoid scoping issues
         function toggleMobileMenu() {
           if (!mobileNavPane) return;
           const isActive = mobileNavPane.classList.contains('active');
@@ -965,9 +965,20 @@ const currentPath = Astro.url.pathname;
           document.body.style.overflow = '';
         }
 
-        // Add event listeners
-        mobileMenuToggle.addEventListener('click', toggleMobileMenu);
-        mobileNavOverlay.addEventListener('click', closeMobileMenu);
+        // Clear any existing event listeners by cloning and replacing elements
+        const newToggle = mobileMenuToggle.cloneNode(true) as HTMLElement;
+        if (mobileMenuToggle.parentNode) {
+          mobileMenuToggle.parentNode.replaceChild(newToggle, mobileMenuToggle);
+        }
+
+        const newOverlay = mobileNavOverlay.cloneNode(true) as HTMLElement;
+        if (mobileNavOverlay.parentNode) {
+          mobileNavOverlay.parentNode.replaceChild(newOverlay, mobileNavOverlay);
+        }
+
+        // Add event listeners to the new elements
+        newToggle.addEventListener('click', toggleMobileMenu);
+        newOverlay.addEventListener('click', closeMobileMenu);
 
         // Close menu when navigation link is clicked
         mobileNavLinks.forEach((link) => {
@@ -992,7 +1003,6 @@ const currentPath = Astro.url.pathname;
           }
         });
 
-        console.log('Mobile menu initialized successfully');
         return true;
       }
 
