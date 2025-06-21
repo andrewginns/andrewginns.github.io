@@ -17,6 +17,11 @@ const currentPath = Astro.url.pathname;
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://api.github.com" />
+    <link rel="dns-prefetch" href="https://github.com" />
+    <link rel="preconnect" href="https://pages.dev" />
+    <link rel="preconnect" href="https://github.io" />
+    <link rel="dns-prefetch" href="https://cloudflare.com" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <ViewTransitions />
