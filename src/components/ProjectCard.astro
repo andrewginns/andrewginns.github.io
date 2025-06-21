@@ -216,9 +216,9 @@ const { project, loading = false } = Astro.props;
     display: block; /* Ensure SVG respects sizing */
   }
 
-  /* Show on mobile - assuming mobile is less than 768px */
-  @media (max-width: 767px) {
-    /* More specific selector for the icon within the header on mobile */
+  /* Show when mobile navigation is active (sidebar hidden, hamburger shown) */
+  /* This breakpoint (1024px) matches BaseLayout.astro's mobile switch */
+  @media (max-width: 1024px) {
     .project-header > .project-github-icon {
       display: inline-block; /* Show the icon */
       margin-left: 0.5rem; /* Add some space next to the demo button or title */
