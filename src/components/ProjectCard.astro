@@ -200,10 +200,11 @@ const { project, loading = false } = Astro.props;
   }
 
   .project-github-icon {
-    display: none; /* Hidden by default */
+    display: inline-block !important; /* TEMPORARILY FORCE VISIBILITY FOR DEBUGGING */
     color: var(--text-secondary);
     transition: color 0.2s ease;
     flex-shrink: 0; /* Prevent icon from shrinking */
+    margin-left: 0.5rem; /* Ensure some spacing */
   }
 
   .project-github-icon:hover {
@@ -216,17 +217,15 @@ const { project, loading = false } = Astro.props;
     display: block; /* Ensure SVG respects sizing */
   }
 
-  /* Show when mobile navigation is active (sidebar hidden, hamburger shown) */
-  /* This breakpoint (1024px) matches BaseLayout.astro's mobile switch */
-  @media (max-width: 1024px) {
+  /* MEDIA QUERY TEMPORARILY REMOVED FOR DEBUGGING */
+  /* @media (max-width: 1024px) {
     .project-header > .project-github-icon {
-      display: inline-block; /* Show the icon */
-      margin-left: 0.5rem; /* Add some space next to the demo button or title */
+      display: inline-block;
+      margin-left: 0.5rem;
     }
 
-    /* Adjust layout if demo button is also present */
     .project-header {
-      align-items: center; /* Vertically align items better with the icon */
+      align-items: center;
     }
-  }
+  } */
 </style>
