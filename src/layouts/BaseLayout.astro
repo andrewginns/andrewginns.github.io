@@ -875,6 +875,61 @@ const currentPath = Astro.url.pathname;
           display: none !important;
         }
       }
+
+      /* Phase 2 Animation Styles */
+
+      /* Initial state for scroll animations */
+      .scroll-animate {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+        transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* Animated state */
+      .scroll-animate.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+
+      .animate-in {
+        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .nav-links {
+        position: relative;
+      }
+
+      .current-section {
+        background: var(--bg-secondary) !important;
+        border-radius: 4px !important;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+
+      /* Enhanced floating elements with performance optimizations */
+      .floating-element {
+        will-change: transform, opacity;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+        -webkit-transform-style: preserve-3d;
+        contain: layout style paint;
+      }
+
+      .floating-element::after {
+        will-change: transform;
+        backface-visibility: hidden;
+      }
     </style>
 
     <script>
@@ -1042,12 +1097,10 @@ const currentPath = Astro.url.pathname;
 
           if (ratio > 0.1 && !animatedElements.has(element)) {
             // Staggered appearance animation
-            const delay = Array.from(element.parentElement?.children || []).indexOf(element) * 100;
+            const delay = Array.from(element.parentElement?.children || []).indexOf(element) * 60;
 
             setTimeout(() => {
-              (element as HTMLElement).style.opacity = '1';
-              (element as HTMLElement).style.transform = 'translateY(0)';
-              element.classList.add('animate-in');
+              element.classList.add('visible');
             }, delay);
 
             animatedElements.add(element);
@@ -1057,20 +1110,34 @@ const currentPath = Astro.url.pathname;
         });
       }, observerOptions);
 
-      // Observe content sections for scroll animations
-      document.addEventListener('DOMContentLoaded', () => {
+      // Function to initialize scroll animations
+      function initializeScrollAnimations() {
         const sections = document.querySelectorAll(
-          'section, .hero-card, .last-updated, h2, p, ul, .project'
+          'section, .hero-card, .last-updated, h2, p, ul, .project, .portfolio-item, .post-preview'
         );
         sections.forEach((section) => {
-          // Initial state for animation
-          (section as HTMLElement).style.opacity = '0';
-          (section as HTMLElement).style.transform = 'translateY(20px)';
-          (section as HTMLElement).style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+          // Check if element is initially below the fold
+          const rect = section.getBoundingClientRect();
+          const isInitiallyVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+          if (isInitiallyVisible) {
+            // Element is already in view, don't animate it
+            section.classList.add('visible');
+            animatedElements.add(section);
+          } else {
+            // Element is below the fold, apply animation
+            section.classList.add('scroll-animate');
+          }
 
           scrollObserver.observe(section);
         });
-      });
+      }
+
+      // Initialize on DOM ready
+      document.addEventListener('DOMContentLoaded', initializeScrollAnimations);
+
+      // Re-initialize after ViewTransitions
+      document.addEventListener('astro:page-load', initializeScrollAnimations);
 
       // 2.3 Navigation Section Highlighting
       function updateNavigationHighlight() {
@@ -1178,57 +1245,5 @@ const currentPath = Astro.url.pathname;
         { passive: true }
       );
     </script>
-
-    <style>
-      /* Phase 2 Animation Styles */
-
-      .animate-in {
-        animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-      }
-
-      @keyframes slideInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .nav-links {
-        position: relative;
-      }
-
-      .current-section {
-        background: var(--bg-secondary) !important;
-        border-radius: 4px !important;
-        padding-left: 0.5rem !important;
-        padding-right: 0.5rem !important;
-      }
-
-      /* Enhanced floating elements with performance optimizations */
-      .floating-element {
-        will-change: transform, opacity;
-        backface-visibility: hidden;
-        transform-style: preserve-3d;
-        -webkit-transform-style: preserve-3d;
-        contain: layout style paint;
-      }
-
-      .floating-element::after {
-        will-change: transform;
-        backface-visibility: hidden;
-      }
-
-      /* Mobile optimizations */
-      @media (max-width: 1024px) {
-        .floating-element {
-          transform: none !important;
-          filter: none !important;
-        }
-      }
-    </style>
   </body>
 </html>
