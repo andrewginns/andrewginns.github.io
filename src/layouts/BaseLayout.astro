@@ -1,5 +1,4 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
 import { getTopProjectTags } from '../utils/globalData';
 import { formatTagForFloatingElement } from '../utils/tagAggregator';
 
@@ -13,7 +12,10 @@ const currentPath = Astro.url.pathname;
 
 // Fetch top project tags for floating elements
 const topTags = await getTopProjectTags(10);
-const formattedTags = topTags.map((tag) => formatTagForFloatingElement(tag));
+const tagPairs = topTags.map((tag) => ({
+  original: tag,
+  formatted: formatTagForFloatingElement(tag),
+}));
 ---
 
 <!doctype html>
@@ -30,7 +32,6 @@ const formattedTags = topTags.map((tag) => formatTagForFloatingElement(tag));
     <link rel="dns-prefetch" href="https://cloudflare.com" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
-    <ViewTransitions />
   </head>
   <body>
     <div class="container">
@@ -152,10 +153,17 @@ const formattedTags = topTags.map((tag) => formatTagForFloatingElement(tag));
       <main class="content">
         <div class="floating-elements">
           {
-            formattedTags.map((tag, index) => (
-              <div class={`floating-element floating-element-${index + 1}`} data-tag={tag}>
-                {tag}
-              </div>
+            tagPairs.map((tagPair, index) => (
+              <a
+                href={`https://github.com/search?q=owner%3Aandrewginns+topic%3A${encodeURIComponent(tagPair.original)}&type=repositories`}
+                class={`floating-element floating-element-${index + 1}`}
+                data-tag={tagPair.formatted}
+                aria-label={`View ${tagPair.formatted} repositories on GitHub`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {tagPair.formatted}
+              </a>
             ))
           }
         </div>
@@ -209,21 +217,23 @@ const formattedTags = topTags.map((tag) => formatTagForFloatingElement(tag));
         width: 100%;
         height: 100vh;
         pointer-events: none;
-        z-index: -1;
+        z-index: 10;
       }
 
       .floating-element {
         position: fixed;
         opacity: 0.58;
         animation: float 20s ease-in-out infinite;
-        pointer-events: none;
+        pointer-events: auto;
         border: 1px solid rgba(231, 76, 60, 0.2);
         box-shadow: 0 2px 8px rgba(231, 76, 60, 0.08);
         transition:
           transform 0.1s ease-out,
-          opacity 0.2s ease-out;
+          opacity 0.2s ease-out,
+          background-color 0.2s ease-out,
+          box-shadow 0.2s ease-out;
         overflow: hidden;
-        z-index: 1;
+        z-index: 11;
         /* Text styling moved from pseudo-elements */
         display: flex;
         align-items: center;
@@ -241,6 +251,20 @@ const formattedTags = topTags.map((tag) => formatTagForFloatingElement(tag));
         width: auto !important;
         min-width: 100px;
         max-width: 180px;
+        /* Make clickable */
+        cursor: pointer;
+        text-decoration: none;
+      }
+
+      /* Hover effects for floating elements */
+      .floating-element:hover {
+        opacity: 0.85;
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(231, 76, 60, 0.2);
+      }
+
+      .floating-element:hover::after {
+        animation-duration: 2s;
       }
 
       .floating-element::after {
@@ -462,6 +486,7 @@ const formattedTags = topTags.map((tag) => formatTagForFloatingElement(tag));
         border-right: 1px solid var(--border-color);
         padding: calc(var(--spacing-unit) * 2);
         overflow-y: auto;
+        z-index: 100;
       }
 
       .sidebar-content {

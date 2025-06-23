@@ -2,9 +2,8 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import astroPlugin from 'eslint-plugin-astro';
 import prettierConfig from 'eslint-config-prettier';
-import type { Linter } from 'eslint';
 
-const config: Linter.FlatConfig[] = [
+const config = [
   // Ignore patterns
   {
     ignores: [

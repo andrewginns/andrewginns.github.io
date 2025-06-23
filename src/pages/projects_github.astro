@@ -16,6 +16,10 @@ interface PortfolioItem {
   impact?: string;
 }
 
+// Get tag parameter from URL
+const url = new URL(Astro.request.url);
+const selectedTag = url.searchParams.get('tag');
+
 // Fetch GitHub data at build time
 console.log('📄 Building projects page...');
 const { pinnedRepos } = await getCachedGitHubData('andrewginns');
@@ -39,12 +43,13 @@ if (portfolioItems.length > 0) {
 }
 
 // If no GitHub data, fall back to static content
-const staticPortfolioItems = [
+const staticPortfolioItems: PortfolioItem[] = [
   {
     title: 'MLOps Pipeline Automation',
     description:
       'Designed and implemented a comprehensive MLOps pipeline that reduced model deployment time from 0.5 days to just 2 hours. Built on Google Cloud Platform using Vertex AI, MLflow, and custom orchestration tools.',
     topics: ['python', 'gcp', 'mlflow', 'docker', 'terraform'],
+    tags: [],
     impact: '6x faster deployment, 90% reduction in manual intervention',
     url: 'https://github.com/andrewginns',
   },
@@ -53,6 +58,7 @@ const staticPortfolioItems = [
     description:
       'Led development of predictive models for vehicle maintenance optimization across a fleet of 100,000+ vehicles. Implemented ensemble models combining time-series analysis with deep learning approaches.',
     topics: ['tensorflow', 'pyspark', 'bigquery', 'kubernetes'],
+    tags: [],
     impact: '25% reduction in unexpected breakdowns, $2M+ annual savings',
     url: 'https://github.com/andrewginns',
   },
@@ -61,12 +67,28 @@ const staticPortfolioItems = [
     description:
       'Developed an end-to-end document processing pipeline using computer vision and NLP for automated data extraction from complex financial documents.',
     topics: ['pytorch', 'opencv', 'azure-ml', 'spacy'],
+    tags: [],
     impact: '85% accuracy in data extraction, 70% reduction in manual processing time',
     url: 'https://github.com/andrewginns',
   },
 ];
 
-const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : staticPortfolioItems;
+const allPortfolioItems = portfolioItems.length > 0 ? portfolioItems : staticPortfolioItems;
+
+// Filter portfolio items based on selected tag
+const displayPortfolioItems = selectedTag
+  ? allPortfolioItems.filter((item) => {
+      const topics = item.topics || item.tags || [];
+      return topics.some(
+        (topic: string) => topic.toLowerCase().replace(/\s+/g, '-') === selectedTag
+      );
+    })
+  : allPortfolioItems;
+
+// Format the selected tag for display
+const displayTag = selectedTag
+  ? selectedTag.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+  : null;
 ---
 
 <BaseLayout title="Projects - Andrew Ginns">
@@ -80,6 +102,32 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
           : 'A selection of work showcasing my expertise in machine learning, MLOps, GenAI, and Data Science. Each project demonstrates different aspects of my experience, from building scalable ML infrastructure to implementing cutting-edge AI techniques.'
       }
     </p>
+
+    {
+      displayTag && (
+        <div class="filter-info">
+          <span class="filter-label">Filtering by:</span>
+          <span class="filter-tag">{displayTag}</span>
+          <a href="/projects_github" class="clear-filter" aria-label="Clear filter">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 8L12 12M8 8L4 4M8 8L4 12M8 8L12 4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </a>
+        </div>
+      )
+    }
 
     <div class="portfolio-grid">
       {
@@ -182,6 +230,54 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
     line-height: 1.8;
     margin-bottom: 3rem;
     color: var(--text-secondary);
+  }
+
+  .filter-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .filter-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .filter-tag {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    padding: 0.25rem 0.75rem;
+    background: white;
+    border-radius: 4px;
+  }
+
+  .clear-filter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
+    padding: 4px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .clear-filter:hover {
+    color: var(--accent-primary);
+    background: white;
+    border-color: var(--border-color);
+    text-decoration: none;
   }
 
   .portfolio-grid {

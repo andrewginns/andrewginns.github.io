@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from 'playwright';
+import { chromium, type Browser, type Page } from 'playwright';
 
 async function testScrollAnimations() {
   const browser: Browser = await chromium.launch({

@@ -49,9 +49,10 @@ async function captureFloatingTags(): Promise<void> {
       // Check if text is wrapped
       const computedStyle = await element.evaluate((el) => {
         const style = window.getComputedStyle(el);
+        const htmlEl = el as HTMLElement;
         return {
-          width: el.offsetWidth,
-          height: el.offsetHeight,
+          width: htmlEl.offsetWidth,
+          height: htmlEl.offsetHeight,
           whiteSpace: style.whiteSpace,
           lineHeight: style.lineHeight,
           fontSize: style.fontSize,
