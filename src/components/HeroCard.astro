@@ -160,7 +160,7 @@ const { name, title, description, imageUrl, imageAlt, tagline } = Astro.props;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 1rem 1.5rem;
     background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
     border: 2px solid var(--border-color);
     border-radius: 12px;
@@ -170,6 +170,8 @@ const { name, title, description, imageUrl, imageAlt, tagline } = Astro.props;
     font-weight: 500;
     position: relative;
     overflow: hidden;
+    min-height: 48px;
+    min-width: 110px;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 4px 12px var(--shadow-light);
   }
@@ -185,21 +187,33 @@ const { name, title, description, imageUrl, imageAlt, tagline } = Astro.props;
     transition: left 0.5s ease;
   }
 
-  .social-link:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    transform: translateY(-2px) scale(1.05) rotate(1deg);
-    box-shadow: 0 8px 20px var(--shadow-medium);
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    color: white;
+  /* Only apply hover effects on devices that can actually hover */
+  @media (hover: hover) {
+    .social-link:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      transform: translateY(-2px) scale(1.05) rotate(1deg);
+      box-shadow: 0 8px 20px var(--shadow-medium);
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+    }
+
+    .social-link:hover::before {
+      left: 100%;
+    }
+
+    .social-link:hover svg {
+      transform: scale(1.1) rotate(5deg);
+    }
   }
 
-  .social-link:hover::before {
-    left: 100%;
-  }
-
-  .social-link:hover svg {
-    transform: scale(1.1) rotate(5deg);
+  /* Touch-friendly styles for mobile devices */
+  @media (hover: none) {
+    .social-link:active {
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      color: white;
+      border-color: var(--accent-primary);
+    }
   }
 
   .social-link svg {
