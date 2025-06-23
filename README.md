@@ -1,14 +1,21 @@
-# Andrew Ginns - Personal Website
+# Andrew Ginns - Personal Website ✨
 
-A modern, minimalist personal website for Andrew Ginns, Machine Learning Engineer. Built with Astro for optimal performance and developer experience.
+Welcome! This is the source code for my personal website, [andrew.ginns.uk](https://andrew.ginns.uk). If you've arrived here from my site, hello!
 
-## Overview
+This repository showcases how a modern, minimalist personal website can be built with [Astro](https://astro.build) for optimum performance and a fantastic developer experience. It's designed to be a living digital CV, project showcase, and a space for technical writing.
 
-This website serves as a digital resume, project showcase, and writing platform, featuring:
-- Professional experience and background
-- Projects highlighting ML and Data Science work
-- Blog for technical writing and industry insights
-- Clean, text-centric design inspired by modern minimalism
+## 🌐 Live Demo
+
+Check out the live website at: **[andrew.ginns.uk](https://andrew.ginns.uk)**
+
+## ✨ Key Features
+
+*   **Blazing Fast Performance**: Built with Astro for a lightweight, super-fast static site.
+*   **Dynamic Content**: Automatically syncs profile information and projects from my GitHub profile.
+*   **Minimalist Design**: Clean, text-centric, and responsive, focusing on content and readability.
+*   **Blog Ready**: Easily manage blog posts using local Markdown files.
+*   **Developer Friendly**: Uses TypeScript, Prettier, ESLint, and Husky for a smooth development workflow.
+*   **Dual Deployment**: Continuously deployed to both GitHub Pages and Cloudflare Pages.
 
 ## Tech Stack
 
@@ -18,87 +25,71 @@ This website serves as a digital resume, project showcase, and writing platform,
 - **Deployment**: GitHub Pages & Cloudflare Pages
 - **CI/CD**: GitHub Actions
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 /
 ├── .env.example          # Example environment variables
 ├── .github/              # GitHub Actions workflows
 │   └── workflows/
-│       ├── deploy.yml
-│       ├── dev-deploy.yml
-│       └── update-badge.yml
-├── .husky/               # Git hooks
+│       ├── deploy.yml       # Main deployment to GitHub Pages & Cloudflare
+│       ├── dev-deploy.yml   # Deployment for development branches
+│       └── update-badge.yml # Workflow to update status badges
+├── .husky/               # Git hooks for pre-commit checks
 │   └── pre-commit
-├── .vscode/              # VSCode settings
+├── .vscode/              # VSCode editor settings
 │   ├── extensions.json
 │   ├── launch.json
 │   └── settings.json
-├── public/               # Static assets
+├── public/               # Static assets (images, favicon, etc.)
 │   ├── andrew-headshot.jpeg
 │   └── favicon.svg
-├── scripts/              # Utility scripts
-│   ├── capture-final-screenshots.ts
-│   ├── capture-floating-tags.ts
-│   ├── capture-polish-screenshots.ts
-│   ├── capture-project-cards.ts
-│   ├── capture-screenshots.ts
-│   ├── capture-updated-screenshots.ts
-│   ├── capture-viewports.ts
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── test-floating-tags.ts
-│   ├── test-scroll-animations.ts
-│   ├── test-tag-formatting.ts
-│   └── tsconfig.json
-├── src/
-│   ├── components/       # Reusable Astro components
+├── scripts/              # Utility and automation scripts
+│   ├── capture-*.ts       # Various screenshot capture scripts
+│   ├── test-*.ts          # Scripts for specific test scenarios
+│   ├── package.json       # Scripts-specific package config
+│   └── tsconfig.json      # TypeScript config for scripts
+├── src/                  # Main source code
+│   ├── components/       # Reusable Astro components (UI building blocks)
 │   │   ├── Footer.astro
 │   │   ├── HeroCard.astro
 │   │   ├── LastUpdated.astro
 │   │   ├── LoadingSpinner.astro
-│   │   ├── OptimizedImage.astro
+│   │   ├── OptimisedImage.astro
 │   │   ├── ProjectCard.astro
 │   │   └── SkeletonCard.astro
-│   ├── content/          # Local markdown content
-│   │   └── writing/
-│   │       └── .gitkeep  # Placeholder for blog posts
-│   ├── layouts/          # Page layouts
+│   ├── content/          # Markdown content collections
+│   │   └── writing/      # Blog posts
+│   │       └── .gitkeep  # Placeholder, add your .md files here
+│   ├── layouts/          # Page layouts (structure for pages)
 │   │   └── BaseLayout.astro
-│   ├── lib/              # Utility functions
-│   │   ├── content.ts
-│   │   └── github.ts     # GitHub API integration
-│   ├── pages/            # Route pages
-│   │   ├── index.astro
-│   │   ├── experience.astro
-│   │   ├── projects_github.astro
-│   │   ├── writing.astro
-│   │   ├── about_me.astro
+│   ├── lib/              # Core library functions
+│   │   ├── content.ts    # Content fetching and processing
+│   │   └── github.ts     # GitHub API integration logic
+│   ├── pages/            # Astro pages (website routes)
+│   │   ├── index.astro   # Homepage
+│   │   ├── ...           # Other site pages
 │   │   └── contact_me.astro
-│   ├── utils/            # Utility functions
-│   │   ├── globalData.ts
-│   │   └── tagAggregator.ts
-│   └── content.config.ts # Content schemas
-├── tests/                # Playwright tests
-│   ├── floating-tags-interaction.spec.ts
-│   ├── mobile-touch-interactions.spec.ts
-│   ├── mobile-validation.spec.ts
-│   ├── reference-screenshot.spec.ts
-│   └── screenshots.spec.ts
-├── .gitignore            # Files to ignore for Git
-├── .lintstagedrc.json    # Lint-staged configuration
-├── .prettierignore       # Files to ignore for Prettier
-├── .prettierrc.json      # Prettier configuration
-├── Makefile              # Make commands
-├── README.md             # This file
-├── astro.config.mjs      # Astro configuration
-├── compare-screenshots.ts # Script for comparing screenshots
-├── eslint.config.ts      # ESLint configuration
-├── mobile-improvements-summary.ts # Script for mobile improvements summary
-├── package-lock.json     # Exact dependencies
-├── package.json          # Project dependencies and scripts
-├── playwright.config.ts  # Playwright configuration
-└── tsconfig.json         # TypeScript configuration
+│   ├── utils/            # Helper utilities
+│   │   ├── globalData.ts # Global data and constants
+│   │   └── tagAggregator.ts # Logic for aggregating tags
+│   └── content.config.ts # Astro content collection schemas
+├── tests/                # Playwright end-to-end tests
+│   ├── *.spec.ts         # Test specifications for various features
+├── .gitignore            # Files and folders ignored by Git
+├── .lintstagedrc.json    # Lint-staged config for pre-commit checks
+├── .prettierignore       # Files ignored by Prettier formatter
+├── .prettierrc.json      # Prettier code formatting rules
+├── Makefile              # Common development commands
+├── README.md             # You are here!
+├── astro.config.mjs      # Astro framework configuration
+├── compare-screenshots.ts # Script for visual regression testing
+├── eslint.config.ts      # ESLint linting rules
+├── mobile-improvements-summary.ts # Script for mobile improvements
+├── package-lock.json     # Exact dependency versions
+├── package.json          # Project metadata and dependencies
+├── playwright.config.ts  # Playwright test runner configuration
+└── tsconfig.json         # TypeScript compiler options
 ```
 
 ## Local Development
@@ -166,10 +157,6 @@ You can manage blog posts in two ways:
    ---
    ```
 
-2. **GitHub Gists** (future enhancement):
-   - Create gists with `[blog]` or `[post]` in the description
-   - The site can fetch and display these automatically
-
 ### GitHub API Configuration
 
 The website uses a unified caching mechanism for all GitHub API calls to optimise performance:
@@ -199,15 +186,14 @@ The site automatically deploys to both GitHub Pages and Cloudflare Pages:
 - **Daily rebuild**: Runs at 00:00 UTC to fetch latest GitHub data
 - **Manual trigger**: Can be triggered manually from GitHub Actions tab
 
+#### Preview Deployments
+- **On Pull Request**: When a Pull Request is opened targeting the `main` branch (or when new commits are pushed to such a PR), a preview deployment is automatically made to GitHub Pages.
+- A comment containing a link to this preview deployment is added to the Pull Request, allowing for easy review of changes.
+
 ### Environment Variables in CI/CD
 The GitHub Actions workflow automatically provides:
-- `GITHUB_TOKEN`: Automatically available in Actions for API access
-- No additional configuration needed for basic functionality
-
-For enhanced features (optional):
-1. Create a Personal Access Token with `public_repo` scope
-2. Add as repository secret: `PERSONAL_GITHUB_TOKEN`
-3. Uncomment the relevant line in `.github/workflows/deploy.yml`
+- `GITHUB_TOKEN`: Automatically available in Actions for API access. This is used for fetching data from your GitHub profile and repositories during the build process.
+- No additional manual token configuration is needed for the core deployment functionality.
 
 ### GitHub Pages Setup
 1. Enable GitHub Pages in repository settings
@@ -232,7 +218,7 @@ The website follows a minimalist, content-first approach:
 - Clean typography with system fonts
 - Ample whitespace for readability
 - Fixed sidebar navigation (responsive on mobile)
-- Subtle color palette with high contrast
+- Subtle colour palette with high contrast
 - No unnecessary visual elements
 - Focus on content and user experience
 
@@ -240,6 +226,19 @@ The website follows a minimalist, content-first approach:
 
 While this is a personal website, suggestions and bug reports are welcome. Please open an issue for discussion.
 
+## 🙏 A Special Thanks
+
+A big thanks to Google Jules and Claude Code for doing the heavy lifting. Couldn't have done it without you, your tireless contributions, bug-hunting prowess, and unconstrained MCP tool use. Cheers, digital comrades! 🤖
+
 ## License
 
 This project is licensed under the MIT License. Content (blog posts, project descriptions) remains copyright of Andrew Ginns.
+
+## 💬 Get in Touch
+
+I'm always open to connecting with fellow developers, data enthusiasts, and potential collaborators!
+
+*   **LinkedIn**: [linkedin.com/in/andrewginns](https://www.linkedin.com/in/andrewginns/)
+*   **GitHub**: You're already here! Feel free to open an issue or explore my other projects.
+
+Thanks for visiting!
