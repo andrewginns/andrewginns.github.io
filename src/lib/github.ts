@@ -31,6 +31,8 @@ export async function getGitHubData(username: string) {
   };
 
   try {
+    console.log(`🔄 Fetching GitHub data for ${username}...`);
+
     // Fetch user profile with timeout
     const profileResponse = await fetchWithTimeout(`https://api.github.com/users/${username}`, {
       headers,
@@ -102,6 +104,7 @@ export async function getGitHubData(username: string) {
           stargazers_count: repo.stargazerCount,
           updated_at: repo.updatedAt,
         }));
+        console.log(`✅ Successfully fetched ${pinnedRepos.length} pinned repos via GraphQL`);
       }
     }
 
@@ -111,15 +114,22 @@ export async function getGitHubData(username: string) {
         .filter((repo) => !repo.fork && repo.description)
         .sort((a, b) => b.stargazers_count - a.stargazers_count)
         .slice(0, 6);
+      console.log(
+        `⚠️  Using fallback: top ${pinnedRepos.length} starred repos (no pinned repos found)`
+      );
     }
 
+    console.log(
+      `✅ GitHub data fetched successfully: ${repos.length} repos, ${pinnedRepos.length} featured`
+    );
     return {
       profile,
       repos,
       pinnedRepos,
     };
   } catch (error) {
-    console.error('Error fetching GitHub data:', error);
+    console.error('❌ Error fetching GitHub data:', error);
+    console.log('⚠️  Using fallback: returning empty data');
     // Return empty data on error
     return {
       profile: null,

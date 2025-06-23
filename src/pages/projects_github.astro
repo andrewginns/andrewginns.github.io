@@ -1,8 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import LoadingSpinner from '../components/LoadingSpinner.astro';
 import { getCachedGitHubData, type GitHubRepo } from '../lib/github.ts';
 
 interface PortfolioItem {
@@ -19,6 +17,7 @@ interface PortfolioItem {
 }
 
 // Fetch GitHub data at build time
+console.log('📄 Building projects page...');
 const { pinnedRepos } = await getCachedGitHubData('andrewginns');
 
 // Map GitHub repos to portfolio format
@@ -32,6 +31,12 @@ const portfolioItems: PortfolioItem[] = pinnedRepos.map((repo: GitHubRepo) => ({
   stars: repo.stargazers_count,
   lastUpdated: new Date(repo.updated_at),
 }));
+
+if (portfolioItems.length > 0) {
+  console.log(`✅ Projects page: Using ${portfolioItems.length} live GitHub projects`);
+} else {
+  console.log('⚠️  Projects page: No GitHub data available, using static fallback projects');
+}
 
 // If no GitHub data, fall back to static content
 const staticPortfolioItems = [
@@ -186,7 +191,7 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
   }
 
   .portfolio-item {
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     background: var(--bg-secondary);
     border-radius: 8px;
     position: relative;
@@ -195,8 +200,8 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
   .mobile-github-icon {
     display: none;
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 1.5rem;
+    right: 2rem;
     width: 32px;
     height: 32px;
     padding: 4px;
@@ -227,20 +232,33 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
       align-items: center;
       justify-content: center;
     }
+
+    .portfolio-item {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .portfolio-item h2 {
+      padding-right: 3rem; /* Ensure title doesn't overlap with GitHub icon */
+    }
   }
 
   .portfolio-item h2 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
+    margin-top: 0 !important; /* Override global h2 margin-top */
+    text-transform: none; /* Override global h2 text-transform */
+    letter-spacing: normal; /* Override global h2 letter-spacing */
+    color: var(--text-primary); /* Override global h2 color */
+    font-weight: 700;
   }
 
   .portfolio-item h2 a {
-    color: var(--text-primary);
+    color: inherit;
     text-decoration: none;
   }
 
   .portfolio-item h2 a:hover {
-    color: var(--accent);
+    color: var(--accent-primary);
   }
 
   .portfolio-meta {
@@ -271,6 +289,11 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 1rem;
+  }
+
+  /* Remove bottom margin from last child in portfolio items */
+  .portfolio-item > *:last-child {
+    margin-bottom: 0;
   }
 
   .technologies span {
