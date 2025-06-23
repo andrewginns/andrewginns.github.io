@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 import astroPlugin from 'eslint-plugin-astro';
 import prettierConfig from 'eslint-config-prettier';
 
-export default [
+const config = [
   // Ignore patterns
   {
     ignores: [
@@ -41,3 +41,5 @@ export default [
     },
   },
 ];
+
+export default config;

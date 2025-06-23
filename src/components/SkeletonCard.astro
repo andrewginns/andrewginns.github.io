@@ -7,7 +7,7 @@ const { count = 1 } = Astro.props;
 ---
 
 {
-  Array.from({ length: count }, (_, i) => (
+  Array.from({ length: count }, (_, _i) => (
     <div class="skeleton-card">
       <div class="skeleton-header">
         <div class="skeleton-title" />
