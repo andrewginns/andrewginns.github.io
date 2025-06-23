@@ -22,30 +22,83 @@ This website serves as a digital resume, project showcase, and writing platform,
 
 ```
 /
+├── .env.example          # Example environment variables
+├── .github/              # GitHub Actions workflows
+│   └── workflows/
+│       ├── deploy.yml
+│       ├── dev-deploy.yml
+│       └── update-badge.yml
+├── .husky/               # Git hooks
+│   └── pre-commit
+├── .vscode/              # VSCode settings
+│   ├── extensions.json
+│   ├── launch.json
+│   └── settings.json
+├── public/               # Static assets
+│   ├── andrew-headshot.jpeg
+│   └── favicon.svg
+├── scripts/              # Utility scripts
+│   ├── capture-final-screenshots.ts
+│   ├── capture-floating-tags.ts
+│   ├── capture-polish-screenshots.ts
+│   ├── capture-project-cards.ts
+│   ├── capture-screenshots.ts
+│   ├── capture-updated-screenshots.ts
+│   ├── capture-viewports.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── test-floating-tags.ts
+│   ├── test-scroll-animations.ts
+│   ├── test-tag-formatting.ts
+│   └── tsconfig.json
 ├── src/
 │   ├── components/       # Reusable Astro components
-│   │   └── LastUpdated.astro
+│   │   ├── Footer.astro
+│   │   ├── HeroCard.astro
+│   │   ├── LastUpdated.astro
+│   │   ├── LoadingSpinner.astro
+│   │   ├── OptimizedImage.astro
+│   │   ├── ProjectCard.astro
+│   │   └── SkeletonCard.astro
 │   ├── content/          # Local markdown content
-│   │   └── writing/      # Blog posts (optional - can use GitHub)
+│   │   └── writing/
+│   │       └── .gitkeep  # Placeholder for blog posts
 │   ├── layouts/          # Page layouts
 │   │   └── BaseLayout.astro
 │   ├── lib/              # Utility functions
+│   │   ├── content.ts
 │   │   └── github.ts     # GitHub API integration
 │   ├── pages/            # Route pages
 │   │   ├── index.astro
 │   │   ├── experience.astro
-│   │   ├── projects_github.astro  # Auto-fetches from GitHub
+│   │   ├── projects_github.astro
 │   │   ├── writing.astro
-│   │   ├── writing/[...slug].astro
 │   │   ├── about_me.astro
 │   │   └── contact_me.astro
+│   ├── utils/            # Utility functions
+│   │   ├── globalData.ts
+│   │   └── tagAggregator.ts
 │   └── content.config.ts # Content schemas
-├── public/               # Static assets
-│   └── favicon.svg
-├── .github/workflows/    # CI/CD pipelines
-│   ├── deploy.yml        # Main deployment workflow
-│   └── update-badge.yml  # Status updates
-└── package.json
+├── tests/                # Playwright tests
+│   ├── floating-tags-interaction.spec.ts
+│   ├── mobile-touch-interactions.spec.ts
+│   ├── mobile-validation.spec.ts
+│   ├── reference-screenshot.spec.ts
+│   └── screenshots.spec.ts
+├── .gitignore            # Files to ignore for Git
+├── .lintstagedrc.json    # Lint-staged configuration
+├── .prettierignore       # Files to ignore for Prettier
+├── .prettierrc.json      # Prettier configuration
+├── Makefile              # Make commands
+├── README.md             # This file
+├── astro.config.mjs      # Astro configuration
+├── compare-screenshots.ts # Script for comparing screenshots
+├── eslint.config.ts      # ESLint configuration
+├── mobile-improvements-summary.ts # Script for mobile improvements summary
+├── package-lock.json     # Exact dependencies
+├── package.json          # Project dependencies and scripts
+├── playwright.config.ts  # Playwright configuration
+└── tsconfig.json         # TypeScript configuration
 ```
 
 ## Local Development
@@ -76,6 +129,9 @@ The site will be available at `http://localhost:4321`
 | `npm run dev` | Start development server |
 | `npm run build` | Build production site |
 | `npm run preview` | Preview production build locally |
+| `npm run lint` | Lint code using ESLint |
+| `npm run format` | Format code using Prettier |
+| `npm run validate` | Run type checking, linting, and formatting checks |
 | `astro check` | TypeScript type checking |
 
 ## Content Management
