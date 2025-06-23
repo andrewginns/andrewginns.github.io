@@ -1,8 +1,7 @@
-/* eslint-disable no-undef */
-import { formatTagForDisplay, formatTagForFloatingElement } from '../src/utils/tagAggregator.js';
+import { formatTagForDisplay, formatTagForFloatingElement } from '../src/utils/tagAggregator';
 
 // Test cases for tag formatting
-const testTags = [
+const testTags: string[] = [
   'machine-learning',
   'artificial-intelligence',
   'deep-learning',
@@ -31,7 +30,7 @@ console.log('===========================\n');
 console.log('Original Tag -> Display Format -> Floating Element Format');
 console.log('----------------------------------------------------------');
 
-testTags.forEach((tag) => {
+testTags.forEach((tag: string) => {
   const displayFormat = formatTagForDisplay(tag);
   const floatingFormat = formatTagForFloatingElement(tag);
 
@@ -40,7 +39,7 @@ testTags.forEach((tag) => {
 
 console.log('\nFloating Element Format Lengths:');
 console.log('--------------------------------');
-testTags.forEach((tag) => {
+testTags.forEach((tag: string) => {
   const floatingFormat = formatTagForFloatingElement(tag);
   console.log(`${tag.padEnd(35)} -> ${floatingFormat.padEnd(15)} (${floatingFormat.length} chars)`);
 });
