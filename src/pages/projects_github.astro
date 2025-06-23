@@ -16,7 +16,12 @@ interface PortfolioItem {
   impact?: string;
 }
 
+// Get tag parameter from URL
+const url = new URL(Astro.request.url);
+const selectedTag = url.searchParams.get('tag');
+
 // Fetch GitHub data at build time
+console.log('📄 Building projects page...');
 const { pinnedRepos } = await getCachedGitHubData('andrewginns');
 
 // Map GitHub repos to portfolio format
@@ -31,32 +36,59 @@ const portfolioItems: PortfolioItem[] = pinnedRepos.map((repo: GitHubRepo) => ({
   lastUpdated: new Date(repo.updated_at),
 }));
 
+if (portfolioItems.length > 0) {
+  console.log(`✅ Projects page: Using ${portfolioItems.length} live GitHub projects`);
+} else {
+  console.log('⚠️  Projects page: No GitHub data available, using static fallback projects');
+}
+
 // If no GitHub data, fall back to static content
-const staticPortfolioItems = [
+const staticPortfolioItems: PortfolioItem[] = [
   {
     title: 'MLOps Pipeline Automation',
     description:
       'Designed and implemented a comprehensive MLOps pipeline that reduced model deployment time from 0.5 days to just 2 hours. Built on Google Cloud Platform using Vertex AI, MLflow, and custom orchestration tools.',
     topics: ['python', 'gcp', 'mlflow', 'docker', 'terraform'],
+    tags: [],
     impact: '6x faster deployment, 90% reduction in manual intervention',
+    url: 'https://github.com/andrewginns',
   },
   {
     title: 'Fleet Predictive Maintenance System',
     description:
       'Led development of predictive models for vehicle maintenance optimization across a fleet of 100,000+ vehicles. Implemented ensemble models combining time-series analysis with deep learning approaches.',
     topics: ['tensorflow', 'pyspark', 'bigquery', 'kubernetes'],
+    tags: [],
     impact: '25% reduction in unexpected breakdowns, $2M+ annual savings',
+    url: 'https://github.com/andrewginns',
   },
   {
     title: 'Computer Vision for Document Processing',
     description:
       'Developed an end-to-end document processing pipeline using computer vision and NLP for automated data extraction from complex financial documents.',
     topics: ['pytorch', 'opencv', 'azure-ml', 'spacy'],
+    tags: [],
     impact: '85% accuracy in data extraction, 70% reduction in manual processing time',
+    url: 'https://github.com/andrewginns',
   },
 ];
 
-const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : staticPortfolioItems;
+const allPortfolioItems = portfolioItems.length > 0 ? portfolioItems : staticPortfolioItems;
+
+// Filter portfolio items based on selected tag
+const displayPortfolioItems = selectedTag
+  ? allPortfolioItems.filter((item) => {
+      const topics = item.topics || item.tags || [];
+      return topics.some(
+        (topic: string) => topic.toLowerCase().replace(/\s+/g, '-') === selectedTag
+      );
+    })
+  : allPortfolioItems;
+
+// Format the selected tag for display
+const displayTag = selectedTag
+  ? selectedTag.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())
+  : null;
 ---
 
 <BaseLayout title="Projects - Andrew Ginns">
@@ -71,10 +103,58 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
       }
     </p>
 
+    {
+      displayTag && (
+        <div class="filter-info">
+          <span class="filter-label">Filtering by:</span>
+          <span class="filter-tag">{displayTag}</span>
+          <a href="/projects_github" class="clear-filter" aria-label="Clear filter">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8 8L12 12M8 8L4 4M8 8L4 12M8 8L12 4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </a>
+        </div>
+      )
+    }
+
     <div class="portfolio-grid">
       {
         displayPortfolioItems.map((project: PortfolioItem) => (
           <article class="portfolio-item">
+            {project.url && (
+              <a
+                href={project.url}
+                class="mobile-github-icon"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`View ${project.title} on GitHub`}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M12 0C5.37 0 0 5.37 0 12C0 17.31 3.435 21.795 8.205 23.385C8.805 23.49 9.03 23.13 9.03 22.815C9.03 22.53 9.015 21.585 9.015 20.58C6 21.135 5.22 19.845 4.98 19.17C4.845 18.825 4.26 17.76 3.75 17.475C3.33 17.25 2.73 16.695 3.735 16.68C4.68 16.665 5.355 17.55 5.58 17.91C6.66 19.725 8.385 19.215 9.075 18.9C9.18 18.12 9.495 17.595 9.84 17.295C7.17 16.995 4.38 15.96 4.38 11.37C4.38 10.065 4.845 8.985 5.61 8.145C5.49 7.845 5.07 6.615 5.73 4.965C5.73 4.965 6.735 4.65 9.03 6.195C9.99 5.925 11.01 5.79 12.03 5.79C13.05 5.79 14.07 5.925 15.03 6.195C17.325 4.635 18.33 4.965 18.33 4.965C18.99 6.615 18.57 7.845 18.45 8.145C19.215 8.985 19.68 10.05 19.68 11.37C19.68 15.975 16.875 16.995 14.205 17.295C14.64 17.67 15.015 18.39 15.015 19.515C15.015 21.12 15 22.41 15 22.815C15 23.13 15.225 23.505 15.825 23.385C18.2072 22.5807 20.2772 21.0497 21.7437 19.0074C23.2101 16.965 23.9993 14.5143 24 12C24 5.37 18.63 0 12 0Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </a>
+            )}
             <h2>
               {project.url ? (
                 <a href={project.url} target="_blank" rel="noopener noreferrer">
@@ -152,6 +232,54 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
     color: var(--text-secondary);
   }
 
+  .filter-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .filter-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .filter-tag {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    padding: 0.25rem 0.75rem;
+    background: white;
+    border-radius: 4px;
+  }
+
+  .clear-filter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
+    padding: 4px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .clear-filter:hover {
+    color: var(--accent-primary);
+    background: white;
+    border-color: var(--border-color);
+    text-decoration: none;
+  }
+
   .portfolio-grid {
     display: grid;
     gap: 2rem;
@@ -159,23 +287,74 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
   }
 
   .portfolio-item {
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     background: var(--bg-secondary);
     border-radius: 8px;
+    position: relative;
+  }
+
+  .mobile-github-icon {
+    display: none;
+    position: absolute;
+    top: 1.5rem;
+    right: 2rem;
+    width: 32px;
+    height: 32px;
+    padding: 4px;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-primary);
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+
+  .mobile-github-icon:hover {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-github-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Show GitHub icon on mobile when hamburger menu is visible */
+  @media (max-width: 1024px) {
+    .mobile-github-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .portfolio-item {
+      padding: 1.25rem 1.5rem;
+    }
+
+    .portfolio-item h2 {
+      padding-right: 3rem; /* Ensure title doesn't overlap with GitHub icon */
+    }
   }
 
   .portfolio-item h2 {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
+    margin-top: 0 !important; /* Override global h2 margin-top */
+    text-transform: none; /* Override global h2 text-transform */
+    letter-spacing: normal; /* Override global h2 letter-spacing */
+    color: var(--text-primary); /* Override global h2 color */
+    font-weight: 700;
   }
 
   .portfolio-item h2 a {
-    color: var(--text-primary);
+    color: inherit;
     text-decoration: none;
   }
 
   .portfolio-item h2 a:hover {
-    color: var(--accent);
+    color: var(--accent-primary);
   }
 
   .portfolio-meta {
@@ -206,6 +385,11 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-bottom: 1rem;
+  }
+
+  /* Remove bottom margin from last child in portfolio items */
+  .portfolio-item > *:last-child {
+    margin-bottom: 0;
   }
 
   .technologies span {
@@ -247,4 +431,3 @@ const displayPortfolioItems = portfolioItems.length > 0 ? portfolioItems : stati
     color: var(--text-secondary);
   }
 </style>
-

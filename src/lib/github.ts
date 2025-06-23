@@ -21,14 +21,27 @@ export async function getGitHubData(username: string) {
     headers['Authorization'] = `token ${token}`;
   }
 
+  const fetchWithTimeout = (url: string, options: RequestInit, timeout = 5000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise<Response>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), timeout)
+      ),
+    ]);
+  };
+
   try {
-    // Fetch user profile
-    const profileResponse = await fetch(`https://api.github.com/users/${username}`, { headers });
+    console.log(`🔄 Fetching GitHub data for ${username}...`);
+
+    // Fetch user profile with timeout
+    const profileResponse = await fetchWithTimeout(`https://api.github.com/users/${username}`, {
+      headers,
+    });
     if (!profileResponse.ok) throw new Error('Failed to fetch profile');
     const profile = await profileResponse.json();
 
-    // Fetch repositories
-    const reposResponse = await fetch(
+    // Fetch repositories with timeout
+    const reposResponse = await fetchWithTimeout(
       `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
       { headers }
     );
@@ -91,6 +104,7 @@ export async function getGitHubData(username: string) {
           stargazers_count: repo.stargazerCount,
           updated_at: repo.updatedAt,
         }));
+        console.log(`✅ Successfully fetched ${pinnedRepos.length} pinned repos via GraphQL`);
       }
     }
 
@@ -100,15 +114,22 @@ export async function getGitHubData(username: string) {
         .filter((repo) => !repo.fork && repo.description)
         .sort((a, b) => b.stargazers_count - a.stargazers_count)
         .slice(0, 6);
+      console.log(
+        `⚠️  Using fallback: top ${pinnedRepos.length} starred repos (no pinned repos found)`
+      );
     }
 
+    console.log(
+      `✅ GitHub data fetched successfully: ${repos.length} repos, ${pinnedRepos.length} featured`
+    );
     return {
       profile,
       repos,
       pinnedRepos,
     };
   } catch (error) {
-    console.error('Error fetching GitHub data:', error);
+    console.error('❌ Error fetching GitHub data:', error);
+    console.log('⚠️  Using fallback: returning empty data');
     // Return empty data on error
     return {
       profile: null,
