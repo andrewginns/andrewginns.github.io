@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 
 async function waitForChartsToLoad(page: Page): Promise<void> {
