@@ -12,14 +12,34 @@ const calculateCost = (tokens: number) => {
   // Simplified pricing: $0.001 per 1000 tokens
   return (tokens / 1000) * 0.001;
 };
+
+// Convert markdown-style formatting to HTML
+const renderMarkdownToHTML = (text: string) => {
+  // Split into paragraphs
+  const paragraphs = text.split('\n\n').filter((p) => p.trim());
+
+  return paragraphs
+    .map((paragraph) => {
+      // Convert bold (**text** or __text__)
+      let html = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+
+      // Convert italics (*text* or _text_)
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+
+      return `<p>${html}</p>`;
+    })
+    .join('\n      ');
+};
+
+const formattedDescription = renderMarkdownToHTML(config.description);
 ---
 
 <BaseLayout title="Merbench - Andrew Ginns" bodyClass="wide-content">
   <div class="merbench-content">
     <h1>{config.title}</h1>
-    <p class="intro">
-      {config.description}
-    </p>
+    <div class="intro" set:html={formattedDescription} />
 
     <!-- Summary Stats -->
     <section class="summary-stats">
@@ -140,10 +160,10 @@ const calculateCost = (tokens: number) => {
   </div>
 
   <!-- Load Plotly from CDN for charts -->
-  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+  <script is:inline src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 
   <!-- Initialize Charts and Filtering -->
-  <script define:vars={{ pareto_data, test_groups_data, raw_data }}>
+  <script is:inline define:vars={{ pareto_data, test_groups_data, raw_data }}>
     // Store original data
     const originalRawData = [...raw_data];
     const originalTestGroupsData = [...test_groups_data];
@@ -222,9 +242,6 @@ const calculateCost = (tokens: number) => {
     function updateSummaryStats(filteredData) {
       const totalRuns = filteredData.rawData.length;
       const models = [...new Set(filteredData.rawData.map((d) => d.Model))];
-      const selectedDifficulties = Array.from(
-        document.querySelectorAll('input[name="difficulty"]:checked')
-      ).map((cb) => cb.value);
 
       const statCards = document.querySelectorAll('.stat-card');
       statCards[0].querySelector('.stat-value').textContent = totalRuns;
@@ -673,7 +690,14 @@ const calculateCost = (tokens: number) => {
     line-height: 1.8;
     margin-bottom: 3rem;
     color: var(--text-secondary);
-    white-space: pre-line;
+  }
+
+  .intro p {
+    margin: 0 0 1rem 0;
+  }
+
+  .intro p:last-child {
+    margin-bottom: 0;
   }
 
   @media (max-width: 768px) {
