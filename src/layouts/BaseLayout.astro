@@ -5,9 +5,10 @@ import { formatTagForFloatingElement } from '../utils/tagAggregator';
 export interface Props {
   title: string;
   description?: string;
+  bodyClass?: string;
 }
 
-const { title, description = 'Andrew Ginns - Machine Learning Engineer' } = Astro.props;
+const { title, description = 'Andrew Ginns - Machine Learning Engineer', bodyClass } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 // Fetch top project tags for floating elements
@@ -33,7 +34,7 @@ const tagPairs = topTags.map((tag) => ({
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body>
+  <body class={bodyClass}>
     <div class="container">
       <nav class="sidebar">
         <div class="sidebar-content">
@@ -58,6 +59,9 @@ const tagPairs = topTags.map((tag) => ({
               <a href="/writing" class={currentPath.startsWith('/writing') ? 'active' : ''}
                 >Writing</a
               >
+            </li>
+            <li>
+              <a href="/merbench" class={currentPath === '/merbench' ? 'active' : ''}>Merbench</a>
             </li>
             <li>
               <a href="/about_me" class={currentPath === '/about_me' ? 'active' : ''}>About</a>
@@ -123,6 +127,9 @@ const tagPairs = topTags.map((tag) => ({
               <a href="/writing" class={currentPath.startsWith('/writing') ? 'active' : ''}
                 >Writing</a
               >
+            </li>
+            <li>
+              <a href="/merbench" class={currentPath === '/merbench' ? 'active' : ''}>Merbench</a>
             </li>
             <li>
               <a href="/about_me" class={currentPath === '/about_me' ? 'active' : ''}>About</a>
@@ -638,6 +645,24 @@ const tagPairs = topTags.map((tag) => ({
         }
       }
 
+      /* Override max-width for pages that need more horizontal space */
+      body.wide-content .content {
+        max-width: calc(100% - var(--sidebar-width));
+      }
+
+      @media (min-width: 1200px) {
+        body.wide-content .content {
+          margin-left: var(--sidebar-width);
+          max-width: calc(100vw - var(--sidebar-width));
+        }
+      }
+
+      @media (max-width: 1024px) {
+        body.wide-content .content {
+          max-width: 100%;
+        }
+      }
+
       h1,
       h2,
       h3,
@@ -743,12 +768,11 @@ const tagPairs = topTags.map((tag) => ({
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.3s ease;
-        pointer-events: none !important;
       }
 
       .mobile-nav-overlay.active {
         opacity: 1;
-        pointer-events: auto;
+        pointer-events: auto !important;
       }
 
       .mobile-nav-pane {
@@ -873,7 +897,10 @@ const tagPairs = topTags.map((tag) => ({
           display: none;
         }
 
-        .mobile-menu-toggle,
+        .mobile-menu-toggle {
+          display: flex;
+        }
+
         .mobile-nav-overlay,
         .mobile-nav-pane {
           display: block;
@@ -886,6 +913,7 @@ const tagPairs = topTags.map((tag) => ({
         .content {
           margin-left: 0;
           padding: calc(var(--spacing-unit) * 1.5);
+          padding-top: calc(var(--spacing-unit) * 4); /* Account for fixed mobile header */
           max-width: 100%;
           min-height: auto;
         }

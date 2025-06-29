@@ -1,0 +1,1130 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LastUpdated from '../components/LastUpdated.astro';
+
+// Load the processed data
+import merbenchData from '../data/merbench_data.json';
+
+const { stats, leaderboard, pareto_data, test_groups_data, raw_data, config } = merbenchData;
+
+// Calculate cost per run (simplified pricing model)
+const calculateCost = (tokens: number) => {
+  // Simplified pricing: $0.001 per 1000 tokens
+  return (tokens / 1000) * 0.001;
+};
+---
+
+<BaseLayout title="Merbench - Andrew Ginns" bodyClass="wide-content">
+  <div class="merbench-content">
+    <h1>{config.title}</h1>
+    <p class="intro">
+      {config.description}
+    </p>
+
+    <!-- Summary Stats -->
+    <section class="summary-stats">
+      <h2>Evaluation Summary</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{stats.total_runs}</div>
+          <div class="stat-label">Total Evaluation Runs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{stats.models_evaluated}</div>
+          <div class="stat-label">Models Evaluated</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{stats.test_cases}</div>
+          <div class="stat-label">Test Cases</div>
+        </div>
+      </div>
+      <div class="providers-section">
+        <h3>Providers Tested</h3>
+        <div class="provider-tags">
+          {stats.providers.map((provider: string) => <span class="provider-tag">{provider}</span>)}
+        </div>
+      </div>
+    </section>
+
+    <!-- Difficulty Filter -->
+    <section class="filter-section">
+      <h2>Filter by Difficulty</h2>
+      <div class="filter-controls">
+        {
+          ['easy', 'medium', 'hard'].map((group: string) => (
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                name="difficulty"
+                value={group}
+                checked
+                data-difficulty={group}
+              />
+              <span class="checkbox-label">{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+            </label>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- Leaderboard -->
+    <section class="leaderboard-section">
+      <h2>Model Leaderboard</h2>
+      <div class="leaderboard-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Model</th>
+              <th>Success Rate</th>
+              <th>Avg Cost/Run</th>
+              <th>Avg Duration</th>
+              <th>Avg Tokens</th>
+              <th>Runs</th>
+              <th>Provider</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              leaderboard.map((entry, index: number) => (
+                <tr>
+                  <td class="rank">{index + 1}</td>
+                  <td class="model-name">{entry.Model}</td>
+                  <td class="success-rate">
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        style={`width: ${entry.Success_Rate}%; background-color: ${
+                          entry.Success_Rate >= 30
+                            ? '#27ae60'
+                            : entry.Success_Rate >= 15
+                              ? '#f39c12'
+                              : '#e74c3c'
+                        }`}
+                      />
+                      <span class="progress-text">{entry.Success_Rate.toFixed(1)}%</span>
+                    </div>
+                  </td>
+                  <td class="cost">${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
+                  <td class="duration">{entry.Avg_Duration.toFixed(2)}s</td>
+                  <td class="tokens">{entry.Avg_Tokens.toLocaleString()}</td>
+                  <td class="runs">{entry.Runs}</td>
+                  <td class="provider">{entry.Provider}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pareto Chart -->
+    <section class="chart-section">
+      <h2>Performance vs Efficiency Trade-offs</h2>
+      <div id="pareto-chart" class="chart-container"></div>
+    </section>
+
+    <!-- Test Group Performance -->
+    <section class="chart-section">
+      <h2>Performance by Difficulty Level</h2>
+      <div id="test-group-chart" class="chart-container"></div>
+    </section>
+
+    <!-- Token Breakdown -->
+    <section class="chart-section">
+      <h2>Token Usage Breakdown</h2>
+      <div id="token-chart" class="chart-container"></div>
+    </section>
+
+    <LastUpdated />
+  </div>
+
+  <!-- Load Plotly from CDN for charts -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <!-- Initialize Charts and Filtering -->
+  <script define:vars={{ pareto_data, test_groups_data, raw_data }}>
+    // Store original data
+    const originalRawData = [...raw_data];
+    const originalTestGroupsData = [...test_groups_data];
+
+    // Calculate cost function
+    const calculateCost = (tokens) => (tokens / 1000) * 0.001;
+
+    // Filter data based on selected difficulties
+    function getFilteredData() {
+      const selectedDifficulties = Array.from(
+        document.querySelectorAll('input[name="difficulty"]:checked')
+      ).map((cb) => cb.value);
+
+      // Filter raw data
+      const filteredRawData = originalRawData.filter((d) =>
+        selectedDifficulties.includes(d.test_group)
+      );
+
+      // Filter test groups data
+      const filteredTestGroupsData = originalTestGroupsData.filter((d) =>
+        selectedDifficulties.includes(d.test_group)
+      );
+
+      // Recalculate leaderboard data from filtered raw data
+      const modelStats = {};
+      filteredRawData.forEach((d) => {
+        if (!modelStats[d.Model]) {
+          modelStats[d.Model] = {
+            Model: d.Model,
+            Provider: d.provider,
+            successCount: 0,
+            totalRuns: 0,
+            totalDuration: 0,
+            totalTokens: 0,
+          };
+        }
+
+        modelStats[d.Model].totalRuns++;
+        modelStats[d.Model].totalDuration += d.Duration;
+        modelStats[d.Model].totalTokens += d.total_tokens;
+
+        if (d.Score_MermaidDiagramValid === 1) {
+          modelStats[d.Model].successCount++;
+        }
+      });
+
+      const filteredLeaderboard = Object.values(modelStats)
+        .map((stats) => ({
+          Model: stats.Model,
+          Success_Rate: (stats.successCount / stats.totalRuns) * 100,
+          Avg_Duration: stats.totalDuration / stats.totalRuns,
+          Avg_Tokens: stats.totalTokens / stats.totalRuns,
+          Runs: stats.totalRuns,
+          Provider: stats.Provider,
+        }))
+        .sort((a, b) => b.Success_Rate - a.Success_Rate);
+
+      // Recalculate pareto data
+      const filteredParetoData = filteredLeaderboard.map((d) => ({
+        Model: d.Model,
+        Success_Rate: d.Success_Rate,
+        Duration: d.Avg_Duration,
+        total_tokens: d.Avg_Tokens,
+        cost: calculateCost(d.Avg_Tokens),
+      }));
+
+      return {
+        leaderboard: filteredLeaderboard,
+        testGroupsData: filteredTestGroupsData,
+        paretoData: filteredParetoData,
+        rawData: filteredRawData,
+      };
+    }
+
+    // Update summary statistics
+    function updateSummaryStats(filteredData) {
+      const totalRuns = filteredData.rawData.length;
+      const models = [...new Set(filteredData.rawData.map((d) => d.Model))];
+      const selectedDifficulties = Array.from(
+        document.querySelectorAll('input[name="difficulty"]:checked')
+      ).map((cb) => cb.value);
+
+      const statCards = document.querySelectorAll('.stat-card');
+      statCards[0].querySelector('.stat-value').textContent = totalRuns;
+      statCards[1].querySelector('.stat-value').textContent = models.length;
+    }
+
+    // Update leaderboard table
+    function updateLeaderboard(filteredData) {
+      const tbody = document.querySelector('.leaderboard-table tbody');
+      tbody.innerHTML = filteredData.leaderboard
+        .map(
+          (entry, index) => `
+        <tr>
+          <td class="rank">${index + 1}</td>
+          <td class="model-name">${entry.Model}</td>
+          <td class="success-rate">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${entry.Success_Rate}%; background-color: ${
+                entry.Success_Rate >= 30
+                  ? '#27ae60'
+                  : entry.Success_Rate >= 15
+                    ? '#f39c12'
+                    : '#e74c3c'
+              }"></div>
+              <span class="progress-text">${entry.Success_Rate.toFixed(1)}%</span>
+            </div>
+          </td>
+          <td class="cost">$${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
+          <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
+          <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
+          <td class="runs">${entry.Runs}</td>
+          <td class="provider">${entry.Provider}</td>
+        </tr>
+      `
+        )
+        .join('');
+    }
+
+    // Initialize Pareto Chart
+    function initParetoChart(data = null) {
+      if (typeof Plotly === 'undefined') {
+        setTimeout(() => initParetoChart(data), 100);
+        return;
+      }
+
+      // Use provided data or original data
+      const chartData = data ? data.paretoData : pareto_data;
+      const dataWithCost = chartData.map((d) => ({
+        ...d,
+        cost: d.cost || calculateCost(d.total_tokens),
+      }));
+
+      const trace = {
+        x: dataWithCost.map((d) => d.cost),
+        y: dataWithCost.map((d) => d.Success_Rate),
+        mode: 'markers+text',
+        type: 'scatter',
+        text: dataWithCost.map((d) => d.Model),
+        textposition: 'top center',
+        textfont: {
+          size: window.innerWidth < 768 ? 8 : 10,
+          color: '#666',
+        },
+        showlegend: false,
+        marker: {
+          size: dataWithCost.map((d) => Math.log(d.Duration + 1) * 5 + 10),
+          color: dataWithCost.map((d) => d.Duration),
+          colorscale: 'Viridis',
+          showscale: true,
+          colorbar: {
+            title: {
+              text: 'Avg Duration (s)',
+              side: 'right',
+            },
+            thickness: 15,
+            len: 0.5,
+          },
+          line: {
+            color: 'white',
+            width: 1,
+          },
+        },
+        hovertemplate:
+          '<b>%{text}</b><br>' +
+          'Success Rate: %{y:.1f}%<br>' +
+          'Cost per Run: $%{x:.4f}<br>' +
+          'Avg Tokens: %{customdata[0]:,.0f}<br>' +
+          'Avg Duration: %{customdata[1]:.2f}s<br>' +
+          '<extra></extra>',
+        customdata: dataWithCost.map((d) => [d.total_tokens, d.Duration]),
+      };
+
+      const layout = {
+        title: {
+          text: 'Model Performance vs Cost Trade-off',
+          font: {
+            size: 16,
+            color: '#2c3e50',
+          },
+        },
+        xaxis: {
+          title: 'Average Cost per Run ($)',
+          type: 'log',
+          gridcolor: '#e0e0e0',
+          zeroline: false,
+        },
+        yaxis: {
+          title: 'Success Rate (%)',
+          gridcolor: '#e0e0e0',
+          zeroline: false,
+          range: [-5, Math.max(...dataWithCost.map((d) => d.Success_Rate)) + 5],
+        },
+        plot_bgcolor: 'white',
+        paper_bgcolor: 'white',
+        hovermode: 'closest',
+        margin: {
+          l: window.innerWidth < 768 ? 40 : 60,
+          r: window.innerWidth < 768 ? 80 : 120,
+          t: 40,
+          b: window.innerWidth < 768 ? 50 : 60,
+        },
+      };
+
+      // Add Pareto frontier line
+      const sortedByEfficiency = [...dataWithCost].sort((a, b) => a.cost - b.cost);
+      const paretoPoints = [];
+      let maxSuccessRate = -Infinity;
+
+      for (const point of sortedByEfficiency) {
+        if (point.Success_Rate > maxSuccessRate) {
+          paretoPoints.push(point);
+          maxSuccessRate = point.Success_Rate;
+        }
+      }
+
+      const traces = [trace];
+      if (paretoPoints.length > 1) {
+        const paretoTrace = {
+          x: paretoPoints.map((p) => p.cost),
+          y: paretoPoints.map((p) => p.Success_Rate),
+          mode: 'lines',
+          type: 'scatter',
+          line: {
+            color: 'rgba(231, 76, 60, 0.3)',
+            width: 2,
+            dash: 'dash',
+          },
+          name: 'Pareto Frontier',
+          hoverinfo: 'skip',
+        };
+        traces.unshift(paretoTrace);
+      }
+
+      const config = {
+        responsive: true,
+        displayModeBar: false,
+        staticPlot: window.innerWidth < 768, // Disable interactivity on mobile for better performance
+      };
+
+      Plotly.newPlot('pareto-chart', traces, layout, config);
+
+      // Force resize on orientation change
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          Plotly.Plots.resize('pareto-chart');
+        }, 500);
+      });
+    }
+
+    // Initialize Test Group Performance Chart
+    function initTestGroupChart(data = null) {
+      if (typeof Plotly === 'undefined') {
+        setTimeout(() => initTestGroupChart(data), 100);
+        return;
+      }
+
+      // Use provided data or original data
+      const chartData = data ? data.testGroupsData : test_groups_data;
+
+      // Process data for grouped bar chart
+      const models = [...new Set(chartData.map((d) => d.Model))];
+      const testGroups = [...new Set(chartData.map((d) => d.test_group))];
+
+      const traces = testGroups.map((group) => {
+        const groupData = chartData.filter((d) => d.test_group === group);
+        const successRates = models.map((model) => {
+          const modelData = groupData.find((d) => d.Model === model);
+          return modelData ? modelData.Score_MermaidDiagramValid * 100 : 0;
+        });
+
+        return {
+          name: group.charAt(0).toUpperCase() + group.slice(1),
+          x: models,
+          y: successRates,
+          type: 'bar',
+          marker: {
+            color: group === 'easy' ? '#27ae60' : group === 'medium' ? '#f39c12' : '#e74c3c',
+          },
+        };
+      });
+
+      const layout = {
+        title: {
+          text: 'Success Rate by Test Difficulty',
+          font: {
+            size: 16,
+            color: '#2c3e50',
+          },
+        },
+        xaxis: {
+          title: 'Model',
+          tickangle: -45,
+        },
+        yaxis: {
+          title: 'Success Rate (%)',
+          range: [0, 105],
+        },
+        barmode: 'group',
+        plot_bgcolor: 'white',
+        paper_bgcolor: 'white',
+        margin: {
+          l: window.innerWidth < 768 ? 40 : 60,
+          r: window.innerWidth < 768 ? 40 : 60,
+          t: 40,
+          b: window.innerWidth < 768 ? 100 : 120,
+        },
+      };
+
+      const config = {
+        responsive: true,
+        displayModeBar: false,
+        staticPlot: window.innerWidth < 768,
+      };
+
+      Plotly.newPlot('test-group-chart', traces, layout, config);
+
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          Plotly.Plots.resize('test-group-chart');
+        }, 500);
+      });
+    }
+
+    // Initialize Token Breakdown Chart
+    function initTokenChart(data = null) {
+      if (typeof Plotly === 'undefined') {
+        setTimeout(() => initTokenChart(data), 100);
+        return;
+      }
+
+      // Use provided data or original data
+      const chartData = data ? data.rawData : raw_data;
+
+      // Average token usage by model
+      const modelTokens = {};
+      chartData.forEach((d) => {
+        if (!modelTokens[d.Model]) {
+          modelTokens[d.Model] = { request: [], response: [] };
+        }
+        modelTokens[d.Model].request.push(d.Metric_request_tokens);
+        modelTokens[d.Model].response.push(d.Metric_response_tokens);
+      });
+
+      const models = Object.keys(modelTokens);
+      const avgRequestTokens = models.map((model) => {
+        const tokens = modelTokens[model].request.filter((t) => t > 0);
+        return tokens.length > 0 ? tokens.reduce((a, b) => a + b) / tokens.length : 0;
+      });
+      const avgResponseTokens = models.map((model) => {
+        const tokens = modelTokens[model].response.filter((t) => t > 0);
+        return tokens.length > 0 ? tokens.reduce((a, b) => a + b) / tokens.length : 0;
+      });
+
+      // Sort by total tokens
+      const totalTokens = models.map((_, i) => avgRequestTokens[i] + avgResponseTokens[i]);
+      const sortedIndices = [...Array(models.length).keys()].sort(
+        (a, b) => totalTokens[b] - totalTokens[a]
+      );
+
+      const trace1 = {
+        x: sortedIndices.map((i) => models[i]),
+        y: sortedIndices.map((i) => avgRequestTokens[i]),
+        name: 'Request Tokens',
+        type: 'bar',
+        marker: { color: '#3498db' },
+      };
+
+      const trace2 = {
+        x: sortedIndices.map((i) => models[i]),
+        y: sortedIndices.map((i) => avgResponseTokens[i]),
+        name: 'Response Tokens',
+        type: 'bar',
+        marker: { color: '#e74c3c' },
+      };
+
+      const layout = {
+        title: {
+          text: 'Average Token Usage per Model',
+          font: {
+            size: 16,
+            color: '#2c3e50',
+          },
+        },
+        xaxis: {
+          title: 'Model',
+          tickangle: -45,
+        },
+        yaxis: {
+          title: 'Average Tokens',
+        },
+        barmode: 'stack',
+        plot_bgcolor: 'white',
+        paper_bgcolor: 'white',
+        margin: {
+          l: window.innerWidth < 768 ? 50 : 80,
+          r: window.innerWidth < 768 ? 40 : 60,
+          t: 40,
+          b: window.innerWidth < 768 ? 100 : 120,
+        },
+      };
+
+      const config = {
+        responsive: true,
+        displayModeBar: false,
+        staticPlot: window.innerWidth < 768,
+      };
+
+      Plotly.newPlot('token-chart', [trace1, trace2], layout, config);
+
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          Plotly.Plots.resize('token-chart');
+        }, 500);
+      });
+    }
+
+    // Main update function
+    function updateAllVisualizations() {
+      const filteredData = getFilteredData();
+
+      // Check if any difficulty is selected
+      const selectedCount = document.querySelectorAll('input[name="difficulty"]:checked').length;
+      if (selectedCount === 0) {
+        // Show a message if no difficulties are selected
+        document.querySelector('.leaderboard-table tbody').innerHTML =
+          '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Please select at least one difficulty level</td></tr>';
+
+        // Clear charts
+        Plotly.purge('pareto-chart');
+        Plotly.purge('test-group-chart');
+        Plotly.purge('token-chart');
+        return;
+      }
+
+      // Update all components
+      updateSummaryStats(filteredData);
+      updateLeaderboard(filteredData);
+      initParetoChart(filteredData);
+      initTestGroupChart(filteredData);
+      initTokenChart(filteredData);
+    }
+
+    // Add event listeners to checkboxes
+    function initializeFilters() {
+      const checkboxes = document.querySelectorAll('input[name="difficulty"]');
+      checkboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', updateAllVisualizations);
+      });
+    }
+
+    // Initialize all charts when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeFilters();
+        // Delay chart initialization to ensure layout is complete
+        setTimeout(() => {
+          initParetoChart();
+          initTestGroupChart();
+          initTokenChart();
+        }, 100);
+      });
+    } else {
+      initializeFilters();
+      // Delay chart initialization to ensure layout is complete
+      setTimeout(() => {
+        initParetoChart();
+        initTestGroupChart();
+        initTokenChart();
+      }, 100);
+    }
+
+    // Force chart resize on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (typeof Plotly !== 'undefined') {
+          Plotly.Plots.resize('pareto-chart');
+          Plotly.Plots.resize('test-group-chart');
+          Plotly.Plots.resize('token-chart');
+        }
+      }, 250);
+    });
+  </script>
+</BaseLayout>
+
+<style>
+  .merbench-content {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .merbench-content {
+      padding: 0 2rem;
+    }
+  }
+
+  /* Wider content on desktop for better data presentation */
+  @media (min-width: 1025px) {
+    .merbench-content {
+      max-width: 1400px;
+      padding: 0 2rem;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .merbench-content {
+      max-width: calc(100% - 4rem);
+      padding: 0 2rem;
+    }
+  }
+
+  /* Mobile-specific layout fixes */
+  @media (max-width: 768px) {
+    .merbench-content {
+      padding: 0.5rem;
+      margin-top: 60px; /* Account for mobile header */
+    }
+  }
+
+  .intro {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 3rem;
+    color: var(--text-secondary);
+    white-space: pre-line;
+  }
+
+  @media (max-width: 768px) {
+    .intro {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    /* Better title spacing on mobile */
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+    }
+  }
+
+  /* Summary Stats Styles */
+  .summary-stats {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .summary-stats h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Force 3 columns on desktop */
+  @media (min-width: 1025px) {
+    .stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 425px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+
+  .stat-card {
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--accent-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-detail {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: 0.25rem;
+  }
+
+  .providers-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+  }
+
+  .providers-section h3 {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .provider-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .provider-tag {
+    background: var(--bg-primary);
+    color: var(--accent-primary);
+    padding: 0.375rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+  }
+
+  /* Leaderboard Styles */
+  .leaderboard-section {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .leaderboard-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .leaderboard-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Mobile scroll indicator */
+  @media (max-width: 768px) {
+    .leaderboard-table {
+      margin: 0 -1rem;
+      padding: 0 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-primary) var(--bg-tertiary);
+    }
+
+    .leaderboard-table::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .leaderboard-table::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+    }
+
+    .leaderboard-table::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: 3px;
+    }
+
+    /* Visual scroll hint */
+    .leaderboard-table::after {
+      content: '\2192';
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      color: var(--accent-primary);
+      opacity: 0.5;
+      pointer-events: none;
+      animation: scrollHint 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollHint {
+      0%,
+      100% {
+        transform: translateY(-50%) translateX(0);
+      }
+      50% {
+        transform: translateY(-50%) translateX(5px);
+      }
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Ensure minimum width for readability */
+  }
+
+  /* Allow table to expand on larger viewports */
+  @media (min-width: 1440px) {
+    table {
+      min-width: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    table {
+      font-size: 0.875rem;
+    }
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background-color: var(--bg-primary);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  tbody tr:hover {
+    background-color: var(--bg-primary);
+  }
+
+  .rank {
+    font-weight: bold;
+    color: var(--text-secondary);
+  }
+
+  .model-name {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  /* Desktop optimizations for better data presentation */
+  @media (min-width: 1025px) {
+    table {
+      font-size: 1rem;
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .model-name {
+      min-width: 180px;
+    }
+
+    .progress-bar {
+      min-width: 140px;
+    }
+  }
+
+  /* Wider viewports - remove constraints to use available space */
+  @media (min-width: 1440px) {
+    th,
+    td {
+      padding: 0.875rem 0.75rem;
+    }
+
+    .model-name {
+      min-width: auto;
+      white-space: nowrap;
+    }
+
+    .progress-bar {
+      min-width: auto;
+      width: 100%;
+    }
+  }
+
+  .progress-bar {
+    position: relative;
+    background-color: var(--bg-tertiary);
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 150px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .cost {
+    color: var(--accent-secondary);
+    font-weight: 500;
+  }
+
+  .duration {
+    color: #9c27b0;
+  }
+
+  .tokens {
+    color: #ff5722;
+  }
+
+  @media (max-width: 768px) {
+    .summary-stats,
+    .leaderboard-section,
+    .filter-section,
+    .chart-section {
+      padding: 1rem;
+      margin-left: 0;
+      margin-right: 0;
+      border-radius: 0;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+    }
+
+    th,
+    td {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .progress-bar {
+      min-width: 100px;
+    }
+
+    /* Hide less important columns on mobile */
+    th:nth-child(5), /* Duration */
+    td:nth-child(5),
+    th:nth-child(6), /* Tokens */
+    td:nth-child(6),
+    th:nth-child(7), /* Runs */
+    td:nth-child(7) {
+      display: none;
+    }
+
+    /* Optimize remaining columns */
+    th:nth-child(4), /* Cost */
+    td:nth-child(4) {
+      min-width: 80px;
+    }
+
+    .progress-bar {
+      min-width: 80px;
+      height: 20px;
+    }
+
+    .progress-text {
+      font-size: 0.7rem;
+    }
+  }
+
+  /* Filter Styles */
+  .filter-section {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-section h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .filter-controls {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filter-checkbox input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+  }
+
+  .checkbox-label {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+  }
+
+  .filter-checkbox:hover .checkbox-label {
+    color: var(--accent-primary);
+  }
+
+  /* Chart Styles */
+  .chart-section {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .chart-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-container {
+    width: 100%;
+    height: 500px;
+    position: relative;
+    min-height: 400px;
+    overflow: hidden;
+  }
+
+  /* Ensure charts are visible on mobile */
+  @media (max-width: 768px) {
+    .chart-container {
+      width: calc(100vw - 2rem);
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .filter-section {
+      padding: 1rem;
+    }
+
+    .filter-controls {
+      gap: 1rem;
+    }
+
+    .chart-section {
+      padding: 1rem;
+    }
+
+    .chart-container {
+      height: 350px;
+      min-height: 300px;
+    }
+  }
+
+  @media (max-width: 425px) {
+    .chart-container {
+      height: 300px;
+      min-height: 250px;
+    }
+  }
+</style>
