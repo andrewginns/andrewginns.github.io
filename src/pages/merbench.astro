@@ -46,27 +46,6 @@ const calculateCost = (tokens: number) => {
       </div>
     </section>
 
-    <!-- Difficulty Filter -->
-    <section class="filter-section">
-      <h2>Filter by Difficulty</h2>
-      <div class="filter-controls">
-        {
-          ['easy', 'medium', 'hard'].map((group: string) => (
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                name="difficulty"
-                value={group}
-                checked
-                data-difficulty={group}
-              />
-              <span class="checkbox-label">{group.charAt(0).toUpperCase() + group.slice(1)}</span>
-            </label>
-          ))
-        }
-      </div>
-    </section>
-
     <!-- Leaderboard -->
     <section class="leaderboard-section">
       <h2>Model Leaderboard</h2>
@@ -115,6 +94,27 @@ const calculateCost = (tokens: number) => {
             }
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- Difficulty Filter -->
+    <section class="filter-section">
+      <h2>Filter by Difficulty</h2>
+      <div class="filter-controls">
+        {
+          ['easy', 'medium', 'hard'].map((group: string) => (
+            <label class="filter-checkbox">
+              <input
+                type="checkbox"
+                name="difficulty"
+                value={group}
+                checked
+                data-difficulty={group}
+              />
+              <span class="checkbox-label">{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+            </label>
+          ))
+        }
       </div>
     </section>
 
@@ -631,7 +631,7 @@ const calculateCost = (tokens: number) => {
   </script>
 </BaseLayout>
 
-<style>
+<style is:global>
   .merbench-content {
     max-width: 1200px;
     width: 100%;
