@@ -158,22 +158,24 @@ const tagPairs = topTags.map((tag) => ({
       </nav>
 
       <main class="content">
-        <div class="floating-elements">
-          {
-            tagPairs.map((tagPair, index) => (
-              <a
-                href={`https://github.com/search?q=owner%3Aandrewginns+topic%3A${encodeURIComponent(tagPair.original)}&type=repositories`}
-                class={`floating-element floating-element-${index + 1}`}
-                data-tag={tagPair.formatted}
-                aria-label={`View ${tagPair.formatted} repositories on GitHub`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {tagPair.formatted}
-              </a>
-            ))
-          }
-        </div>
+        {
+          currentPath !== '/merbench' && (
+            <div class="floating-elements">
+              {tagPairs.map((tagPair, index) => (
+                <a
+                  href={`https://github.com/search?q=owner%3Aandrewginns+topic%3A${encodeURIComponent(tagPair.original)}&type=repositories`}
+                  class={`floating-element floating-element-${index + 1}`}
+                  data-tag={tagPair.formatted}
+                  aria-label={`View ${tagPair.formatted} repositories on GitHub`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {tagPair.formatted}
+                </a>
+              ))}
+            </div>
+          )
+        }
         <slot />
       </main>
     </div>
