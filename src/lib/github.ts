@@ -376,6 +376,81 @@ export async function getCachedGitHubProfile(username: string) {
   return cachedProfile;
 }
 
+// Fetch last commit information for a specific file
+export async function getFileLastCommit(
+  owner: string,
+  repo: string,
+  path: string
+): Promise<{ date: string; sha: string; message: string } | null> {
+  const headers: HeadersInit = {
+    Accept: 'application/vnd.github.v3+json',
+  };
+
+  const token = import.meta.env.GITHUB_TOKEN;
+  if (token) {
+    headers['Authorization'] = `token ${token}`;
+  }
+
+  const fetchWithTimeout = (url: string, options: RequestInit, timeout = 5000) => {
+    return Promise.race([
+      fetch(url, options),
+      new Promise<Response>((_, reject) =>
+        setTimeout(() => reject(new Error('Request timeout')), timeout)
+      ),
+    ]);
+  };
+
+  try {
+    console.log(`🔄 Fetching last commit for ${owner}/${repo}/${path}...`);
+
+    const response = await fetchWithTimeout(
+      `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(path)}&per_page=1`,
+      { headers }
+    );
+
+    if (!response.ok) {
+      console.warn(`⚠️  Failed to fetch commit info: ${response.status}`);
+      return null;
+    }
+
+    const commits = await response.json();
+
+    if (!Array.isArray(commits) || commits.length === 0) {
+      console.warn('⚠️  No commits found for file');
+      return null;
+    }
+
+    const lastCommit = commits[0];
+    console.log(`✅ Last commit fetched: ${lastCommit.sha.substring(0, 7)}`);
+
+    return {
+      date: lastCommit.commit.committer.date,
+      sha: lastCommit.sha,
+      message: lastCommit.commit.message,
+    };
+  } catch (error) {
+    console.error('❌ Error fetching file commit info:', error);
+    return null;
+  }
+}
+
+// Cache for file commit data
+const cachedFileCommits: Record<string, { date: string; sha: string; message: string } | null> = {};
+
+export async function getCachedFileLastCommit(
+  owner: string,
+  repo: string,
+  path: string
+): Promise<{ date: string; sha: string; message: string } | null> {
+  const cacheKey = `${owner}/${repo}/${path}`;
+
+  if (!cachedFileCommits[cacheKey]) {
+    cachedFileCommits[cacheKey] = await getFileLastCommit(owner, repo, path);
+  }
+
+  return cachedFileCommits[cacheKey];
+}
+
 // Legacy function for backward compatibility
 export async function getCachedGitHubCompany(username: string): Promise<string> {
   const profile = await getCachedGitHubProfile(username);

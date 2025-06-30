@@ -6,6 +6,7 @@ import LeaderboardTable from '../components/merbench/LeaderboardTable.astro';
 import DifficultyFilter from '../components/merbench/DifficultyFilter.astro';
 import ChartContainer from '../components/merbench/ChartContainer.astro';
 import { renderMarkdownToHTML } from '../lib/merbench';
+import { getCachedFileLastCommit } from '../lib/github';
 import type { MerbenchData } from '../lib/merbench-types';
 
 // Load the processed data
@@ -14,6 +15,25 @@ const data = merbenchData as MerbenchData;
 
 const { stats, leaderboard, config } = data;
 const formattedDescription = renderMarkdownToHTML(config.description);
+
+// Fetch last commit info for the merbench data file
+const fileCommitInfo = await getCachedFileLastCommit(
+  'andrewginns',
+  'andrewginns.github.io',
+  'src/data/merbench_data.json'
+);
+
+// Format the date for display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
 ---
 
 <BaseLayout title="Merbench - Andrew Ginns" bodyClass="wide-content">
@@ -21,7 +41,11 @@ const formattedDescription = renderMarkdownToHTML(config.description);
     <h1>{config.title}</h1>
     <div class="intro" set:html={formattedDescription} />
 
-    <SummaryStats stats={stats} />
+    <SummaryStats
+      stats={stats}
+      sourceUrl="https://github.com/andrewginns/agents-mcp-usage/tree/main/agents_mcp_usage/evaluations/mermaid_evals"
+      lastUpdated={lastUpdated || undefined}
+    />
     <LeaderboardTable leaderboard={leaderboard} />
     <DifficultyFilter difficulties={['easy', 'medium', 'hard']} />
 
