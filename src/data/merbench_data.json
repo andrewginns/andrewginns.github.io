@@ -280,6 +280,50 @@
       "Score_UsedBothMCPTools": 1.0
     }
   ],
+  "failure_analysis_data": [
+    {
+      "Model": "gemini-2.0-flash",
+      "Invalid Diagram": 15,
+      "MCP Tool Failure": 13,
+      "Usage Limit Exceeded": 0
+    },
+    {
+      "Model": "gemini-2.5-flash",
+      "Invalid Diagram": 12,
+      "MCP Tool Failure": 8,
+      "Usage Limit Exceeded": 0
+    },
+    {
+      "Model": "gemini-2.5-flash-lite-preview-06-17",
+      "Invalid Diagram": 14,
+      "MCP Tool Failure": 8,
+      "Usage Limit Exceeded": 0
+    },
+    {
+      "Model": "gemini-2.5-flash-preview-04-17",
+      "Invalid Diagram": 14,
+      "MCP Tool Failure": 5,
+      "Usage Limit Exceeded": 0
+    },
+    {
+      "Model": "gemini-2.5-pro-preview-03-25",
+      "Invalid Diagram": 11,
+      "MCP Tool Failure": 9,
+      "Usage Limit Exceeded": 8
+    },
+    {
+      "Model": "gemini-2.5-pro-preview-05-06",
+      "Invalid Diagram": 10,
+      "MCP Tool Failure": 9,
+      "Usage Limit Exceeded": 4
+    },
+    {
+      "Model": "gemini-2.5-pro-preview-06-05",
+      "Invalid Diagram": 9,
+      "MCP Tool Failure": 0,
+      "Usage Limit Exceeded": 0
+    }
+  ],
   "raw_data": [
     {
       "Model": "gemini-2.5-pro-preview-06-05",

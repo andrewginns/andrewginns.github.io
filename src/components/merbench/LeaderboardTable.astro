@@ -1,0 +1,299 @@
+---
+import { calculateCost } from '../../lib/merbench';
+import type { LeaderboardEntry } from '../../lib/merbench-types';
+
+export interface Props {
+  leaderboard: LeaderboardEntry[];
+}
+
+const { leaderboard } = Astro.props;
+---
+
+<section class="leaderboard-section">
+  <h2>Model Leaderboard</h2>
+  <div class="leaderboard-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Model</th>
+          <th>Success Rate</th>
+          <th>Avg Cost/Run</th>
+          <th>Avg Duration</th>
+          <th>Avg Tokens</th>
+          <th>Runs</th>
+          <th>Provider</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          leaderboard.map((entry, index) => (
+            <tr>
+              <td class="rank">{index + 1}</td>
+              <td class="model-name">{entry.Model}</td>
+              <td class="success-rate">
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    style={`width: ${entry.Success_Rate}%; background-color: ${
+                      entry.Success_Rate >= 30
+                        ? '#27ae60'
+                        : entry.Success_Rate >= 15
+                          ? '#f39c12'
+                          : '#e74c3c'
+                    }`}
+                  />
+                  <span class="progress-text">{entry.Success_Rate.toFixed(1)}%</span>
+                </div>
+              </td>
+              <td class="cost">${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
+              <td class="duration">{entry.Avg_Duration.toFixed(2)}s</td>
+              <td class="tokens">{entry.Avg_Tokens.toLocaleString()}</td>
+              <td class="runs">{entry.Runs}</td>
+              <td class="provider">{entry.Provider}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  /* Leaderboard Styles */
+  .leaderboard-section {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .leaderboard-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .leaderboard-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Mobile scroll indicator */
+  @media (max-width: 768px) {
+    .leaderboard-table {
+      margin: 0 -1rem;
+      padding: 0 1rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-primary) var(--bg-tertiary);
+    }
+
+    .leaderboard-table::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .leaderboard-table::-webkit-scrollbar-track {
+      background: var(--bg-tertiary);
+    }
+
+    .leaderboard-table::-webkit-scrollbar-thumb {
+      background: var(--accent-primary);
+      border-radius: 3px;
+    }
+
+    /* Visual scroll hint */
+    .leaderboard-table::after {
+      content: '\2192';
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      color: var(--accent-primary);
+      opacity: 0.5;
+      pointer-events: none;
+      animation: scrollHint 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollHint {
+      0%,
+      100% {
+        transform: translateY(-50%) translateX(0);
+      }
+      50% {
+        transform: translateY(-50%) translateX(5px);
+      }
+    }
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Ensure minimum width for readability */
+  }
+
+  /* Allow table to expand on larger viewports */
+  @media (min-width: 1440px) {
+    table {
+      min-width: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    table {
+      font-size: 0.875rem;
+    }
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background-color: var(--bg-primary);
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  tbody tr:hover {
+    background-color: var(--bg-primary);
+  }
+
+  .rank {
+    font-weight: bold;
+    color: var(--text-secondary);
+  }
+
+  .model-name {
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  /* Desktop optimizations for better data presentation */
+  @media (min-width: 1025px) {
+    table {
+      font-size: 1rem;
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .model-name {
+      min-width: 180px;
+    }
+
+    .progress-bar {
+      min-width: 140px;
+    }
+  }
+
+  /* Wider viewports - remove constraints to use available space */
+  @media (min-width: 1440px) {
+    th,
+    td {
+      padding: 0.875rem 0.75rem;
+    }
+
+    .model-name {
+      min-width: auto;
+      white-space: nowrap;
+    }
+
+    .progress-bar {
+      min-width: auto;
+      width: 100%;
+    }
+  }
+
+  .progress-bar {
+    position: relative;
+    background-color: var(--bg-tertiary);
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 150px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .cost {
+    color: var(--accent-secondary);
+    font-weight: 500;
+  }
+
+  .duration {
+    color: #9c27b0;
+  }
+
+  .tokens {
+    color: #ff5722;
+  }
+
+  @media (max-width: 768px) {
+    .leaderboard-section {
+      padding: 1rem;
+      margin-left: 0;
+      margin-right: 0;
+      border-radius: 0;
+    }
+
+    th,
+    td {
+      padding: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .progress-bar {
+      min-width: 100px;
+    }
+
+    /* Hide less important columns on mobile */
+    th:nth-child(5), /* Duration */
+    td:nth-child(5),
+    th:nth-child(6), /* Tokens */
+    td:nth-child(6),
+    th:nth-child(7), /* Runs */
+    td:nth-child(7) {
+      display: none;
+    }
+
+    /* Optimize remaining columns */
+    th:nth-child(4), /* Cost */
+    td:nth-child(4) {
+      min-width: 80px;
+    }
+
+    .progress-bar {
+      min-width: 80px;
+      height: 20px;
+    }
+
+    .progress-text {
+      font-size: 0.7rem;
+    }
+  }
+</style>
