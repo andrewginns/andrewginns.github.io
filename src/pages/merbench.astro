@@ -1,39 +1,39 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
+import SummaryStats from '../components/merbench/SummaryStats.astro';
+import LeaderboardTable from '../components/merbench/LeaderboardTable.astro';
+import DifficultyFilter from '../components/merbench/DifficultyFilter.astro';
+import ChartContainer from '../components/merbench/ChartContainer.astro';
+import { renderMarkdownToHTML } from '../lib/merbench';
+import { getCachedFileLastCommit } from '../lib/github';
+import type { MerbenchData } from '../lib/merbench-types';
 
 // Load the processed data
 import merbenchData from '../data/merbench_data.json';
+const data = merbenchData as MerbenchData;
 
-const { stats, leaderboard, pareto_data, test_groups_data, raw_data, config } = merbenchData;
-
-// Calculate cost per run (simplified pricing model)
-const calculateCost = (tokens: number) => {
-  // Simplified pricing: $0.001 per 1000 tokens
-  return (tokens / 1000) * 0.001;
-};
-
-// Convert markdown-style formatting to HTML
-const renderMarkdownToHTML = (text: string) => {
-  // Split into paragraphs
-  const paragraphs = text.split('\n\n').filter((p) => p.trim());
-
-  return paragraphs
-    .map((paragraph) => {
-      // Convert bold (**text** or __text__)
-      let html = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
-
-      // Convert italics (*text* or _text_)
-      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      html = html.replace(/_(.+?)_/g, '<em>$1</em>');
-
-      return `<p>${html}</p>`;
-    })
-    .join('\n      ');
-};
-
+const { stats, leaderboard, config } = data;
 const formattedDescription = renderMarkdownToHTML(config.description);
+
+// Fetch last commit info for the merbench data file
+const fileCommitInfo = await getCachedFileLastCommit(
+  'andrewginns',
+  'andrewginns.github.io',
+  'src/data/merbench_data.json'
+);
+
+// Format the date for display
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
 ---
 
 <BaseLayout title="Merbench - Andrew Ginns" bodyClass="wide-content">
@@ -41,120 +41,18 @@ const formattedDescription = renderMarkdownToHTML(config.description);
     <h1>{config.title}</h1>
     <div class="intro" set:html={formattedDescription} />
 
-    <!-- Summary Stats -->
-    <section class="summary-stats">
-      <h2>Evaluation Summary</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value">{stats.total_runs}</div>
-          <div class="stat-label">Total Evaluation Runs</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{stats.models_evaluated}</div>
-          <div class="stat-label">Models Evaluated</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{stats.test_cases}</div>
-          <div class="stat-label">Test Cases</div>
-        </div>
-      </div>
-      <div class="providers-section">
-        <h3>Providers Tested</h3>
-        <div class="provider-tags">
-          {stats.providers.map((provider: string) => <span class="provider-tag">{provider}</span>)}
-        </div>
-      </div>
-    </section>
+    <SummaryStats
+      stats={stats}
+      sourceUrl="https://github.com/andrewginns/agents-mcp-usage/tree/main/agents_mcp_usage/evaluations/mermaid_evals"
+      lastUpdated={lastUpdated || undefined}
+    />
+    <LeaderboardTable leaderboard={leaderboard} />
+    <DifficultyFilter difficulties={['easy', 'medium', 'hard']} />
 
-    <!-- Leaderboard -->
-    <section class="leaderboard-section">
-      <h2>Model Leaderboard</h2>
-      <div class="leaderboard-table">
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Model</th>
-              <th>Success Rate</th>
-              <th>Avg Cost/Run</th>
-              <th>Avg Duration</th>
-              <th>Avg Tokens</th>
-              <th>Runs</th>
-              <th>Provider</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              leaderboard.map((entry, index: number) => (
-                <tr>
-                  <td class="rank">{index + 1}</td>
-                  <td class="model-name">{entry.Model}</td>
-                  <td class="success-rate">
-                    <div class="progress-bar">
-                      <div
-                        class="progress-fill"
-                        style={`width: ${entry.Success_Rate}%; background-color: ${
-                          entry.Success_Rate >= 30
-                            ? '#27ae60'
-                            : entry.Success_Rate >= 15
-                              ? '#f39c12'
-                              : '#e74c3c'
-                        }`}
-                      />
-                      <span class="progress-text">{entry.Success_Rate.toFixed(1)}%</span>
-                    </div>
-                  </td>
-                  <td class="cost">${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
-                  <td class="duration">{entry.Avg_Duration.toFixed(2)}s</td>
-                  <td class="tokens">{entry.Avg_Tokens.toLocaleString()}</td>
-                  <td class="runs">{entry.Runs}</td>
-                  <td class="provider">{entry.Provider}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Difficulty Filter -->
-    <section class="filter-section">
-      <h2>Filter by Difficulty</h2>
-      <div class="filter-controls">
-        {
-          ['easy', 'medium', 'hard'].map((group: string) => (
-            <label class="filter-checkbox">
-              <input
-                type="checkbox"
-                name="difficulty"
-                value={group}
-                checked
-                data-difficulty={group}
-              />
-              <span class="checkbox-label">{group.charAt(0).toUpperCase() + group.slice(1)}</span>
-            </label>
-          ))
-        }
-      </div>
-    </section>
-
-    <!-- Pareto Chart -->
-    <section class="chart-section">
-      <h2>Performance vs Efficiency Trade-offs</h2>
-      <div id="pareto-chart" class="chart-container"></div>
-    </section>
-
-    <!-- Test Group Performance -->
-    <section class="chart-section">
-      <h2>Performance by Difficulty Level</h2>
-      <div id="test-group-chart" class="chart-container"></div>
-    </section>
-
-    <!-- Token Breakdown -->
-    <section class="chart-section">
-      <h2>Token Usage Breakdown</h2>
-      <div id="token-chart" class="chart-container"></div>
-    </section>
+    <ChartContainer chartId="pareto-chart" title="Performance vs Efficiency Trade-offs" />
+    <ChartContainer chartId="test-group-chart" title="Performance by Difficulty Level" />
+    <ChartContainer chartId="token-chart" title="Token Usage Breakdown" />
+    <ChartContainer chartId="failure-analysis-chart" title="Failure Analysis by Reason" />
 
     <LastUpdated />
   </div>
@@ -162,489 +60,23 @@ const formattedDescription = renderMarkdownToHTML(config.description);
   <!-- Load Plotly from CDN for charts -->
   <script is:inline src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 
-  <!-- Initialize Charts and Filtering -->
-  <script is:inline define:vars={{ pareto_data, test_groups_data, raw_data }}>
-    // Store original data
-    const originalRawData = [...raw_data];
-    const originalTestGroupsData = [...test_groups_data];
+  <!-- Initialize Charts and Filtering with TypeScript Modules -->
+  <script>
+    import '../scripts/merbench-init';
 
-    // Calculate cost function
-    const calculateCost = (tokens) => (tokens / 1000) * 0.001;
-
-    // Filter data based on selected difficulties
-    function getFilteredData() {
-      const selectedDifficulties = Array.from(
-        document.querySelectorAll('input[name="difficulty"]:checked')
-      ).map((cb) => cb.value);
-
-      // Filter raw data
-      const filteredRawData = originalRawData.filter((d) =>
-        selectedDifficulties.includes(d.test_group)
-      );
-
-      // Filter test groups data
-      const filteredTestGroupsData = originalTestGroupsData.filter((d) =>
-        selectedDifficulties.includes(d.test_group)
-      );
-
-      // Recalculate leaderboard data from filtered raw data
-      const modelStats = {};
-      filteredRawData.forEach((d) => {
-        if (!modelStats[d.Model]) {
-          modelStats[d.Model] = {
-            Model: d.Model,
-            Provider: d.provider,
-            successCount: 0,
-            totalRuns: 0,
-            totalDuration: 0,
-            totalTokens: 0,
-          };
-        }
-
-        modelStats[d.Model].totalRuns++;
-        modelStats[d.Model].totalDuration += d.Duration;
-        modelStats[d.Model].totalTokens += d.total_tokens;
-
-        if (d.Score_MermaidDiagramValid === 1) {
-          modelStats[d.Model].successCount++;
-        }
-      });
-
-      const filteredLeaderboard = Object.values(modelStats)
-        .map((stats) => ({
-          Model: stats.Model,
-          Success_Rate: (stats.successCount / stats.totalRuns) * 100,
-          Avg_Duration: stats.totalDuration / stats.totalRuns,
-          Avg_Tokens: stats.totalTokens / stats.totalRuns,
-          Runs: stats.totalRuns,
-          Provider: stats.Provider,
-        }))
-        .sort((a, b) => b.Success_Rate - a.Success_Rate);
-
-      // Recalculate pareto data
-      const filteredParetoData = filteredLeaderboard.map((d) => ({
-        Model: d.Model,
-        Success_Rate: d.Success_Rate,
-        Duration: d.Avg_Duration,
-        total_tokens: d.Avg_Tokens,
-        cost: calculateCost(d.Avg_Tokens),
-      }));
-
-      return {
-        leaderboard: filteredLeaderboard,
-        testGroupsData: filteredTestGroupsData,
-        paretoData: filteredParetoData,
-        rawData: filteredRawData,
-      };
-    }
-
-    // Update summary statistics
-    function updateSummaryStats(filteredData) {
-      const totalRuns = filteredData.rawData.length;
-      const models = [...new Set(filteredData.rawData.map((d) => d.Model))];
-
-      const statCards = document.querySelectorAll('.stat-card');
-      statCards[0].querySelector('.stat-value').textContent = totalRuns;
-      statCards[1].querySelector('.stat-value').textContent = models.length;
-    }
-
-    // Update leaderboard table
-    function updateLeaderboard(filteredData) {
-      const tbody = document.querySelector('.leaderboard-table tbody');
-      tbody.innerHTML = filteredData.leaderboard
-        .map(
-          (entry, index) => `
-        <tr>
-          <td class="rank">${index + 1}</td>
-          <td class="model-name">${entry.Model}</td>
-          <td class="success-rate">
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${entry.Success_Rate}%; background-color: ${
-                entry.Success_Rate >= 30
-                  ? '#27ae60'
-                  : entry.Success_Rate >= 15
-                    ? '#f39c12'
-                    : '#e74c3c'
-              }"></div>
-              <span class="progress-text">${entry.Success_Rate.toFixed(1)}%</span>
-            </div>
-          </td>
-          <td class="cost">$${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
-          <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
-          <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
-          <td class="runs">${entry.Runs}</td>
-          <td class="provider">${entry.Provider}</td>
-        </tr>
-      `
-        )
-        .join('');
-    }
-
-    // Initialize Pareto Chart
-    function initParetoChart(data = null) {
-      if (typeof Plotly === 'undefined') {
-        setTimeout(() => initParetoChart(data), 100);
-        return;
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof window.initializeMerbench === 'function') {
+        window.initializeMerbench((window as any).merbenchData);
+      } else {
+        console.error('Merbench initialization function not found');
       }
-
-      // Use provided data or original data
-      const chartData = data ? data.paretoData : pareto_data;
-      const dataWithCost = chartData.map((d) => ({
-        ...d,
-        cost: d.cost || calculateCost(d.total_tokens),
-      }));
-
-      const trace = {
-        x: dataWithCost.map((d) => d.cost),
-        y: dataWithCost.map((d) => d.Success_Rate),
-        mode: 'markers+text',
-        type: 'scatter',
-        text: dataWithCost.map((d) => d.Model),
-        textposition: 'top center',
-        textfont: {
-          size: window.innerWidth < 768 ? 8 : 10,
-          color: '#666',
-        },
-        showlegend: false,
-        marker: {
-          size: dataWithCost.map((d) => Math.log(d.Duration + 1) * 5 + 10),
-          color: dataWithCost.map((d) => d.Duration),
-          colorscale: 'Viridis',
-          showscale: true,
-          colorbar: {
-            title: {
-              text: 'Avg Duration (s)',
-              side: 'right',
-            },
-            thickness: 15,
-            len: 0.5,
-          },
-          line: {
-            color: 'white',
-            width: 1,
-          },
-        },
-        hovertemplate:
-          '<b>%{text}</b><br>' +
-          'Success Rate: %{y:.1f}%<br>' +
-          'Cost per Run: $%{x:.4f}<br>' +
-          'Avg Tokens: %{customdata[0]:,.0f}<br>' +
-          'Avg Duration: %{customdata[1]:.2f}s<br>' +
-          '<extra></extra>',
-        customdata: dataWithCost.map((d) => [d.total_tokens, d.Duration]),
-      };
-
-      const layout = {
-        title: {
-          text: 'Model Performance vs Cost Trade-off',
-          font: {
-            size: 16,
-            color: '#2c3e50',
-          },
-        },
-        xaxis: {
-          title: 'Average Cost per Run ($)',
-          type: 'log',
-          gridcolor: '#e0e0e0',
-          zeroline: false,
-        },
-        yaxis: {
-          title: 'Success Rate (%)',
-          gridcolor: '#e0e0e0',
-          zeroline: false,
-          range: [-5, Math.max(...dataWithCost.map((d) => d.Success_Rate)) + 5],
-        },
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
-        hovermode: 'closest',
-        margin: {
-          l: window.innerWidth < 768 ? 40 : 60,
-          r: window.innerWidth < 768 ? 80 : 120,
-          t: 40,
-          b: window.innerWidth < 768 ? 50 : 60,
-        },
-      };
-
-      // Add Pareto frontier line
-      const sortedByEfficiency = [...dataWithCost].sort((a, b) => a.cost - b.cost);
-      const paretoPoints = [];
-      let maxSuccessRate = -Infinity;
-
-      for (const point of sortedByEfficiency) {
-        if (point.Success_Rate > maxSuccessRate) {
-          paretoPoints.push(point);
-          maxSuccessRate = point.Success_Rate;
-        }
-      }
-
-      const traces = [trace];
-      if (paretoPoints.length > 1) {
-        const paretoTrace = {
-          x: paretoPoints.map((p) => p.cost),
-          y: paretoPoints.map((p) => p.Success_Rate),
-          mode: 'lines',
-          type: 'scatter',
-          line: {
-            color: 'rgba(231, 76, 60, 0.3)',
-            width: 2,
-            dash: 'dash',
-          },
-          name: 'Pareto Frontier',
-          hoverinfo: 'skip',
-        };
-        traces.unshift(paretoTrace);
-      }
-
-      const config = {
-        responsive: true,
-        displayModeBar: false,
-        staticPlot: window.innerWidth < 768, // Disable interactivity on mobile for better performance
-      };
-
-      Plotly.newPlot('pareto-chart', traces, layout, config);
-
-      // Force resize on orientation change
-      window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-          Plotly.Plots.resize('pareto-chart');
-        }, 500);
-      });
-    }
-
-    // Initialize Test Group Performance Chart
-    function initTestGroupChart(data = null) {
-      if (typeof Plotly === 'undefined') {
-        setTimeout(() => initTestGroupChart(data), 100);
-        return;
-      }
-
-      // Use provided data or original data
-      const chartData = data ? data.testGroupsData : test_groups_data;
-
-      // Process data for grouped bar chart
-      const models = [...new Set(chartData.map((d) => d.Model))];
-      const testGroups = [...new Set(chartData.map((d) => d.test_group))];
-
-      const traces = testGroups.map((group) => {
-        const groupData = chartData.filter((d) => d.test_group === group);
-        const successRates = models.map((model) => {
-          const modelData = groupData.find((d) => d.Model === model);
-          return modelData ? modelData.Score_MermaidDiagramValid * 100 : 0;
-        });
-
-        return {
-          name: group.charAt(0).toUpperCase() + group.slice(1),
-          x: models,
-          y: successRates,
-          type: 'bar',
-          marker: {
-            color: group === 'easy' ? '#27ae60' : group === 'medium' ? '#f39c12' : '#e74c3c',
-          },
-        };
-      });
-
-      const layout = {
-        title: {
-          text: 'Success Rate by Test Difficulty',
-          font: {
-            size: 16,
-            color: '#2c3e50',
-          },
-        },
-        xaxis: {
-          title: 'Model',
-          tickangle: -45,
-        },
-        yaxis: {
-          title: 'Success Rate (%)',
-          range: [0, 105],
-        },
-        barmode: 'group',
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
-        margin: {
-          l: window.innerWidth < 768 ? 40 : 60,
-          r: window.innerWidth < 768 ? 40 : 60,
-          t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
-        },
-      };
-
-      const config = {
-        responsive: true,
-        displayModeBar: false,
-        staticPlot: window.innerWidth < 768,
-      };
-
-      Plotly.newPlot('test-group-chart', traces, layout, config);
-
-      window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-          Plotly.Plots.resize('test-group-chart');
-        }, 500);
-      });
-    }
-
-    // Initialize Token Breakdown Chart
-    function initTokenChart(data = null) {
-      if (typeof Plotly === 'undefined') {
-        setTimeout(() => initTokenChart(data), 100);
-        return;
-      }
-
-      // Use provided data or original data
-      const chartData = data ? data.rawData : raw_data;
-
-      // Average token usage by model
-      const modelTokens = {};
-      chartData.forEach((d) => {
-        if (!modelTokens[d.Model]) {
-          modelTokens[d.Model] = { request: [], response: [] };
-        }
-        modelTokens[d.Model].request.push(d.Metric_request_tokens);
-        modelTokens[d.Model].response.push(d.Metric_response_tokens);
-      });
-
-      const models = Object.keys(modelTokens);
-      const avgRequestTokens = models.map((model) => {
-        const tokens = modelTokens[model].request.filter((t) => t > 0);
-        return tokens.length > 0 ? tokens.reduce((a, b) => a + b) / tokens.length : 0;
-      });
-      const avgResponseTokens = models.map((model) => {
-        const tokens = modelTokens[model].response.filter((t) => t > 0);
-        return tokens.length > 0 ? tokens.reduce((a, b) => a + b) / tokens.length : 0;
-      });
-
-      // Sort by total tokens
-      const totalTokens = models.map((_, i) => avgRequestTokens[i] + avgResponseTokens[i]);
-      const sortedIndices = [...Array(models.length).keys()].sort(
-        (a, b) => totalTokens[b] - totalTokens[a]
-      );
-
-      const trace1 = {
-        x: sortedIndices.map((i) => models[i]),
-        y: sortedIndices.map((i) => avgRequestTokens[i]),
-        name: 'Request Tokens',
-        type: 'bar',
-        marker: { color: '#3498db' },
-      };
-
-      const trace2 = {
-        x: sortedIndices.map((i) => models[i]),
-        y: sortedIndices.map((i) => avgResponseTokens[i]),
-        name: 'Response Tokens',
-        type: 'bar',
-        marker: { color: '#e74c3c' },
-      };
-
-      const layout = {
-        title: {
-          text: 'Average Token Usage per Model',
-          font: {
-            size: 16,
-            color: '#2c3e50',
-          },
-        },
-        xaxis: {
-          title: 'Model',
-          tickangle: -45,
-        },
-        yaxis: {
-          title: 'Average Tokens',
-        },
-        barmode: 'stack',
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
-        margin: {
-          l: window.innerWidth < 768 ? 50 : 80,
-          r: window.innerWidth < 768 ? 40 : 60,
-          t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
-        },
-      };
-
-      const config = {
-        responsive: true,
-        displayModeBar: false,
-        staticPlot: window.innerWidth < 768,
-      };
-
-      Plotly.newPlot('token-chart', [trace1, trace2], layout, config);
-
-      window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-          Plotly.Plots.resize('token-chart');
-        }, 500);
-      });
-    }
-
-    // Main update function
-    function updateAllVisualizations() {
-      const filteredData = getFilteredData();
-
-      // Check if any difficulty is selected
-      const selectedCount = document.querySelectorAll('input[name="difficulty"]:checked').length;
-      if (selectedCount === 0) {
-        // Show a message if no difficulties are selected
-        document.querySelector('.leaderboard-table tbody').innerHTML =
-          '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Please select at least one difficulty level</td></tr>';
-
-        // Clear charts
-        Plotly.purge('pareto-chart');
-        Plotly.purge('test-group-chart');
-        Plotly.purge('token-chart');
-        return;
-      }
-
-      // Update all components
-      updateSummaryStats(filteredData);
-      updateLeaderboard(filteredData);
-      initParetoChart(filteredData);
-      initTestGroupChart(filteredData);
-      initTokenChart(filteredData);
-    }
-
-    // Add event listeners to checkboxes
-    function initializeFilters() {
-      const checkboxes = document.querySelectorAll('input[name="difficulty"]');
-      checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener('change', updateAllVisualizations);
-      });
-    }
-
-    // Initialize all charts when DOM is ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        initializeFilters();
-        // Delay chart initialization to ensure layout is complete
-        setTimeout(() => {
-          initParetoChart();
-          initTestGroupChart();
-          initTokenChart();
-        }, 100);
-      });
-    } else {
-      initializeFilters();
-      // Delay chart initialization to ensure layout is complete
-      setTimeout(() => {
-        initParetoChart();
-        initTestGroupChart();
-        initTokenChart();
-      }, 100);
-    }
-
-    // Force chart resize on window resize
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        if (typeof Plotly !== 'undefined') {
-          Plotly.Plots.resize('pareto-chart');
-          Plotly.Plots.resize('test-group-chart');
-          Plotly.Plots.resize('token-chart');
-        }
-      }, 250);
     });
+  </script>
+
+  <!-- Make data available globally -->
+  <script is:inline define:vars={{ data: merbenchData }}>
+    window.merbenchData = data;
   </script>
 </BaseLayout>
 

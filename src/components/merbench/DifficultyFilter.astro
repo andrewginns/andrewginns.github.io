@@ -1,0 +1,77 @@
+---
+export interface Props {
+  difficulties: string[];
+}
+
+const { difficulties } = Astro.props;
+---
+
+<section class="filter-section">
+  <h2>Filter by Difficulty</h2>
+  <div class="filter-controls">
+    {
+      difficulties.map((group) => (
+        <label class="filter-checkbox">
+          <input type="checkbox" name="difficulty" value={group} checked data-difficulty={group} />
+          <span class="checkbox-label">{group.charAt(0).toUpperCase() + group.slice(1)}</span>
+        </label>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  /* Filter Styles */
+  .filter-section {
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .filter-section h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .filter-controls {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filter-checkbox input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+  }
+
+  .checkbox-label {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+  }
+
+  .filter-checkbox:hover .checkbox-label {
+    color: var(--accent-primary);
+  }
+
+  @media (max-width: 768px) {
+    .filter-section {
+      padding: 1rem;
+    }
+
+    .filter-controls {
+      gap: 1rem;
+    }
+  }
+</style>
