@@ -28,7 +28,12 @@
   "license": "MIT",
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/sitemap": "^3.4.1",
     "astro": "^5.9.4",
+    "astro-robots-txt": "^1.0.0",
+    "astro-seo": "^0.8.4",
+    "astro-seo-schema": "^5.0.0",
+    "fast-xml-parser": "^5.2.5",
     "typescript": "^5.8.3"
   },
   "devDependencies": {

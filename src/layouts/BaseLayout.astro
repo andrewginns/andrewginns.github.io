@@ -1,14 +1,28 @@
 ---
 import { getTopProjectTags } from '../utils/globalData';
 import { formatTagForFloatingElement } from '../utils/tagAggregator';
+import SEO from '../components/SEO.astro';
+import StructuredData from '../components/StructuredData.astro';
 
 export interface Props {
   title: string;
   description?: string;
   bodyClass?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishDate?: Date;
+  author?: string;
 }
 
-const { title, description = 'Andrew Ginns - Machine Learning Engineer', bodyClass } = Astro.props;
+const {
+  title,
+  description = 'Andrew Ginns - Machine Learning Engineer',
+  bodyClass,
+  image,
+  type = 'website',
+  publishDate,
+  author,
+} = Astro.props;
 const currentPath = Astro.url.pathname;
 
 // Fetch top project tags for floating elements
@@ -23,7 +37,6 @@ const tagPairs = topTags.map((tag) => ({
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://api.github.com" />
@@ -32,6 +45,20 @@ const tagPairs = topTags.map((tag) => ({
     <link rel="preconnect" href="https://github.io" />
     <link rel="dns-prefetch" href="https://cloudflare.com" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO and Structured Data -->
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      type={type}
+      publishDate={publishDate}
+      author={author}
+    />
+
+    <!-- Structured Data for Person (on homepage) -->
+    {currentPath === '/' && <StructuredData type="Person" data={{}} />}
+
     <title>{title}</title>
   </head>
   <body class={bodyClass}>

@@ -1,3 +1,5 @@
+import { getCachedGitHubData as getCachedData } from '../utils/github-cache';
+
 export interface GitHubRepo {
   name: string;
   description: string;
@@ -11,48 +13,29 @@ export interface GitHubRepo {
 }
 
 export async function getGitHubData(username: string) {
-  const headers: HeadersInit = {
-    Accept: 'application/vnd.github.v3+json',
-  };
-
   // Optional: Add GitHub token for higher rate limits
   const token = import.meta.env.GITHUB_TOKEN;
-  if (token) {
-    headers['Authorization'] = `token ${token}`;
-  }
-
-  const fetchWithTimeout = (url: string, options: RequestInit, timeout = 5000) => {
-    return Promise.race([
-      fetch(url, options),
-      new Promise<Response>((_, reject) =>
-        setTimeout(() => reject(new Error('Request timeout')), timeout)
-      ),
-    ]);
-  };
 
   try {
     console.log(`🔄 Fetching GitHub data for ${username}...`);
 
-    // Fetch user profile with timeout
-    const profileResponse = await fetchWithTimeout(`https://api.github.com/users/${username}`, {
-      headers,
-    });
-    if (!profileResponse.ok) throw new Error('Failed to fetch profile');
-    const profile = await profileResponse.json();
+    // Fetch user profile with caching and rate limiting
+    const profile = await getCachedData(`/users/${username}`);
 
-    // Fetch repositories with timeout
-    const reposResponse = await fetchWithTimeout(
-      `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
-      { headers }
+    // Fetch repositories with caching and rate limiting
+    const repos: GitHubRepo[] = await getCachedData(
+      `/users/${username}/repos?per_page=100&sort=updated`
     );
-    if (!reposResponse.ok) throw new Error('Failed to fetch repositories');
-    const repos: GitHubRepo[] = await reposResponse.json();
 
     // For pinned repos, we'll use a GraphQL query (requires authentication)
     // Alternatively, we can use the most starred/recent repos as a fallback
     let pinnedRepos: GitHubRepo[] = [];
 
     if (token) {
+      const headers: HeadersInit = {
+        Accept: 'application/vnd.github.v3+json',
+        Authorization: `token ${token}`,
+      };
       // Use GraphQL to get pinned repos
       const graphqlQuery = `
         query {
