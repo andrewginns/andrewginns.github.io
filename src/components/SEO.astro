@@ -1,5 +1,5 @@
 ---
-import { SEO } from 'astro-seo';
+import { SEO as AstroSEO } from 'astro-seo';
 import { Schema } from 'astro-seo-schema';
 
 export interface Props {
@@ -24,7 +24,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const imageURL = new URL(image, Astro.site);
 ---
 
-<SEO
+<AstroSEO
   title={title}
   description={description}
   canonical={canonicalURL.href}
@@ -43,7 +43,7 @@ const imageURL = new URL(image, Astro.site);
       type === 'article'
         ? {
             publishedTime: publishDate?.toISOString(),
-            author: [author],
+            authors: [author],
           }
         : undefined,
   }}

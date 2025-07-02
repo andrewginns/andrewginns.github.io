@@ -1,33 +1,18 @@
 ---
-import { Picture, type ImageMetadata } from 'astro:assets';
-
 export interface Props {
-  src: string | ImageMetadata;
+  src: string;
   alt: string;
-  sizes?: string;
   loading?: 'eager' | 'lazy';
   class?: string;
-  formats?: ('webp' | 'avif' | 'png' | 'jpg')[];
 }
 
-const {
-  src,
-  alt,
-  sizes = '(max-width: 768px) 100vw, 50vw',
-  loading = 'lazy',
-  class: className,
-  formats = ['avif', 'webp'],
-} = Astro.props;
-
-const widths = [400, 800, 1200];
+const { src, alt, loading = 'lazy', class: className } = Astro.props;
 ---
 
-<Picture
+<img
   src={src}
   alt={alt}
-  widths={widths}
-  sizes={sizes}
-  formats={formats}
   loading={loading}
   class={className}
+  style="max-width: 100%; height: auto; display: block;"
 />

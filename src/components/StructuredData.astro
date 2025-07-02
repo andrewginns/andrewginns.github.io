@@ -3,10 +3,10 @@ import { Schema } from 'astro-seo-schema';
 
 export interface Props {
   type: 'Person' | 'Organization' | 'Article' | 'WebSite' | 'BreadcrumbList';
-  data: Array<{ name: string; url: string }> | Record<string, unknown>;
+  data?: Array<{ name: string; url: string }>;
 }
 
-const { type, data } = Astro.props;
+const { type, data = [] } = Astro.props;
 
 // Helper function to create breadcrumb structured data
 function createBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
@@ -67,8 +67,8 @@ switch (type) {
     schemaData = createBreadcrumbSchema(data);
     break;
   default:
-    schemaData = data;
+    schemaData = createPersonSchema(); // Default fallback
 }
 ---
 
-<Schema item={schemaData} />
+<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
