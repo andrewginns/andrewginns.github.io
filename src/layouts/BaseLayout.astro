@@ -232,6 +232,15 @@ const tagPairs = topTags.map((tag) => ({
         --sidebar-width: 240px;
         --content-max-width: 800px;
         --spacing-unit: 1rem;
+
+        /* Phase 2: Fluid Typography - Enhanced responsive design */
+        --font-size-base: clamp(1rem, 2vw, 1.125rem);
+        --font-size-lg: clamp(1.25rem, 3vw, 1.5rem);
+        --font-size-xl: clamp(1.875rem, 4vw, 2.5rem);
+        --font-size-2xl: clamp(2.25rem, 5vw, 3rem);
+
+        --spacing-base: clamp(1rem, 3vw, 1.5rem);
+        --spacing-lg: clamp(2rem, 5vw, 3rem);
       }
 
       * {
@@ -1016,6 +1025,69 @@ const tagPairs = topTags.map((tag) => ({
       .floating-element::after {
         will-change: transform;
         backface-visibility: hidden;
+      }
+
+      /* Phase 2: Accessibility Improvements */
+
+      /* Reduced motion support - accessibility improvement */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+
+        /* Disable floating element animations */
+        .floating-element {
+          animation: none !important;
+        }
+
+        .floating-element::after {
+          animation: none !important;
+        }
+
+        /* Disable typewriter effect for users who prefer reduced motion */
+        .tagline::after,
+        .mobile-tagline::after {
+          animation: none !important;
+          opacity: 1 !important;
+        }
+      }
+
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        :root {
+          --text-primary: #000000;
+          --text-secondary: #333333;
+          --bg-primary: #ffffff;
+          --bg-secondary: #f0f0f0;
+          --border-color: #000000;
+          --accent-primary: #0000ff;
+          --accent-secondary: #0000aa;
+        }
+
+        .floating-element {
+          border: 2px solid currentColor !important;
+          background: white !important;
+          color: black !important;
+        }
+
+        .nav-links a,
+        .mobile-nav-links a {
+          border: 1px solid transparent;
+        }
+
+        .nav-links a:focus,
+        .mobile-nav-links a:focus,
+        .social-link:focus,
+        .mobile-social-link:focus {
+          border: 2px solid currentColor !important;
+          outline: 2px solid currentColor !important;
+          outline-offset: 2px !important;
+        }
       }
     </style>
 
