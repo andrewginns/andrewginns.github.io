@@ -115,7 +115,10 @@ export function formatTagForFloatingElement(tag: string): string {
   // Common abbreviations for floating elements
   const abbreviations: Record<string, string> = {
     'machine-learning': 'ML',
+    ml: 'ML',
     'artificial-intelligence': 'AI',
+    ai: 'AI',
+    ds: 'DS',
     'deep-learning': 'Deep Learning',
     'computer-vision': 'Computer Vision',
     'natural-language-processing': 'NLP',
