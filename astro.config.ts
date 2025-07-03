@@ -1,7 +1,7 @@
-// @ts-check
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import robotsTxt from 'astro-robots-txt';
+import type { AstroIntegration } from 'astro';
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,7 +20,7 @@ export default defineConfig({
       changefreq: 'weekly',
       priority: 0.7,
       lastmod: new Date(),
-      filter: (page) => !page.includes('/admin/'),
+      filter: (page: string) => !page.includes('/admin/'),
       serialize(item) {
         if (item.url.includes('/writing/')) {
           item.priority = 0.9;
@@ -39,7 +39,7 @@ export default defineConfig({
         },
       ],
     }),
-  ],
+  ] as AstroIntegration[],
   vite: {
     build: {
       cssCodeSplit: true,
