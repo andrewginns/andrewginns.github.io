@@ -1,0 +1,11 @@
+IMPORTANT: Create an OpenGraph default image
+
+Please add an image file named "og-default.jpg" to the public directory.
+
+Recommended specifications:
+- Dimensions: 1200x630 pixels
+- Format: JPG or PNG
+- Content: Your logo, name, or a representation of your brand
+- File size: Under 200KB for optimal performance
+
+This image will be used as the default OpenGraph image for social media sharing when pages don't specify their own image.

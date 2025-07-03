@@ -1,0 +1,72 @@
+---
+export interface Props {
+  type: 'Person' | 'Organization' | 'Article' | 'WebSite' | 'BreadcrumbList';
+  data?: Array<{ name: string; url: string }>;
+}
+
+const { type, data = [] } = Astro.props;
+
+// Helper function to create breadcrumb structured data
+function createBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}
+
+// Helper function to create person schema
+function createPersonSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Andrew Ginns',
+    url: 'https://andrew.ginns.uk',
+    sameAs: ['https://github.com/andrewginns', 'https://linkedin.com/in/andrewginns'],
+    jobTitle: 'GenAI Solution Architect',
+    alumniOf: {
+      '@type': 'Organization',
+      name: 'University Name', // Update with actual university
+    },
+    worksFor: {
+      '@type': 'Organization',
+      name: 'Company Name', // Update with actual company
+    },
+  };
+}
+
+// Helper function to create organization schema
+function createOrganizationSchema() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Andrew Ginns',
+    url: 'https://andrew.ginns.uk',
+    logo: 'https://andrew.ginns.uk/favicon.svg',
+    sameAs: ['https://github.com/andrewginns', 'https://linkedin.com/in/andrewginns'],
+  };
+}
+
+// Select appropriate schema based on type
+let schemaData;
+switch (type) {
+  case 'Person':
+    schemaData = createPersonSchema();
+    break;
+  case 'Organization':
+    schemaData = createOrganizationSchema();
+    break;
+  case 'BreadcrumbList':
+    schemaData = createBreadcrumbSchema(data);
+    break;
+  default:
+    schemaData = createPersonSchema(); // Default fallback
+}
+---
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaData)} />

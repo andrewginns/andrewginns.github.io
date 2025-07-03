@@ -1,14 +1,34 @@
 ---
 import { getTopProjectTags } from '../utils/globalData';
 import { formatTagForFloatingElement } from '../utils/tagAggregator';
+import SEO from '../components/SEO.astro';
+import StructuredData from '../components/StructuredData.astro';
+import { getCachedGitHubProfile } from '../lib/github';
 
 export interface Props {
   title: string;
   description?: string;
   bodyClass?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishDate?: Date;
+  author?: string;
 }
 
-const { title, description = 'Andrew Ginns - Machine Learning Engineer', bodyClass } = Astro.props;
+// Fetch dynamic GitHub role and company for SEO/OG tags
+const githubProfile = await getCachedGitHubProfile('andrewginns');
+const dynamicRole = githubProfile.role;
+const dynamicCompany = githubProfile.company;
+
+const {
+  title,
+  description = `Welcome to my personal website, find out more about me and my projects. Curently: ${dynamicRole} at ${dynamicCompany}`,
+  bodyClass,
+  image,
+  type = 'website',
+  publishDate,
+  author,
+} = Astro.props;
 const currentPath = Astro.url.pathname;
 
 // Fetch top project tags for floating elements
@@ -23,7 +43,6 @@ const tagPairs = topTags.map((tag) => ({
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://api.github.com" />
@@ -32,6 +51,20 @@ const tagPairs = topTags.map((tag) => ({
     <link rel="preconnect" href="https://github.io" />
     <link rel="dns-prefetch" href="https://cloudflare.com" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO and Structured Data -->
+    <SEO
+      title={title}
+      description={description}
+      image={image}
+      type={type}
+      publishDate={publishDate}
+      author={author}
+    />
+
+    <!-- Structured Data for Person (on homepage) -->
+    {currentPath === '/' && <StructuredData type="Person" />}
+
     <title>{title}</title>
   </head>
   <body class={bodyClass}>

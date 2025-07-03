@@ -1,0 +1,67 @@
+---
+import { SEO as AstroSEO } from 'astro-seo';
+import { Schema } from 'astro-seo-schema';
+
+export interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishDate?: Date;
+  author?: string;
+}
+
+const {
+  title,
+  description,
+  image = '/og-default.jpg',
+  type = 'website',
+  publishDate,
+  author = 'Andrew Ginns',
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = new URL(image, Astro.site);
+---
+
+<AstroSEO
+  title={title}
+  description={description}
+  canonical={canonicalURL.href}
+  openGraph={{
+    basic: {
+      title: title,
+      type: type,
+      image: imageURL.href,
+      url: canonicalURL.href,
+    },
+    optional: {
+      description: description,
+      siteName: 'Andrew Ginns',
+    },
+    article:
+      type === 'article'
+        ? {
+            publishedTime: publishDate?.toISOString(),
+            authors: [author],
+          }
+        : undefined,
+  }}
+/>
+
+<Schema
+  item={{
+    '@context': 'https://schema.org',
+    '@type': type === 'article' ? 'BlogPosting' : 'WebSite',
+    name: title,
+    headline: title,
+    description: description,
+    url: canonicalURL.href,
+    image: imageURL.href,
+    author: {
+      '@type': 'Person',
+      name: author,
+      url: 'https://andrew.ginns.uk',
+    },
+  }}
+/>
