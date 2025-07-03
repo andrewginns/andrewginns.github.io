@@ -21,7 +21,8 @@ window.initializeMerbench = function (data: MerbenchData) {
   };
 
   // Initialize filters (will be used by the charts for updates)
-  new MerbenchFilters(data, charts);
+  const filters = new MerbenchFilters(data, charts);
+  filters.initialize();
 
   // Initialize charts with all data
   const initializeAllCharts = async () => {
@@ -48,39 +49,8 @@ window.initializeMerbench = function (data: MerbenchData) {
     }
   };
 
-  // Set up filter handling
-  const handleFilterChange = () => {
-    const selectedDifficulties = Array.from(
-      document.querySelectorAll('input[name="difficulty"]:checked')
-    ).map((cb: any) => cb.value);
-
-    if (selectedDifficulties.length === 0) {
-      showEmptyState();
-      return;
-    }
-
-    // Get filtered data
-    const filteredData = getFilteredData(
-      selectedDifficulties,
-      originalData.rawData,
-      originalData.testGroupsData
-    );
-
-    // Update charts
-    charts.updateAllCharts(filteredData);
-
-    // Update other components using the utility functions directly
-    updateSummaryStats(filteredData);
-    updateLeaderboard(filteredData);
-  };
-
   // Set up event listeners
   const setupEventListeners = () => {
-    const checkboxes = document.querySelectorAll('input[name="difficulty"]');
-    checkboxes.forEach((checkbox) => {
-      checkbox.addEventListener('change', handleFilterChange);
-    });
-
     // Setup responsive behavior
     let resizeTimeout: number;
     window.addEventListener('resize', () => {
@@ -97,15 +67,7 @@ window.initializeMerbench = function (data: MerbenchData) {
       await initializeAllCharts();
       setupEventListeners();
 
-      // Make sure all difficulties are checked by default
-      const checkboxes = document.querySelectorAll(
-        'input[name="difficulty"]'
-      ) as NodeListOf<HTMLInputElement>;
-      checkboxes.forEach((checkbox) => {
-        if (!checkbox.checked) {
-          checkbox.checked = true;
-        }
-      });
+      // Make sure all filters are checked by default (handled by the HTML default)
     } catch (error) {
       console.error('Failed to initialize Merbench:', error);
     }
@@ -142,13 +104,4 @@ function calculateFailureAnalysis(rawData: RawData[]) {
   });
 
   return Object.values(failureAnalysis);
-}
-
-// Helper function to show empty state
-function showEmptyState() {
-  const tbody = document.querySelector('.leaderboard-table tbody');
-  if (tbody) {
-    tbody.innerHTML =
-      '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Please select at least one difficulty level</td></tr>';
-  }
 }

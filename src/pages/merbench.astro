@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
 import SummaryStats from '../components/merbench/SummaryStats.astro';
 import LeaderboardTable from '../components/merbench/LeaderboardTable.astro';
-import DifficultyFilter from '../components/merbench/DifficultyFilter.astro';
+import CombinedFilters from '../components/merbench/CombinedFilters.astro';
 import ChartContainer from '../components/merbench/ChartContainer.astro';
 import { renderMarkdownToHTML } from '../lib/merbench';
 import { getCachedFileLastCommit } from '../lib/github';
@@ -46,8 +46,10 @@ const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
       sourceUrl="https://github.com/andrewginns/agents-mcp-usage/tree/main/agents_mcp_usage/evaluations/mermaid_evals"
       lastUpdated={lastUpdated || undefined}
     />
+
+    <CombinedFilters difficulties={['easy', 'medium', 'hard']} providers={stats.providers} />
+
     <LeaderboardTable leaderboard={leaderboard} />
-    <DifficultyFilter difficulties={['easy', 'medium', 'hard']} />
 
     <ChartContainer chartId="pareto-chart" title="Performance vs Efficiency Trade-offs" />
     <ChartContainer chartId="test-group-chart" title="Performance by Difficulty Level" />
@@ -482,50 +484,6 @@ const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
     .progress-text {
       font-size: 0.7rem;
     }
-  }
-
-  /* Filter Styles */
-  .filter-section {
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .filter-section h2 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-  }
-
-  .filter-controls {
-    display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
-
-  .filter-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .filter-checkbox input[type='checkbox'] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: var(--accent-primary);
-  }
-
-  .checkbox-label {
-    font-size: 0.95rem;
-    color: var(--text-primary);
-  }
-
-  .filter-checkbox:hover .checkbox-label {
-    color: var(--accent-primary);
   }
 
   /* Chart Styles */
