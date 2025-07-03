@@ -44,3 +44,6 @@ memory-bank/*
 scripts/screenshots/*
 reference_files/*
 screenshots/*
+
+# Project tracking
+TODO.md
