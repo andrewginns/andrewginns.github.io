@@ -3,11 +3,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import LastUpdated from '../components/LastUpdated.astro';
 import HeroCard from '../components/HeroCard.astro';
 import { getIntroContent } from '../lib/content.ts';
+import { getCachedGitHubProfile } from '../lib/github';
 
 const introContent = await getIntroContent();
+const githubProfile = await getCachedGitHubProfile('andrewginns');
+const dynamicTitle = `Andrew Ginns - ${githubProfile.role} at ${githubProfile.company}`;
 ---
 
-<BaseLayout title="Andrew Ginns - Machine Learning Engineer">
+<BaseLayout title={dynamicTitle}>
   <div class="home-content">
     <HeroCard
       name="Hi, I'm Andrew"
@@ -17,34 +20,32 @@ const introContent = await getIntroContent();
       imageAlt="Andrew Ginns - Headshot"
       tagline="Feel free to look around ✨"
     />
-    
+
     <section class="work-section">
       <h2>What I Do</h2>
       <p>
         {introContent.introText}
       </p>
     </section>
-    
+
     <section class="focus-section">
       <h2>Recent Focus</h2>
       <p>
-        I'm particularly interested in Large Language Models, Agentic System, and building robust 
+        I'm particularly interested in Large Language Models, Agentic System, and building robust
         MLOps workflows.
       </p>
     </section>
-    
+
     <section class="connect-section">
       <h2>Let's Connect</h2>
+      <p>Interested in working with me? Check out my work and get in touch.</p>
       <p>
-        Interested in working with me? Check out my work and get in touch.
-      </p>
-      <p>
-                    <a href="/projects_github">View Projects</a> • 
-        <a href="/writing">Read Writing</a> • 
+        <a href="/projects_github">View Projects</a> •
+        <a href="/writing">Read Writing</a> •
         <a href="/contact_me">Get in Touch</a>
       </p>
     </section>
-    
+
     <LastUpdated />
   </div>
 </BaseLayout>
@@ -55,24 +56,23 @@ const introContent = await getIntroContent();
   .connect-section {
     margin-bottom: 3rem;
   }
-  
+
   .work-list {
     list-style: none;
     padding: 0;
     margin-left: 0;
   }
-  
+
   .work-list li {
     margin-bottom: 0.5rem;
     padding-left: 1rem;
     position: relative;
   }
-  
+
   .work-list li::before {
     content: '•';
     color: var(--accent-primary);
     position: absolute;
     left: 0;
   }
-  
 </style>

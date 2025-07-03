@@ -3,6 +3,7 @@ import { getTopProjectTags } from '../utils/globalData';
 import { formatTagForFloatingElement } from '../utils/tagAggregator';
 import SEO from '../components/SEO.astro';
 import StructuredData from '../components/StructuredData.astro';
+import { getCachedGitHubProfile } from '../lib/github';
 
 export interface Props {
   title: string;
@@ -14,9 +15,14 @@ export interface Props {
   author?: string;
 }
 
+// Fetch dynamic GitHub role and company for SEO/OG tags
+const githubProfile = await getCachedGitHubProfile('andrewginns');
+const dynamicRole = githubProfile.role;
+const dynamicCompany = githubProfile.company;
+
 const {
   title,
-  description = 'Andrew Ginns - Machine Learning Engineer',
+  description = `Welcome to my personal website, find out more about me and my projects. Curently: ${dynamicRole} at ${dynamicCompany}`,
   bodyClass,
   image,
   type = 'website',

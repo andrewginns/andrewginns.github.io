@@ -1,6 +1,4 @@
 ---
-import { Schema } from 'astro-seo-schema';
-
 export interface Props {
   type: 'Person' | 'Organization' | 'Article' | 'WebSite' | 'BreadcrumbList';
   data?: Array<{ name: string; url: string }>;
@@ -71,4 +69,4 @@ switch (type) {
 }
 ---
 
-<script type="application/ld+json" set:html={JSON.stringify(schemaData)} />
+<script is:inline type="application/ld+json" set:html={JSON.stringify(schemaData)} />

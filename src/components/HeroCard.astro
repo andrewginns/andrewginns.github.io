@@ -1,6 +1,4 @@
 ---
-import OptimizedImage from './OptimizedImage.astro';
-
 interface Props {
   name: string;
   title: string;
@@ -15,7 +13,14 @@ const { name, title, description, imageUrl, imageAlt, tagline } = Astro.props;
 
 <div class="hero-card">
   <div class="hero-image-wrapper">
-    <OptimizedImage src={imageUrl} alt={imageAlt} loading="eager" class="hero-image" />
+    <!-- 
+      Note: Using a simple img tag instead of OptimizedImage component for the hero image.
+      The Picture component with responsive widths (400px, 800px, 1200px) was making 
+      the image appear too large and not fit properly within the hero card's fixed 
+      200px × 200px design. The hero card requires a fixed-size image to maintain 
+      its intended layout and visual balance.
+    -->
+    <img src={imageUrl} alt={imageAlt} loading="eager" class="hero-image" />
   </div>
   <div class="hero-content">
     <h1 class="hero-title" transition:name="hero-title">{name} 👋🏼</h1>
