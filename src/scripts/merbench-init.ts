@@ -5,12 +5,21 @@ import type { MerbenchData, RawData } from '../lib/merbench-types';
 declare global {
   interface Window {
     initializeMerbench: (data: MerbenchData) => void;
+    merbenchCharts?: MerbenchCharts;
+    merbenchData?: MerbenchData;
+    currentFilteredData?: any;
   }
 }
 
 // Initialize Merbench functionality
 window.initializeMerbench = function (data: MerbenchData) {
   const charts = new MerbenchCharts();
+
+  // Make charts instance globally available
+  window.merbenchCharts = charts;
+
+  // Store original data globally
+  window.merbenchData = data;
 
   // Set up initial data
   const originalData = {
@@ -41,6 +50,9 @@ window.initializeMerbench = function (data: MerbenchData) {
         rawData: originalData.rawData,
         failureAnalysisData: calculateFailureAnalysis(originalData.rawData),
       };
+
+      // Store initial chart data globally for metric selector access
+      window.currentFilteredData = chartData;
 
       await charts.initializeAllCharts(chartData);
     } catch (error) {
