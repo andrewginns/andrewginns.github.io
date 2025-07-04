@@ -55,12 +55,65 @@ export class MerbenchCharts {
     }
   }
 
-  async initParetoChart(data: ParetoData[], containerId: string): Promise<void> {
+  async initParetoChart(
+    data: ParetoData[],
+    containerId: string,
+    metric: 'cost' | 'time' | 'tokens' = 'cost'
+  ): Promise<void> {
     try {
       if (!this.plotlyLoaded) await this.waitForPlotly();
 
       const processed = processChartData.pareto(data);
-      const { dataWithCost, paretoPoints } = processed;
+      const { dataWithCost } = processed;
+
+      // Get X-axis data based on selected metric
+      let xData: number[];
+      let xAxisTitle: string;
+      let xAxisType: 'linear' | 'log' = 'log';
+      let chartTitle: string;
+
+      switch (metric) {
+        case 'time':
+          xData = dataWithCost.map((d) => d.Duration);
+          xAxisTitle = 'Average Duration (seconds)';
+          xAxisType = 'linear';
+          chartTitle = 'Model Performance vs Time Trade-off';
+          break;
+        case 'tokens':
+          xData = dataWithCost.map((d) => d.total_tokens);
+          xAxisTitle = 'Average Tokens per Run';
+          xAxisType = 'log';
+          chartTitle = 'Model Performance vs Token Usage Trade-off';
+          break;
+        case 'cost':
+        default:
+          xData = dataWithCost.map((d) => d.cost);
+          xAxisTitle = 'Average Cost per Run ($)';
+          xAxisType = 'log';
+          chartTitle = 'Model Performance vs Cost Trade-off';
+          break;
+      }
+
+      // Calculate pareto frontier for selected metric
+      const paretoData = dataWithCost
+        .map((d, index) => ({ ...d, originalIndex: index }))
+        .sort((a, b) => {
+          const aValue =
+            metric === 'time' ? a.Duration : metric === 'tokens' ? a.total_tokens : a.cost;
+          const bValue =
+            metric === 'time' ? b.Duration : metric === 'tokens' ? b.total_tokens : b.cost;
+          return aValue - bValue;
+        });
+
+      const paretoFrontier: any[] = [];
+      let maxSuccessRate = -1;
+
+      for (const point of paretoData) {
+        if (point.Success_Rate > maxSuccessRate) {
+          paretoFrontier.push(point);
+          maxSuccessRate = point.Success_Rate;
+        }
+      }
 
       // Calculate colors for each point based on Duration values
       const durations = dataWithCost.map((d) => d.Duration);
@@ -78,8 +131,41 @@ export class MerbenchCharts {
         return this.getContrastColor(bgColor);
       });
 
+      // Create hover template based on selected metric
+      let hoverTemplate: string;
+      switch (metric) {
+        case 'time':
+          hoverTemplate =
+            '<b>%{text}</b><br>' +
+            'Success Rate: %{y:.1f}%<br>' +
+            'Avg Duration: %{x:.2f}s<br>' +
+            'Cost per Run: $%{customdata[0]:.4f}<br>' +
+            'Avg Tokens: %{customdata[1]:,.0f}<br>' +
+            '<extra></extra>';
+          break;
+        case 'tokens':
+          hoverTemplate =
+            '<b>%{text}</b><br>' +
+            'Success Rate: %{y:.1f}%<br>' +
+            'Avg Tokens: %{x:,.0f}<br>' +
+            'Cost per Run: $%{customdata[0]:.4f}<br>' +
+            'Avg Duration: %{customdata[1]:.2f}s<br>' +
+            '<extra></extra>';
+          break;
+        case 'cost':
+        default:
+          hoverTemplate =
+            '<b>%{text}</b><br>' +
+            'Success Rate: %{y:.1f}%<br>' +
+            'Cost per Run: $%{x:.4f}<br>' +
+            'Avg Tokens: %{customdata[0]:,.0f}<br>' +
+            'Avg Duration: %{customdata[1]:.2f}s<br>' +
+            '<extra></extra>';
+          break;
+      }
+
       const trace = {
-        x: dataWithCost.map((d) => d.cost),
+        x: xData,
         y: dataWithCost.map((d) => d.Success_Rate),
         mode: 'markers+text',
         type: 'scatter',
@@ -139,29 +225,28 @@ export class MerbenchCharts {
             width: 1,
           },
         },
-        hovertemplate:
-          '<b>%{text}</b><br>' +
-          'Success Rate: %{y:.1f}%<br>' +
-          'Cost per Run: $%{x:.4f}<br>' +
-          'Avg Tokens: %{customdata[0]:,.0f}<br>' +
-          'Avg Duration: %{customdata[1]:.2f}s<br>' +
-          '<extra></extra>',
-        customdata: dataWithCost.map((d) => [d.total_tokens, d.Duration]),
+        hovertemplate: hoverTemplate,
+        customdata:
+          metric === 'time'
+            ? dataWithCost.map((d) => [d.cost, d.total_tokens])
+            : metric === 'tokens'
+              ? dataWithCost.map((d) => [d.cost, d.Duration])
+              : dataWithCost.map((d) => [d.total_tokens, d.Duration]),
       };
 
       const isMobile = window.innerWidth < 768;
 
       const layout = {
         title: {
-          text: 'Model Performance vs Cost Trade-off',
+          text: chartTitle,
           font: {
             size: 16,
             color: '#2c3e50',
           },
         },
         xaxis: {
-          title: 'Average Cost per Run ($)',
-          type: 'log',
+          title: xAxisTitle,
+          type: xAxisType,
           gridcolor: '#e0e0e0',
           zeroline: false,
           spikemode: 'across',
@@ -204,10 +289,20 @@ export class MerbenchCharts {
       };
 
       const traces: any[] = [trace];
-      if (paretoPoints.length > 1) {
+      if (paretoFrontier.length > 1) {
         const paretoTrace = {
-          x: paretoPoints.map((p) => p.cost),
-          y: paretoPoints.map((p) => p.Success_Rate),
+          x: paretoFrontier.map((p) => {
+            switch (metric) {
+              case 'time':
+                return p.Duration;
+              case 'tokens':
+                return p.total_tokens;
+              case 'cost':
+              default:
+                return p.cost;
+            }
+          }),
+          y: paretoFrontier.map((p) => p.Success_Rate),
           mode: 'lines',
           type: 'scatter',
           line: {
@@ -232,7 +327,7 @@ export class MerbenchCharts {
 
       // Add enhanced hover behavior for desktop
       if (!window.innerWidth || window.innerWidth >= 768) {
-        this.addEnhancedHover(containerId, dataWithCost);
+        this.addEnhancedHover(containerId, dataWithCost, metric);
       }
 
       this.hideLoading(containerId);
@@ -460,11 +555,11 @@ export class MerbenchCharts {
     ]);
   }
 
-  updateAllCharts(filteredData: FilteredData): void {
+  updateAllCharts(filteredData: FilteredData, paretoMetric?: 'cost' | 'time' | 'tokens'): void {
     if (!this.plotlyLoaded) return;
 
     try {
-      this.initParetoChart(filteredData.paretoData, 'pareto-chart');
+      this.initParetoChart(filteredData.paretoData, 'pareto-chart', paretoMetric);
       this.initTestGroupChart(filteredData.testGroupsData, 'test-group-chart');
       this.initTokenChart(filteredData.rawData, 'token-chart');
       this.initFailureAnalysisChart(filteredData.failureAnalysisData, 'failure-analysis-chart');
@@ -473,14 +568,26 @@ export class MerbenchCharts {
     }
   }
 
-  private addEnhancedHover(containerId: string, dataWithCost: any[]): void {
+  updateParetoChart(data: ParetoData[], metric: 'cost' | 'time' | 'tokens'): void {
+    if (!this.plotlyLoaded) return;
+
+    try {
+      this.initParetoChart(data, 'pareto-chart', metric);
+    } catch (error) {
+      console.error('Failed to update Pareto chart:', error);
+    }
+  }
+
+  private addEnhancedHover(
+    containerId: string,
+    dataWithCost: any[],
+    metric: 'cost' | 'time' | 'tokens' = 'cost'
+  ): void {
     const plotElement = document.getElementById(containerId);
     if (!plotElement) return;
 
     // Store the current hover data
     let currentHoverIndex = -1;
-    let mouseX = 0;
-    let mouseY = 0;
 
     // Function to find the nearest point
     const findNearestPoint = (xPixel: number, yPixel: number) => {
@@ -500,8 +607,19 @@ export class MerbenchCharts {
       let nearestIndex = -1;
 
       dataWithCost.forEach((point, index) => {
-        // Calculate distance in log-scale aware way for x-axis
-        const xDist = Math.log10(point.cost) - Math.log10(xData);
+        // Calculate distance based on current metric
+        let xDist: number;
+        if (metric === 'time') {
+          // Linear scale for time
+          xDist = (point.Duration - xData) / 60; // Normalize by 60 seconds
+        } else if (metric === 'tokens') {
+          // Log scale for tokens
+          xDist = Math.log10(point.total_tokens) - Math.log10(xData);
+        } else {
+          // Log scale for cost (default)
+          xDist = Math.log10(point.cost) - Math.log10(xData);
+        }
+
         const yDist = (point.Success_Rate - yData) / 100; // Normalize y distance
         const distance = Math.sqrt(xDist * xDist + yDist * yDist);
 
@@ -529,9 +647,6 @@ export class MerbenchCharts {
       const plotHeight = rect.height - plotly.margin.t - plotly.margin.b;
 
       if (xPixel >= 0 && xPixel <= plotWidth && yPixel >= 0 && yPixel <= plotHeight) {
-        mouseX = xPixel;
-        mouseY = yPixel;
-
         const nearestIndex = findNearestPoint(xPixel, yPixel);
 
         if (nearestIndex !== -1 && nearestIndex !== currentHoverIndex) {

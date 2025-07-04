@@ -9,7 +9,24 @@ const { chartId, title, height = 500 } = Astro.props;
 ---
 
 <section class="chart-section">
-  <h2>{title}</h2>
+  <div class="chart-header">
+    <h2>{title}</h2>
+    {
+      chartId === 'pareto-chart' && (
+        <div class="metric-selector" id="metric-selector">
+          <button class="metric-btn active" data-metric="cost">
+            Cost
+          </button>
+          <button class="metric-btn" data-metric="time">
+            Time
+          </button>
+          <button class="metric-btn" data-metric="tokens">
+            Tokens
+          </button>
+        </div>
+      )
+    }
+  </div>
   <div class="chart-loading" id={`chart-loading-${chartId}`}>
     <div class="spinner"></div>
     <p>Loading chart data...</p>
@@ -34,9 +51,54 @@ const { chartId, title, height = 500 } = Astro.props;
     margin-bottom: 2rem;
   }
 
-  .chart-section h2 {
-    margin-top: 0;
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .chart-section h2 {
+    margin: 0;
+  }
+
+  .metric-selector {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    padding: 0.25rem;
+    border: 1px solid var(--border-color);
+  }
+
+  .metric-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .metric-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .metric-btn.active {
+    background: var(--accent-primary);
+    color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .metric-btn.active:hover {
+    background: color-mix(in srgb, var(--accent-primary) 90%, black);
   }
 
   .chart-container {
@@ -87,20 +149,35 @@ const { chartId, title, height = 500 } = Astro.props;
     border: 1px solid var(--border-color);
   }
 
-  /* Ensure charts are visible on mobile */
+  /* Mobile responsive styles */
   @media (max-width: 768px) {
+    .chart-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .metric-selector {
+      align-self: stretch;
+      justify-content: center;
+    }
+
+    .metric-btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.75rem 0.5rem;
+      font-size: 0.9rem;
+    }
+
     .chart-container {
       width: calc(100vw - 2rem);
       max-width: 100%;
+      height: 350px;
+      min-height: 300px;
     }
 
     .chart-section {
       padding: 1rem;
-    }
-
-    .chart-container {
-      height: 350px;
-      min-height: 300px;
     }
   }
 
@@ -109,5 +186,70 @@ const { chartId, title, height = 500 } = Astro.props;
       height: 300px;
       min-height: 250px;
     }
+
+    .metric-btn {
+      font-size: 0.8rem;
+      padding: 0.6rem 0.4rem;
+    }
   }
 </style>
+
+<script>
+  // Metric selector functionality for Pareto chart
+  document.addEventListener('DOMContentLoaded', () => {
+    // Only run for pareto chart
+    if (document.getElementById('pareto-chart') === null) return;
+
+    const metricSelector = document.getElementById('metric-selector');
+    if (!metricSelector) return;
+
+    let currentMetric = 'cost';
+
+    // Handle metric button clicks
+    metricSelector.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (!target || !target.classList.contains('metric-btn')) return;
+
+      const selectedMetric = target.dataset.metric as 'cost' | 'time' | 'tokens';
+      if (!selectedMetric || selectedMetric === currentMetric) return;
+
+      // Update button states
+      metricSelector.querySelectorAll('.metric-btn').forEach((btn) => {
+        btn.classList.remove('active');
+      });
+      target.classList.add('active');
+
+      currentMetric = selectedMetric;
+
+      // Update the chart with the new metric
+      if (typeof window.merbenchCharts !== 'undefined' && window.merbenchCharts) {
+        // Get current filtered data
+        const currentData = window.currentFilteredData || window.merbenchData;
+        if (currentData) {
+          // Compute pareto data from leaderboard data
+          let paretoData;
+          if (currentData.paretoData) {
+            // Use already computed pareto data (from filtered data)
+            paretoData = currentData.paretoData;
+          } else if (currentData.leaderboard) {
+            // Compute pareto data from leaderboard (from original data)
+            paretoData = currentData.leaderboard.map((entry: any) => ({
+              Model: entry.Model,
+              Success_Rate: entry.Success_Rate,
+              Duration: entry.Avg_Duration,
+              total_tokens: entry.Avg_Tokens,
+              cost: (entry.Avg_Tokens / 1000) * 0.001, // Calculate cost
+            }));
+          }
+
+          if (paretoData) {
+            window.merbenchCharts.updateParetoChart(paretoData, selectedMetric);
+          }
+        }
+      }
+    });
+
+    // Make metric state available globally for filter updates
+    window.getCurrentParetoMetric = () => currentMetric as 'cost' | 'time' | 'tokens';
+  });
+</script>
