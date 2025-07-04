@@ -79,14 +79,36 @@ export class MerbenchCharts {
           color: dataWithCost.map((d) => d.Duration),
           colorscale: 'Viridis',
           showscale: true,
-          colorbar: {
-            title: {
-              text: 'Avg Duration (s)',
-              side: 'right',
-            },
-            thickness: 15,
-            len: 0.5,
-          },
+          colorbar:
+            window.innerWidth < 768
+              ? {
+                  title: {
+                    text: 'Duration (s)',
+                    side: 'bottom',
+                    font: {
+                      size: 10,
+                    },
+                  },
+                  orientation: 'h',
+                  thickness: 15,
+                  len: 0.5,
+                  x: 0.5,
+                  xanchor: 'center',
+                  y: -0.25,
+                  yanchor: 'top',
+                }
+              : {
+                  title: {
+                    text: 'Avg Duration (s)',
+                    side: 'right',
+                    font: {
+                      size: 12,
+                    },
+                  },
+                  thickness: 15,
+                  len: 0.5,
+                  x: 1.05,
+                },
           line: {
             color: 'white',
             width: 1,
@@ -101,6 +123,8 @@ export class MerbenchCharts {
           '<extra></extra>',
         customdata: dataWithCost.map((d) => [d.total_tokens, d.Duration]),
       };
+
+      const isMobile = window.innerWidth < 768;
 
       const layout = {
         title: {
@@ -125,11 +149,22 @@ export class MerbenchCharts {
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
         hovermode: 'closest',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.6,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 40 : 60,
-          r: window.innerWidth < 768 ? 80 : 120,
+          l: isMobile ? 40 : 60,
+          r: isMobile ? 40 : 120,
           t: 40,
-          b: window.innerWidth < 768 ? 50 : 60,
+          b: isMobile ? 160 : 60,
         },
       };
 
@@ -172,6 +207,8 @@ export class MerbenchCharts {
 
       const { traces } = processChartData.testGroup(data);
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Success Rate by Test Difficulty',
@@ -181,7 +218,7 @@ export class MerbenchCharts {
           },
         },
         xaxis: {
-          title: 'Model',
+          title: isMobile ? '' : 'Model',
           tickangle: -45,
         },
         yaxis: {
@@ -191,11 +228,22 @@ export class MerbenchCharts {
         barmode: 'group',
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.85,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 40 : 60,
-          r: window.innerWidth < 768 ? 40 : 60,
+          l: isMobile ? 40 : 60,
+          r: isMobile ? 40 : 60,
           t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
+          b: isMobile ? 200 : 120,
         },
       };
 
@@ -237,6 +285,8 @@ export class MerbenchCharts {
         marker: { color: '#e74c3c' },
       };
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Average Token Usage per Model',
@@ -246,7 +296,7 @@ export class MerbenchCharts {
           },
         },
         xaxis: {
-          title: 'Model',
+          title: isMobile ? '' : 'Model',
           tickangle: -45,
         },
         yaxis: {
@@ -255,11 +305,22 @@ export class MerbenchCharts {
         barmode: 'stack',
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.85,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 50 : 80,
-          r: window.innerWidth < 768 ? 40 : 60,
+          l: isMobile ? 50 : 80,
+          r: isMobile ? 40 : 60,
           t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
+          b: isMobile ? 200 : 120,
         },
       };
 
@@ -290,6 +351,8 @@ export class MerbenchCharts {
 
       const { traces } = result;
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Failure Analysis by Reason',
@@ -299,7 +362,7 @@ export class MerbenchCharts {
           },
         },
         xaxis: {
-          title: 'Model',
+          title: isMobile ? '' : 'Model',
           tickangle: -45,
         },
         yaxis: {
@@ -308,11 +371,22 @@ export class MerbenchCharts {
         barmode: 'stack',
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.85,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 50 : 80,
-          r: window.innerWidth < 768 ? 40 : 60,
+          l: isMobile ? 50 : 80,
+          r: isMobile ? 40 : 60,
           t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
+          b: isMobile ? 200 : 120,
         },
       };
 
