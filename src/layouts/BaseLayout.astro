@@ -1092,6 +1092,22 @@ const tagPairs = topTags.map((tag) => ({
     </style>
 
     <script>
+      // Extend Window interface for cross-component coordination
+      declare global {
+        interface Window {
+          mobileMenuControls?: {
+            open: () => void;
+            close: () => void;
+            toggle: () => void;
+            isOpen: () => boolean;
+          };
+          filterControls?: {
+            close: () => void;
+            isOpen: () => boolean;
+          };
+        }
+      }
+
       // Auto-typing tagline animation
       const titles = ['ML Engineer', 'Data Scientist', 'GenAI Solution Architect'];
 
@@ -1171,6 +1187,11 @@ const tagPairs = topTags.map((tag) => ({
         }
 
         function openMobileMenu() {
+          // Close filter panel if it's open
+          if (window.filterControls?.isOpen()) {
+            window.filterControls.close();
+          }
+
           if (mobileMenuToggle) mobileMenuToggle.classList.add('active');
           if (mobileNavOverlay) mobileNavOverlay.classList.add('active');
           if (mobileNavPane) mobileNavPane.classList.add('active');
@@ -1183,6 +1204,18 @@ const tagPairs = topTags.map((tag) => ({
           if (mobileNavPane) mobileNavPane.classList.remove('active');
           document.body.style.overflow = '';
         }
+
+        function isMobileMenuOpen() {
+          return mobileNavPane ? mobileNavPane.classList.contains('active') : false;
+        }
+
+        // Expose mobile menu controls globally for cross-component coordination
+        window.mobileMenuControls = {
+          open: openMobileMenu,
+          close: closeMobileMenu,
+          toggle: toggleMobileMenu,
+          isOpen: isMobileMenuOpen,
+        };
 
         // Clear any existing event listeners by cloning and replacing elements
         const newToggle = mobileMenuToggle.cloneNode(true) as HTMLElement;

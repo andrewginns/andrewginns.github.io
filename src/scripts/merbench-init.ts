@@ -1,6 +1,5 @@
 import { MerbenchCharts } from './merbench-charts';
 import { MerbenchFilters } from './merbench-filters';
-import { getFilteredData, updateSummaryStats, updateLeaderboard } from '../lib/merbench';
 import type { MerbenchData, RawData } from '../lib/merbench-types';
 
 declare global {
