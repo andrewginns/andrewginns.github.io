@@ -64,7 +64,7 @@ export class MerbenchCharts {
       if (!this.plotlyLoaded) await this.waitForPlotly();
 
       const processed = processChartData.pareto(data);
-      const { dataWithCost, paretoPoints } = processed;
+      const { dataWithCost } = processed;
 
       // Get X-axis data based on selected metric
       let xData: number[];
@@ -588,8 +588,6 @@ export class MerbenchCharts {
 
     // Store the current hover data
     let currentHoverIndex = -1;
-    let mouseX = 0;
-    let mouseY = 0;
 
     // Function to find the nearest point
     const findNearestPoint = (xPixel: number, yPixel: number) => {
@@ -649,9 +647,6 @@ export class MerbenchCharts {
       const plotHeight = rect.height - plotly.margin.t - plotly.margin.b;
 
       if (xPixel >= 0 && xPixel <= plotWidth && yPixel >= 0 && yPixel <= plotHeight) {
-        mouseX = xPixel;
-        mouseY = yPixel;
-
         const nearestIndex = findNearestPoint(xPixel, yPixel);
 
         if (nearestIndex !== -1 && nearestIndex !== currentHoverIndex) {

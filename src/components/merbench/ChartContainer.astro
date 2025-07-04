@@ -207,10 +207,10 @@ const { chartId, title, height = 500 } = Astro.props;
 
     // Handle metric button clicks
     metricSelector.addEventListener('click', (e) => {
-      const target = e.target;
-      if (!target.classList.contains('metric-btn')) return;
+      const target = e.target as HTMLElement;
+      if (!target || !target.classList.contains('metric-btn')) return;
 
-      const selectedMetric = target.dataset.metric;
+      const selectedMetric = target.dataset.metric as 'cost' | 'time' | 'tokens';
       if (!selectedMetric || selectedMetric === currentMetric) return;
 
       // Update button states
@@ -233,7 +233,7 @@ const { chartId, title, height = 500 } = Astro.props;
             paretoData = currentData.paretoData;
           } else if (currentData.leaderboard) {
             // Compute pareto data from leaderboard (from original data)
-            paretoData = currentData.leaderboard.map((entry) => ({
+            paretoData = currentData.leaderboard.map((entry: any) => ({
               Model: entry.Model,
               Success_Rate: entry.Success_Rate,
               Duration: entry.Avg_Duration,
@@ -250,6 +250,6 @@ const { chartId, title, height = 500 } = Astro.props;
     });
 
     // Make metric state available globally for filter updates
-    window.getCurrentParetoMetric = () => currentMetric;
+    window.getCurrentParetoMetric = () => currentMetric as 'cost' | 'time' | 'tokens';
   });
 </script>

@@ -29,7 +29,6 @@ export class MerbenchFilters {
   private captureScrollState() {
     const scrollY = window.scrollY;
     const viewportHeight = window.innerHeight;
-    const viewportCenter = scrollY + viewportHeight / 2;
     const documentHeight = document.documentElement.scrollHeight;
     const maxScroll = documentHeight - viewportHeight;
 
