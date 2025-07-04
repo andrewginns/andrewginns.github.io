@@ -3,6 +3,7 @@ import { getTopProjectTags } from '../utils/globalData';
 import { formatTagForFloatingElement } from '../utils/tagAggregator';
 import SEO from '../components/SEO.astro';
 import StructuredData from '../components/StructuredData.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import { getCachedGitHubProfile } from '../lib/github';
 
 export interface Props {
@@ -51,6 +52,24 @@ const tagPairs = topTags.map((tag) => ({
     <link rel="preconnect" href="https://github.io" />
     <link rel="dns-prefetch" href="https://cloudflare.com" />
     <meta name="generator" content={Astro.generator} />
+
+    <!-- Theme detection script - must run before page renders to prevent FOUC -->
+    <script is:inline>
+      (function () {
+        const getStoredTheme = () => localStorage.getItem('theme');
+        const getSystemTheme = () =>
+          window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const getTheme = () => getStoredTheme() || getSystemTheme();
+
+        const theme = getTheme();
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // Store theme if not already stored (respect user's first system preference)
+        if (!getStoredTheme()) {
+          localStorage.setItem('theme', theme);
+        }
+      })();
+    </script>
 
     <!-- SEO and Structured Data -->
     <SEO
@@ -118,6 +137,7 @@ const tagPairs = topTags.map((tag) => ({
               rel="noopener noreferrer"
               class="social-link">LinkedIn</a
             >
+            <ThemeToggle variant="sidebar" />
           </div>
         </div>
       </nav>
@@ -186,6 +206,7 @@ const tagPairs = topTags.map((tag) => ({
               rel="noopener noreferrer"
               class="mobile-social-link">LinkedIn</a
             >
+            <ThemeToggle variant="mobile" />
           </div>
         </div>
       </nav>
@@ -226,6 +247,12 @@ const tagPairs = topTags.map((tag) => ({
         --accent-tertiary: #f39c12;
         --success-color: #27ae60;
         --border-color: #dfe6e9;
+        --progress-high: #27ae60;
+        --progress-medium: #f39c12;
+        --progress-low: #e74c3c;
+        --duration-color: #9c27b0;
+        --tokens-color: #ff5722;
+        --badge-color: #ff4444;
         --shadow-light: rgba(0, 0, 0, 0.08);
         --shadow-medium: rgba(0, 0, 0, 0.12);
         --shadow-strong: rgba(0, 0, 0, 0.16);
@@ -241,6 +268,43 @@ const tagPairs = topTags.map((tag) => ({
 
         --spacing-base: clamp(1rem, 3vw, 1.5rem);
         --spacing-lg: clamp(2rem, 5vw, 3rem);
+      }
+
+      /* Dark mode color palette - GitHub-inspired sophisticated dark */
+      [data-theme='dark'] {
+        /* Enhanced background system with proper layering */
+        --text-primary: #f0f6fc;
+        --text-secondary: #8b949e;
+        --text-light: #6e7681;
+        --bg-primary: #0d1117;
+        --bg-secondary: #161b22;
+        --bg-tertiary: #21262d;
+        --bg-overlay: #30363d;
+        --bg-elevated: #484f58;
+
+        /* Sophisticated accent colors */
+        --accent-primary: #f85149;
+        --accent-secondary: #58a6ff;
+        --accent-tertiary: #f2cc60;
+        --success-color: #3fb950;
+
+        /* Enhanced border system */
+        --border-color: #30363d;
+        --border-muted: #21262d;
+        --border-subtle: rgba(240, 246, 252, 0.1);
+
+        /* Refined progress and chart colors */
+        --progress-high: #3fb950;
+        --progress-medium: #d29922;
+        --progress-low: #f85149;
+        --duration-color: #a5a2ff;
+        --tokens-color: #ffab70;
+        --badge-color: #f85149;
+
+        /* Sophisticated shadows with blue undertones */
+        --shadow-light: rgba(1, 4, 9, 0.3);
+        --shadow-medium: rgba(1, 4, 9, 0.4);
+        --shadow-strong: rgba(1, 4, 9, 0.5);
       }
 
       * {
@@ -328,13 +392,25 @@ const tagPairs = topTags.map((tag) => ({
         background: linear-gradient(
           90deg,
           transparent 0%,
-          rgba(255, 255, 255, 0.6) 40%,
-          rgba(255, 255, 255, 0.8) 50%,
-          rgba(255, 255, 255, 0.6) 60%,
+          rgba(240, 246, 252, 0.15) 40%,
+          rgba(240, 246, 252, 0.25) 50%,
+          rgba(240, 246, 252, 0.15) 60%,
           transparent 100%
         );
         pointer-events: none;
         animation: shimmer 6s ease-in-out infinite;
+      }
+
+      /* Dark mode shimmer effect */
+      [data-theme='dark'] .floating-element::after {
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(88, 166, 255, 0.1) 40%,
+          rgba(88, 166, 255, 0.2) 50%,
+          rgba(88, 166, 255, 0.1) 60%,
+          transparent 100%
+        );
       }
 
       .floating-element-1 {
@@ -342,7 +418,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 8%;
         right: 10%;
-        background: rgba(248, 249, 250, 0.95);
+        background: var(--bg-secondary, rgba(248, 249, 250, 0.95));
         border-radius: 8px;
         animation-delay: 0s;
         overflow: hidden;
@@ -358,7 +434,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 25%;
         right: 5%;
-        background: rgba(231, 76, 60, 0.15);
+        background: var(--bg-tertiary, rgba(231, 76, 60, 0.15));
         border-radius: 6px;
         animation-delay: 1s;
         overflow: hidden;
@@ -375,7 +451,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 45%;
         right: 8%;
-        background: rgba(248, 249, 250, 0.95);
+        background: var(--bg-secondary, rgba(248, 249, 250, 0.95));
         border-radius: 10px;
         animation-delay: 2s;
         overflow: hidden;
@@ -391,7 +467,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 65%;
         right: 15%;
-        background: rgba(231, 76, 60, 0.12);
+        background: var(--bg-tertiary, rgba(231, 76, 60, 0.12));
         border-radius: 5px;
         animation-delay: 3s;
         overflow: hidden;
@@ -407,7 +483,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 80%;
         right: 6%;
-        background: rgba(248, 249, 250, 0.95);
+        background: var(--bg-secondary, rgba(248, 249, 250, 0.95));
         border-radius: 7px;
         animation-delay: 4s;
         overflow: hidden;
@@ -423,7 +499,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 35%;
         right: 2%;
-        background: rgba(231, 76, 60, 0.18);
+        background: var(--bg-tertiary, rgba(231, 76, 60, 0.18));
         border-radius: 9px;
         animation-delay: 5s;
         overflow: hidden;
@@ -440,7 +516,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 55%;
         right: 3%;
-        background: rgba(248, 249, 250, 0.95);
+        background: var(--bg-secondary, rgba(248, 249, 250, 0.95));
         border-radius: 6px;
         animation-delay: 6s;
         overflow: hidden;
@@ -456,7 +532,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 15%;
         right: 12%;
-        background: rgba(231, 76, 60, 0.13);
+        background: var(--bg-tertiary, rgba(231, 76, 60, 0.13));
         border-radius: 8px;
         animation-delay: 7s;
         overflow: hidden;
@@ -473,7 +549,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 70%;
         right: 9%;
-        background: rgba(248, 249, 250, 0.95);
+        background: var(--bg-secondary, rgba(248, 249, 250, 0.95));
         border-radius: 7px;
         animation-delay: 8s;
         overflow: hidden;
@@ -489,7 +565,7 @@ const tagPairs = topTags.map((tag) => ({
         height: auto;
         top: 90%;
         right: 4%;
-        background: rgba(231, 76, 60, 0.16);
+        background: var(--bg-tertiary, rgba(231, 76, 60, 0.16));
         border-radius: 9px;
         animation-delay: 9s;
         overflow: hidden;

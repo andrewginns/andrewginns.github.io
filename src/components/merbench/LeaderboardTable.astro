@@ -34,14 +34,14 @@ const { leaderboard } = Astro.props;
               <td class="success-rate">
                 <div class="progress-bar">
                   <div
-                    class="progress-fill"
-                    style={`width: ${entry.Success_Rate}%; background-color: ${
+                    class={`progress-fill ${
                       entry.Success_Rate >= 30
-                        ? '#27ae60'
+                        ? 'progress-fill--high'
                         : entry.Success_Rate >= 15
-                          ? '#f39c12'
-                          : '#e74c3c'
+                          ? 'progress-fill--medium'
+                          : 'progress-fill--low'
                     }`}
+                    style={`width: ${entry.Success_Rate}%`}
                   />
                   <span class="progress-text">{entry.Success_Rate.toFixed(1)}%</span>
                 </div>
@@ -246,11 +246,23 @@ const { leaderboard } = Astro.props;
   }
 
   .duration {
-    color: #9c27b0;
+    color: var(--duration-color);
   }
 
   .tokens {
-    color: #ff5722;
+    color: var(--tokens-color);
+  }
+
+  .progress-fill--high {
+    background-color: var(--progress-high);
+  }
+
+  .progress-fill--medium {
+    background-color: var(--progress-medium);
+  }
+
+  .progress-fill--low {
+    background-color: var(--progress-low);
   }
 
   @media (max-width: 768px) {

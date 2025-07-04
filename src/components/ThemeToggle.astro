@@ -1,0 +1,330 @@
+---
+// ThemeToggle component for switching between light and dark modes
+export interface Props {
+  variant?: 'sidebar' | 'mobile';
+}
+
+const { variant = 'sidebar' } = Astro.props;
+---
+
+<button
+  class={`theme-toggle theme-toggle--${variant}`}
+  id={`theme-toggle-${variant}`}
+  role="switch"
+  aria-checked="false"
+  aria-label="Dark mode toggle"
+>
+  <span class="theme-toggle__label">Dark mode</span>
+  <span class="theme-toggle__switch">
+    <span class="theme-toggle__handle">
+      <span class="theme-toggle__icon theme-toggle__icon--sun" aria-hidden="true">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <circle cx="12" cy="12" r="4"></circle>
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+          ></path>
+        </svg>
+      </span>
+      <span class="theme-toggle__icon theme-toggle__icon--moon" aria-hidden="true">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </span>
+    </span>
+  </span>
+  <span class="theme-toggle__state"></span>
+</button>
+
+<style>
+  .theme-toggle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    user-select: none;
+    font-family: inherit;
+  }
+
+  .theme-toggle:hover {
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+    background: var(--bg-secondary);
+  }
+
+  .theme-toggle:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-color: var(--accent-primary);
+  }
+
+  .theme-toggle__label {
+    font-weight: 500;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .theme-toggle__switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+  }
+
+  .theme-toggle__handle {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    background: var(--bg-primary);
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+
+  .theme-toggle__icon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .theme-toggle__icon svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .theme-toggle__state {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    min-width: 20px;
+    text-align: center;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+  }
+
+  /* Light mode (Dark mode OFF) - sun icon on the left */
+  .theme-toggle__switch {
+    background: var(--bg-tertiary);
+  }
+
+  .theme-toggle__handle {
+    transform: translateX(0);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .theme-toggle__icon--sun {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    color: var(--accent-tertiary);
+  }
+
+  .theme-toggle__icon--moon {
+    opacity: 0;
+    transform: scale(0.8) rotate(45deg);
+  }
+
+  .theme-toggle__state::before {
+    content: 'Off';
+  }
+
+  /* Dark mode (Dark mode ON) - moon icon on the right */
+  html[data-theme='dark'] .theme-toggle__switch {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
+
+  html[data-theme='dark'] .theme-toggle__handle {
+    transform: translateX(20px);
+    background: var(--bg-primary);
+    border: 1px solid transparent;
+  }
+
+  html[data-theme='dark'] .theme-toggle__icon--sun {
+    opacity: 0;
+    transform: scale(0.8) rotate(-45deg);
+  }
+
+  html[data-theme='dark'] .theme-toggle__icon--moon {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+    color: #2c3e50;
+  }
+
+  html[data-theme='dark'] .theme-toggle__state::before {
+    content: 'On';
+  }
+
+  /* Sidebar variant styling */
+  .theme-toggle--sidebar {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  /* Mobile variant styling */
+  .theme-toggle--mobile {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.75rem;
+  }
+
+  /* Enhanced hover states */
+  .theme-toggle:hover .theme-toggle__switch {
+    border-color: var(--accent-primary);
+  }
+
+  :root .theme-toggle:hover .theme-toggle__switch {
+    background: var(--bg-overlay);
+  }
+
+  [data-theme='dark'] .theme-toggle:hover .theme-toggle__switch {
+    background: var(--accent-secondary);
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle,
+    .theme-toggle__switch,
+    .theme-toggle__handle,
+    .theme-toggle__icon,
+    .theme-toggle__state {
+      transition: none !important;
+    }
+
+    .theme-toggle__icon--sun,
+    .theme-toggle__icon--moon {
+      transform: none !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .theme-toggle {
+      border: 2px solid currentColor;
+    }
+
+    .theme-toggle:focus-within {
+      outline: 3px solid currentColor;
+      outline-offset: 3px;
+    }
+
+    .theme-toggle__switch {
+      border: 2px solid currentColor;
+    }
+
+    .theme-toggle__handle {
+      border: 2px solid currentColor;
+    }
+  }
+</style>
+
+<script>
+  function initializeThemeToggle() {
+    const toggles = document.querySelectorAll('.theme-toggle');
+
+    toggles.forEach((toggle) => {
+      // Remove existing listeners by cloning and replacing
+      const newToggle = toggle.cloneNode(true) as HTMLButtonElement;
+
+      if (toggle.parentNode) {
+        toggle.parentNode.replaceChild(newToggle, toggle);
+      }
+
+      // Set initial state
+      function updateToggleState() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const isDark = currentTheme === 'dark';
+
+        newToggle.setAttribute('aria-checked', isDark.toString());
+
+        // Update aria-label to reflect current state
+        newToggle.setAttribute('aria-label', `Dark mode ${isDark ? 'on' : 'off'}`);
+      }
+
+      // Handle toggle change
+      function handleThemeChange() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        // Update theme
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+
+        // Update toggle state
+        updateToggleState();
+
+        // Dispatch custom event for other components to listen to
+        window.dispatchEvent(
+          new CustomEvent('theme-changed', {
+            detail: { theme: newTheme },
+          })
+        );
+
+        console.log(`Theme changed to: ${newTheme}`);
+      }
+
+      // Set initial state
+      updateToggleState();
+
+      // Add click event listener
+      newToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleThemeChange();
+      });
+
+      // Handle keyboard navigation
+      newToggle.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleThemeChange();
+        }
+      });
+    });
+  }
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeThemeToggle);
+  } else {
+    initializeThemeToggle();
+  }
+
+  // Re-initialize after ViewTransitions
+  document.addEventListener('astro:page-load', initializeThemeToggle);
+</script>
