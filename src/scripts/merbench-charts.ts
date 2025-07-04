@@ -62,6 +62,22 @@ export class MerbenchCharts {
       const processed = processChartData.pareto(data);
       const { dataWithCost, paretoPoints } = processed;
 
+      // Calculate colors for each point based on Duration values
+      const durations = dataWithCost.map((d) => d.Duration);
+      const minDuration = Math.min(...durations);
+      const maxDuration = Math.max(...durations);
+
+      // Get colors for each point using the Viridis colorscale
+      const markerColors = dataWithCost.map((d) => {
+        const normalized = (d.Duration - minDuration) / (maxDuration - minDuration);
+        return this.getViridisColor(normalized);
+      });
+
+      // Calculate appropriate text colors based on background luminance
+      const textColors = markerColors.map((bgColor) => {
+        return this.getContrastColor(bgColor);
+      });
+
       const trace = {
         x: dataWithCost.map((d) => d.cost),
         y: dataWithCost.map((d) => d.Success_Rate),
@@ -74,19 +90,50 @@ export class MerbenchCharts {
           color: '#666',
         },
         showlegend: false,
+        hoverlabel: {
+          bgcolor: markerColors,
+          bordercolor: markerColors.map((color) => this.darkenColor(color, 0.2)),
+          font: {
+            family: 'system-ui, -apple-system, sans-serif',
+            size: 14,
+            color: textColors,
+          },
+        },
         marker: {
           size: dataWithCost.map((d) => Math.log(d.Duration + 1) * 5 + 10),
           color: dataWithCost.map((d) => d.Duration),
           colorscale: 'Viridis',
           showscale: true,
-          colorbar: {
-            title: {
-              text: 'Avg Duration (s)',
-              side: 'right',
-            },
-            thickness: 15,
-            len: 0.5,
-          },
+          colorbar:
+            window.innerWidth < 768
+              ? {
+                  title: {
+                    text: 'Duration (s)',
+                    side: 'bottom',
+                    font: {
+                      size: 10,
+                    },
+                  },
+                  orientation: 'h',
+                  thickness: 15,
+                  len: 0.5,
+                  x: 0.5,
+                  xanchor: 'center',
+                  y: -0.25,
+                  yanchor: 'top',
+                }
+              : {
+                  title: {
+                    text: 'Avg Duration (s)',
+                    side: 'right',
+                    font: {
+                      size: 12,
+                    },
+                  },
+                  thickness: 15,
+                  len: 0.5,
+                  x: 1.05,
+                },
           line: {
             color: 'white',
             width: 1,
@@ -102,6 +149,8 @@ export class MerbenchCharts {
         customdata: dataWithCost.map((d) => [d.total_tokens, d.Duration]),
       };
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Model Performance vs Cost Trade-off',
@@ -115,21 +164,42 @@ export class MerbenchCharts {
           type: 'log',
           gridcolor: '#e0e0e0',
           zeroline: false,
+          spikemode: 'across',
+          spikethickness: 1,
+          spikecolor: '#999',
+          spikedash: 'dot',
         },
         yaxis: {
           title: 'Success Rate (%)',
           gridcolor: '#e0e0e0',
           zeroline: false,
           range: [-5, Math.max(...dataWithCost.map((d) => d.Success_Rate)) + 5],
+          spikemode: 'across',
+          spikethickness: 1,
+          spikecolor: '#999',
+          spikedash: 'dot',
         },
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
         hovermode: 'closest',
+        hoverdistance: -1, // This makes hover work across entire plot
+        spikedistance: -1, // Show spikes for any distance
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.6,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 40 : 60,
-          r: window.innerWidth < 768 ? 80 : 120,
+          l: isMobile ? 40 : 60,
+          r: isMobile ? 40 : 120,
           t: 40,
-          b: window.innerWidth < 768 ? 50 : 60,
+          b: isMobile ? 160 : 60,
         },
       };
 
@@ -158,7 +228,13 @@ export class MerbenchCharts {
       };
 
       await window.Plotly.newPlot(containerId, traces, layout, config);
-      this.charts.set(containerId, { traces, layout, config });
+      this.charts.set(containerId, { traces, layout, config, dataWithCost });
+
+      // Add enhanced hover behavior for desktop
+      if (!window.innerWidth || window.innerWidth >= 768) {
+        this.addEnhancedHover(containerId, dataWithCost);
+      }
+
       this.hideLoading(containerId);
     } catch (error) {
       console.error('Failed to initialize Pareto chart:', error);
@@ -172,6 +248,8 @@ export class MerbenchCharts {
 
       const { traces } = processChartData.testGroup(data);
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Success Rate by Test Difficulty',
@@ -181,7 +259,7 @@ export class MerbenchCharts {
           },
         },
         xaxis: {
-          title: 'Model',
+          title: isMobile ? '' : 'Model',
           tickangle: -45,
         },
         yaxis: {
@@ -191,11 +269,22 @@ export class MerbenchCharts {
         barmode: 'group',
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.85,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 40 : 60,
-          r: window.innerWidth < 768 ? 40 : 60,
+          l: isMobile ? 40 : 60,
+          r: isMobile ? 40 : 60,
           t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
+          b: isMobile ? 200 : 120,
         },
       };
 
@@ -237,6 +326,8 @@ export class MerbenchCharts {
         marker: { color: '#e74c3c' },
       };
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Average Token Usage per Model',
@@ -246,7 +337,7 @@ export class MerbenchCharts {
           },
         },
         xaxis: {
-          title: 'Model',
+          title: isMobile ? '' : 'Model',
           tickangle: -45,
         },
         yaxis: {
@@ -255,11 +346,22 @@ export class MerbenchCharts {
         barmode: 'stack',
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.85,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 50 : 80,
-          r: window.innerWidth < 768 ? 40 : 60,
+          l: isMobile ? 50 : 80,
+          r: isMobile ? 40 : 60,
           t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
+          b: isMobile ? 200 : 120,
         },
       };
 
@@ -290,6 +392,8 @@ export class MerbenchCharts {
 
       const { traces } = result;
 
+      const isMobile = window.innerWidth < 768;
+
       const layout = {
         title: {
           text: 'Failure Analysis by Reason',
@@ -299,7 +403,7 @@ export class MerbenchCharts {
           },
         },
         xaxis: {
-          title: 'Model',
+          title: isMobile ? '' : 'Model',
           tickangle: -45,
         },
         yaxis: {
@@ -308,11 +412,22 @@ export class MerbenchCharts {
         barmode: 'stack',
         plot_bgcolor: 'white',
         paper_bgcolor: 'white',
+        legend: isMobile
+          ? {
+              orientation: 'h',
+              x: 0,
+              y: -0.85,
+              xanchor: 'left',
+              yanchor: 'top',
+            }
+          : {
+              // Default position for desktop
+            },
         margin: {
-          l: window.innerWidth < 768 ? 50 : 80,
-          r: window.innerWidth < 768 ? 40 : 60,
+          l: isMobile ? 50 : 80,
+          r: isMobile ? 40 : 60,
           t: 40,
-          b: window.innerWidth < 768 ? 100 : 120,
+          b: isMobile ? 200 : 120,
         },
       };
 
@@ -358,6 +473,105 @@ export class MerbenchCharts {
     }
   }
 
+  private addEnhancedHover(containerId: string, dataWithCost: any[]): void {
+    const plotElement = document.getElementById(containerId);
+    if (!plotElement) return;
+
+    // Store the current hover data
+    let currentHoverIndex = -1;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    // Function to find the nearest point
+    const findNearestPoint = (xPixel: number, yPixel: number) => {
+      const plotly = (plotElement as any)._fullLayout;
+      if (!plotly) return -1;
+
+      // Convert pixel coordinates to data coordinates
+      const xaxis = plotly.xaxis;
+      const yaxis = plotly.yaxis;
+
+      // Get data coordinates from pixel coordinates
+      const xData = xaxis.p2d ? xaxis.p2d(xPixel) : xaxis.p2c(xPixel);
+      const yData = yaxis.p2d ? yaxis.p2d(yPixel) : yaxis.p2c(yPixel);
+
+      // Find the nearest point
+      let minDistance = Infinity;
+      let nearestIndex = -1;
+
+      dataWithCost.forEach((point, index) => {
+        // Calculate distance in log-scale aware way for x-axis
+        const xDist = Math.log10(point.cost) - Math.log10(xData);
+        const yDist = (point.Success_Rate - yData) / 100; // Normalize y distance
+        const distance = Math.sqrt(xDist * xDist + yDist * yDist);
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestIndex = index;
+        }
+      });
+
+      return nearestIndex;
+    };
+
+    // Mouse move handler
+    const handleMouseMove = (event: MouseEvent) => {
+      const rect = plotElement.getBoundingClientRect();
+      const plotly = (plotElement as any)._fullLayout;
+      if (!plotly) return;
+
+      // Get mouse position relative to plot area
+      const xPixel = event.clientX - rect.left - plotly.margin.l;
+      const yPixel = event.clientY - rect.top - plotly.margin.t;
+
+      // Check if mouse is within plot area
+      const plotWidth = rect.width - plotly.margin.l - plotly.margin.r;
+      const plotHeight = rect.height - plotly.margin.t - plotly.margin.b;
+
+      if (xPixel >= 0 && xPixel <= plotWidth && yPixel >= 0 && yPixel <= plotHeight) {
+        mouseX = xPixel;
+        mouseY = yPixel;
+
+        const nearestIndex = findNearestPoint(xPixel, yPixel);
+
+        if (nearestIndex !== -1 && nearestIndex !== currentHoverIndex) {
+          currentHoverIndex = nearestIndex;
+
+          // Trigger hover on the nearest point
+          window.Plotly.Fx.hover(plotElement, [
+            {
+              curveNumber: 0,
+              pointNumber: nearestIndex,
+            },
+          ]);
+        }
+      } else {
+        // Mouse is outside plot area
+        currentHoverIndex = -1;
+        window.Plotly.Fx.unhover(plotElement);
+      }
+    };
+
+    // Mouse leave handler
+    const handleMouseLeave = () => {
+      currentHoverIndex = -1;
+      window.Plotly.Fx.unhover(plotElement);
+    };
+
+    // Add event listeners
+    plotElement.addEventListener('mousemove', handleMouseMove);
+    plotElement.addEventListener('mouseleave', handleMouseLeave);
+
+    // Store cleanup function
+    const chartData = this.charts.get(containerId);
+    if (chartData) {
+      chartData.cleanup = () => {
+        plotElement.removeEventListener('mousemove', handleMouseMove);
+        plotElement.removeEventListener('mouseleave', handleMouseLeave);
+      };
+    }
+  }
+
   resizeCharts(): void {
     if (!this.plotlyLoaded || typeof window.Plotly === 'undefined') return;
 
@@ -375,12 +589,100 @@ export class MerbenchCharts {
     if (!this.plotlyLoaded || typeof window.Plotly === 'undefined') return;
 
     try {
+      // Clean up event listeners before purging
+      ['pareto-chart', 'test-group-chart', 'token-chart', 'failure-analysis-chart'].forEach(
+        (id) => {
+          const chartData = this.charts.get(id);
+          if (chartData && chartData.cleanup) {
+            chartData.cleanup();
+          }
+        }
+      );
+
       window.Plotly.purge('pareto-chart');
       window.Plotly.purge('test-group-chart');
       window.Plotly.purge('token-chart');
       window.Plotly.purge('failure-analysis-chart');
+
+      this.charts.clear();
     } catch (error) {
       console.error('Failed to purge charts:', error);
     }
+  }
+
+  // Color helper methods
+  private getViridisColor(value: number): string {
+    // Viridis colorscale approximation using RGB values
+    // Value should be between 0 and 1
+    const clampedValue = Math.max(0, Math.min(1, value));
+
+    // Define key points in the Viridis colorscale
+    const colorPoints = [
+      { pos: 0.0, r: 68, g: 1, b: 84 }, // Dark purple
+      { pos: 0.25, r: 58, g: 82, b: 139 }, // Blue
+      { pos: 0.5, r: 32, g: 144, b: 140 }, // Teal
+      { pos: 0.75, r: 94, g: 201, b: 97 }, // Green
+      { pos: 1.0, r: 253, g: 231, b: 36 }, // Yellow
+    ];
+
+    // Find the two colors to interpolate between
+    let lowerIndex = 0;
+    let upperIndex = colorPoints.length - 1;
+
+    for (let i = 0; i < colorPoints.length - 1; i++) {
+      if (clampedValue >= colorPoints[i].pos && clampedValue <= colorPoints[i + 1].pos) {
+        lowerIndex = i;
+        upperIndex = i + 1;
+        break;
+      }
+    }
+
+    const lower = colorPoints[lowerIndex];
+    const upper = colorPoints[upperIndex];
+
+    // Interpolate between the colors
+    const range = upper.pos - lower.pos;
+    const t = range === 0 ? 0 : (clampedValue - lower.pos) / range;
+
+    const r = Math.round(lower.r + (upper.r - lower.r) * t);
+    const g = Math.round(lower.g + (upper.g - lower.g) * t);
+    const b = Math.round(lower.b + (upper.b - lower.b) * t);
+
+    return `rgb(${r}, ${g}, ${b})`;
+  }
+
+  private getContrastColor(bgColor: string): string {
+    // Extract RGB values from the color string
+    const rgbMatch = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (!rgbMatch) return '#000000'; // Default to black if parsing fails
+
+    const r = parseInt(rgbMatch[1]);
+    const g = parseInt(rgbMatch[2]);
+    const b = parseInt(rgbMatch[3]);
+
+    // Calculate relative luminance using WCAG formula
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Return white for dark backgrounds, black for light backgrounds
+    // Using a threshold of 0.5 for good contrast
+    return luminance > 0.5 ? '#000000' : '#ffffff';
+  }
+
+  private darkenColor(color: string, amount: number): string {
+    // Extract RGB values
+    const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+    if (!rgbMatch) return color;
+
+    const r = parseInt(rgbMatch[1]);
+    const g = parseInt(rgbMatch[2]);
+    const b = parseInt(rgbMatch[3]);
+
+    // Darken by reducing each component
+    const factor = 1 - amount;
+    const newR = Math.round(r * factor);
+    const newG = Math.round(g * factor);
+    const newB = Math.round(b * factor);
+
+    return `rgb(${newR}, ${newG}, ${newB})`;
   }
 }

@@ -1,0 +1,732 @@
+---
+export interface Props {
+  difficulties: string[];
+  providers: string[];
+}
+
+const { difficulties, providers } = Astro.props;
+---
+
+<div class="filter-container" id="filter-container">
+  <button class="filter-fab" id="filter-fab" aria-label="Toggle filters">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+      <path
+        d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.73-4.8 5.75-7.39C20.25 4.95 19.78 4 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z"
+      ></path>
+    </svg>
+    <span class="filter-count" id="filter-count"></span>
+  </button>
+  <div class="filter-panel" id="filter-panel">
+    <div class="backdrop"></div>
+    <div class="backdrop-edge"></div>
+    <div class="filter-inner">
+      <div class="filter-row">
+        <!-- Difficulty Filter Group -->
+        <div class="filter-group">
+          <span class="filter-label">Difficulty:</span>
+          <div class="filter-controls">
+            {
+              difficulties.map((difficulty) => (
+                <label class="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    name="difficulty"
+                    value={difficulty}
+                    checked
+                    data-difficulty={difficulty}
+                  />
+                  <span class="checkbox-label">
+                    {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                  </span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Provider Filter Group -->
+        <div class="filter-group">
+          <span class="filter-label">Provider:</span>
+          <div class="filter-controls">
+            {
+              providers.map((provider) => (
+                <label class="filter-checkbox">
+                  <input
+                    type="checkbox"
+                    name="provider"
+                    value={provider}
+                    checked
+                    data-provider={provider}
+                  />
+                  <span class="checkbox-label">{provider}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="filter-actions">
+          <button class="filter-action" id="select-all">All</button>
+          <button class="filter-action" id="clear-all">None</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style is:global>
+    /* Filter container - Desktop: top sticky, Mobile: bottom FAB */
+    .filter-container {
+      --glass-thickness: 3px;
+      z-index: 100;
+    }
+
+    /* Desktop: Keep traditional top sticky behavior */
+    @media (min-width: 769px) {
+      .filter-container {
+        position: sticky;
+        top: 1rem;
+        border-radius: 8px;
+        margin: 0 0 1.5rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--bg-secondary) 95%, transparent);
+        border: 1px solid var(--border-color);
+      }
+
+      .filter-fab {
+        display: none;
+      }
+
+      .filter-panel {
+        display: block;
+      }
+    }
+
+    /* Mobile: Bottom FAB pattern */
+    @media (max-width: 768px) {
+      .filter-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: 0;
+      }
+
+      .filter-fab {
+        position: fixed;
+        bottom: 2rem;
+        right: 1rem;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--accent-primary);
+        color: white;
+        border: none;
+        box-shadow:
+          0 4px 12px rgba(0, 0, 0, 0.15),
+          0 2px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 101;
+      }
+
+      .filter-fab:hover {
+        background: color-mix(in srgb, var(--accent-primary) 90%, black);
+        transform: scale(1.05);
+        box-shadow:
+          0 6px 16px rgba(0, 0, 0, 0.2),
+          0 3px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .filter-fab:active {
+        transform: scale(0.95);
+      }
+
+      .filter-count {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        background: #ff4444;
+        color: white;
+        border-radius: 10px;
+        min-width: 20px;
+        height: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid white;
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.2s ease;
+      }
+
+      .filter-count.visible {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      .filter-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        max-height: 60vh;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--bg-secondary) 95%, transparent);
+        border: 1px solid var(--border-color);
+        border-bottom: none;
+      }
+
+      .filter-panel.expanded {
+        transform: translateY(0);
+      }
+    }
+
+    /* Progressive enhancement: Glass effect for browsers with backdrop-filter support */
+    @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+      @media (min-width: 769px) {
+        .filter-container {
+          background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+          border: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .filter-panel {
+          background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+          border: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
+          border-bottom: none;
+        }
+      }
+
+      .backdrop {
+        position: absolute;
+        inset: 0;
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        background: linear-gradient(
+          to bottom,
+          color-mix(in srgb, var(--bg-secondary) 30%, transparent),
+          transparent 50%
+        );
+        pointer-events: none;
+      }
+
+      .backdrop-edge {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: var(--glass-thickness);
+        background: color-mix(in srgb, var(--bg-secondary) 10%, transparent);
+        -webkit-backdrop-filter: blur(12px) brightness(0.96);
+        backdrop-filter: blur(12px) brightness(0.96);
+        transform: translateY(100%);
+        pointer-events: none;
+      }
+    }
+
+    /* Performance optimization: mask-image for supported browsers */
+    @supports (mask-image: none) or (-webkit-mask-image: none) {
+      .backdrop {
+        height: 200%;
+        -webkit-mask-image: linear-gradient(to bottom, black 0% 50%, transparent 50% 100%);
+        mask-image: linear-gradient(to bottom, black 0% 50%, transparent 50% 100%);
+      }
+
+      .backdrop-edge {
+        height: 100%;
+        inset: 0;
+        -webkit-mask-image: linear-gradient(
+          to bottom,
+          black 0,
+          black var(--glass-thickness),
+          transparent var(--glass-thickness)
+        );
+        mask-image: linear-gradient(
+          to bottom,
+          black 0,
+          black var(--glass-thickness),
+          transparent var(--glass-thickness)
+        );
+      }
+    }
+
+    /* Enhanced shadow when sticky - desktop only */
+    @media (min-width: 769px) {
+      .filter-container.is-sticky {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      }
+    }
+
+    .filter-inner {
+      position: relative;
+      padding: 0.75rem 1.5rem;
+      z-index: 1;
+    }
+
+    /* Mobile filter panel adjustments */
+    @media (max-width: 768px) {
+      .filter-inner {
+        padding: 1rem;
+        padding-bottom: 1.5rem;
+      }
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* Mobile: Stack filter groups vertically */
+    @media (max-width: 768px) {
+      .filter-row {
+        flex-direction: column;
+        gap: 1.5rem;
+        align-items: stretch;
+        margin-top: 1rem;
+      }
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Mobile: Full width filter groups */
+    @media (max-width: 768px) {
+      .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
+
+    .filter-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* Mobile: Better spacing for touch targets */
+    @media (max-width: 768px) {
+      .filter-controls {
+        gap: 1rem;
+        width: 100%;
+      }
+    }
+
+    .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Mobile: Larger touch targets (44px minimum for accessibility) */
+    @media (max-width: 768px) {
+      .filter-checkbox {
+        gap: 0.5rem;
+        padding: 0.75rem 0.5rem;
+        border-radius: 4px;
+        transition: background-color 0.2s ease;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+      }
+
+      .filter-checkbox:active {
+        background-color: color-mix(in srgb, var(--accent-primary) 10%, transparent);
+      }
+    }
+
+    .filter-checkbox input[type='checkbox'] {
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+      accent-color: var(--accent-primary);
+      margin: 0;
+    }
+
+    /* Mobile: Larger checkboxes */
+    @media (max-width: 768px) {
+      .filter-checkbox input[type='checkbox'] {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    /* Custom checkbox styling */
+    .filter-checkbox input[type='checkbox'] {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--bg-primary);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-checkbox input[type='checkbox']:checked {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .filter-checkbox input[type='checkbox']:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .filter-checkbox input[type='checkbox']:hover {
+      border-color: var(--accent-primary);
+    }
+
+    /* Mobile: Larger checkboxes */
+    @media (max-width: 768px) {
+      .filter-checkbox input[type='checkbox']:checked::after {
+        font-size: 0.8rem;
+      }
+    }
+
+    .checkbox-label {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      line-height: 1;
+      transition: color 0.2s ease;
+    }
+
+    .filter-checkbox:hover .checkbox-label {
+      color: var(--accent-primary);
+    }
+
+    /* Mobile: Enhanced label styling */
+    @media (max-width: 768px) {
+      .filter-checkbox {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin: 0 -0.5rem;
+      }
+
+      .filter-checkbox:hover {
+        background: color-mix(in srgb, var(--accent-primary) 5%, var(--bg-primary));
+        border-color: color-mix(in srgb, var(--accent-primary) 30%, var(--border-color));
+      }
+
+      .checkbox-label {
+        font-size: 0.9rem;
+      }
+    }
+
+    .filter-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+    }
+
+    /* Mobile: Full width action buttons */
+    @media (max-width: 768px) {
+      .filter-actions {
+        margin: 0;
+        gap: 1rem;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .filter-action {
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      line-height: 1;
+      border: none;
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* "All" button - primary action */
+    .filter-action#select-all {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-action#select-all:hover {
+      background: color-mix(in srgb, var(--accent-primary) 90%, black);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* "None" button - secondary action */
+    .filter-action#clear-all {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-action#clear-all:hover {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border-color: color-mix(in srgb, var(--border-color) 50%, var(--accent-primary));
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Mobile: Enhanced touch-friendly buttons */
+    @media (max-width: 768px) {
+      .filter-action {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        flex: 1;
+        text-align: center;
+        min-height: 48px;
+        font-weight: 600;
+      }
+
+      .filter-action#select-all {
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+      }
+
+      .filter-action#select-all:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .filter-action#clear-all:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    /* Desktop tablet optimizations */
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .filter-inner {
+        padding: 0.6rem 1.25rem;
+      }
+
+      .filter-row {
+        gap: 1.5rem;
+      }
+    }
+
+    /* Wide screens */
+    @media (min-width: 1440px) {
+      .filter-inner {
+        max-width: calc(100% - 3rem);
+      }
+    }
+  </style>
+
+  <script>
+    // Extend Window interface for mobile menu controls
+    declare global {
+      interface Window {
+        mobileMenuControls?: {
+          open: () => void;
+          close: () => void;
+          toggle: () => void;
+          isOpen: () => boolean;
+        };
+      }
+    }
+
+    // Add sticky class when scrolled (desktop only)
+    const filterContainer = document.getElementById('filter-container');
+    if (filterContainer && window.innerWidth > 768) {
+      const observer = new IntersectionObserver(
+        ([e]) => {
+          filterContainer.classList.toggle('is-sticky', e.intersectionRatio < 1);
+        },
+        { threshold: [1], rootMargin: '-1px 0px 0px 0px' }
+      );
+      observer.observe(filterContainer);
+    }
+
+    // Mobile FAB functionality
+    const filterFab = document.getElementById('filter-fab');
+    const filterPanel = document.getElementById('filter-panel');
+    const filterCount = document.getElementById('filter-count');
+    let isPanelExpanded = false;
+
+    // Update filter count badge
+    function updateFilterCount() {
+      const checkboxes = document.querySelectorAll('.filter-container input[type="checkbox"]');
+      const uncheckedCount = Array.from(checkboxes).filter(
+        (cb) => !(cb as HTMLInputElement).checked
+      ).length;
+
+      if (filterCount) {
+        if (uncheckedCount > 0) {
+          filterCount.textContent = uncheckedCount.toString();
+          filterCount.classList.add('visible');
+        } else {
+          filterCount.classList.remove('visible');
+        }
+      }
+    }
+
+    // Close filter panel
+    function closeFilterPanel() {
+      isPanelExpanded = false;
+      if (filterPanel) {
+        filterPanel.classList.remove('expanded');
+      }
+      if (filterFab) {
+        filterFab.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    // Open filter panel
+    function openFilterPanel() {
+      isPanelExpanded = true;
+      if (filterPanel) {
+        filterPanel.classList.add('expanded');
+      }
+      if (filterFab) {
+        filterFab.setAttribute('aria-expanded', 'true');
+      }
+    }
+
+    // Toggle filter panel (mobile) with mobile menu coordination
+    if (filterFab && filterPanel) {
+      filterFab.addEventListener('click', () => {
+        // If mobile nav is open, close it first
+        if (window.mobileMenuControls?.isOpen()) {
+          window.mobileMenuControls.close();
+          // Small delay to allow nav menu to close before opening filter
+          setTimeout(() => {
+            openFilterPanel();
+          }, 150);
+        } else if (isPanelExpanded) {
+          closeFilterPanel();
+        } else {
+          openFilterPanel();
+        }
+      });
+
+      // Close panel when clicking outside (mobile)
+      document.addEventListener('click', (e) => {
+        if (
+          window.innerWidth <= 768 &&
+          isPanelExpanded &&
+          !filterPanel.contains(e.target as Node) &&
+          !filterFab.contains(e.target as Node)
+        ) {
+          closeFilterPanel();
+        }
+      });
+
+      // Close panel on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isPanelExpanded) {
+          closeFilterPanel();
+          filterFab.focus();
+        }
+      });
+    }
+
+    // Expose filter controls globally for coordination with mobile menu
+    window.filterControls = {
+      close: closeFilterPanel,
+      isOpen: () => isPanelExpanded,
+    };
+
+    // Handle select all / clear all buttons
+    const selectAllBtn = document.getElementById('select-all');
+    const clearAllBtn = document.getElementById('clear-all');
+
+    if (selectAllBtn) {
+      selectAllBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.filter-container input[type="checkbox"]');
+        checkboxes.forEach((cb) => {
+          (cb as HTMLInputElement).checked = true;
+        });
+
+        // Update filter count and trigger change event
+        updateFilterCount();
+        if (checkboxes.length > 0) {
+          checkboxes[0].dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+
+    if (clearAllBtn) {
+      clearAllBtn.addEventListener('click', () => {
+        const checkboxes = document.querySelectorAll('.filter-container input[type="checkbox"]');
+        checkboxes.forEach((cb) => {
+          (cb as HTMLInputElement).checked = false;
+        });
+
+        // Update filter count and trigger change event
+        updateFilterCount();
+        if (checkboxes.length > 0) {
+          checkboxes[0].dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+
+    // Update filter count on checkbox changes
+    document.addEventListener('change', (e) => {
+      if (
+        e.target &&
+        (e.target as HTMLElement).matches('.filter-container input[type="checkbox"]')
+      ) {
+        updateFilterCount();
+      }
+    });
+
+    // Initialize filter count on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFilterCount();
+    });
+
+    // Handle window resize to toggle between desktop/mobile behavior
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && isPanelExpanded) {
+        // Switch to desktop mode - close mobile panel
+        isPanelExpanded = false;
+        if (filterPanel) {
+          filterPanel.classList.remove('expanded');
+        }
+        if (filterFab) {
+          filterFab.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+  </script>
+</div>

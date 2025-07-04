@@ -33,21 +33,34 @@ export const renderMarkdownToHTML = (text: string): string => {
     .join('\n      ');
 };
 
-// Filter data based on selected difficulties
+// Filter data based on selected difficulties and providers
 export const getFilteredData = (
   selectedDifficulties: string[],
   originalRawData: RawData[],
-  originalTestGroupsData: TestGroupData[]
+  originalTestGroupsData: TestGroupData[],
+  selectedProviders?: string[]
 ): FilteredData => {
-  // Filter raw data
-  const filteredRawData = originalRawData.filter((d) =>
-    selectedDifficulties.includes(d.test_group)
-  );
+  // Filter raw data with AND logic
+  const filteredRawData = originalRawData.filter((d) => {
+    const difficultyMatch =
+      selectedDifficulties.length === 0 || selectedDifficulties.includes(d.test_group);
+    const providerMatch =
+      !selectedProviders ||
+      selectedProviders.length === 0 ||
+      selectedProviders.includes(d.provider);
+    return difficultyMatch && providerMatch;
+  });
 
-  // Filter test groups data
-  const filteredTestGroupsData = originalTestGroupsData.filter((d) =>
-    selectedDifficulties.includes(d.test_group)
-  );
+  // Get the list of models that remain after filtering raw data
+  const filteredModels = new Set(filteredRawData.map((d) => d.Model));
+
+  // Filter test groups data by difficulty AND by models that remain after provider filtering
+  const filteredTestGroupsData = originalTestGroupsData.filter((d) => {
+    const difficultyMatch =
+      selectedDifficulties.length === 0 || selectedDifficulties.includes(d.test_group);
+    const modelMatch = filteredModels.has(d.Model);
+    return difficultyMatch && modelMatch;
+  });
 
   // Recalculate leaderboard data from filtered raw data
   const modelStats: Record<string, ModelStats> = {};
@@ -294,6 +307,6 @@ export const showEmptyState = (): void => {
   const tbody = document.querySelector('.leaderboard-table tbody');
   if (tbody) {
     tbody.innerHTML =
-      '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Please select at least one difficulty level</td></tr>';
+      '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Please select at least one filter to view results</td></tr>';
   }
 };

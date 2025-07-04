@@ -23,7 +23,9 @@ export class MerbenchFilters {
   }
 
   private setupEventListeners(): void {
-    const checkboxes = document.querySelectorAll('input[name="difficulty"]');
+    const checkboxes = document.querySelectorAll(
+      'input[name="difficulty"], input[name="provider"]'
+    );
     checkboxes.forEach((checkbox) => {
       checkbox.addEventListener('change', () => this.handleFilterChange());
     });
@@ -34,11 +36,17 @@ export class MerbenchFilters {
     return Array.from(selectedCheckboxes).map((cb) => (cb as HTMLInputElement).value);
   }
 
+  private getSelectedProviders(): string[] {
+    const selectedCheckboxes = document.querySelectorAll('input[name="provider"]:checked');
+    return Array.from(selectedCheckboxes).map((cb) => (cb as HTMLInputElement).value);
+  }
+
   private handleFilterChange(): void {
     try {
       const selectedDifficulties = this.getSelectedDifficulties();
+      const selectedProviders = this.getSelectedProviders();
 
-      if (selectedDifficulties.length === 0) {
+      if (selectedDifficulties.length === 0 && selectedProviders.length === 0) {
         this.showNoDataMessage();
         this.charts.purgeCharts();
         return;
@@ -47,7 +55,8 @@ export class MerbenchFilters {
       const filteredData = getFilteredData(
         selectedDifficulties,
         this.originalRawData,
-        this.originalTestGroupsData
+        this.originalTestGroupsData,
+        selectedProviders
       );
 
       this.updateUI(filteredData);
@@ -88,7 +97,7 @@ export class MerbenchFilters {
   // Method to reset all filters
   public resetFilters(): void {
     const checkboxes = document.querySelectorAll(
-      'input[name="difficulty"]'
+      'input[name="difficulty"], input[name="provider"]'
     ) as NodeListOf<HTMLInputElement>;
     checkboxes.forEach((checkbox) => {
       checkbox.checked = true;
@@ -97,7 +106,10 @@ export class MerbenchFilters {
   }
 
   // Method to get current filter state
-  public getCurrentFilters(): string[] {
-    return this.getSelectedDifficulties();
+  public getCurrentFilters(): { difficulties: string[]; providers: string[] } {
+    return {
+      difficulties: this.getSelectedDifficulties(),
+      providers: this.getSelectedProviders(),
+    };
   }
 }

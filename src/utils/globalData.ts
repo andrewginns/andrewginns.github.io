@@ -13,17 +13,25 @@ export async function getTopProjectTags(limit: number = 7): Promise<string[]> {
     console.log('🔄 Fetching top project tags...');
     const githubData = await getCachedGitHubData('andrewginns');
 
-    if (!githubData.pinnedRepos || githubData.pinnedRepos.length === 0) {
+    if (!githubData.repos || githubData.repos.length === 0) {
       console.log('⚠️  No GitHub repos found, using default tags');
+      return getDefaultTags();
+    }
+
+    // Filter out forked repositories to only include owned repos
+    const ownedRepos = githubData.repos.filter((repo) => !repo.fork);
+
+    if (ownedRepos.length === 0) {
+      console.log('⚠️  No owned GitHub repos found, using default tags');
       return getDefaultTags();
     }
 
     // Use a consistent seed to ensure stable output during build
     const seed = 42; // Fixed seed for consistent builds
-    const topTags = getTopTags(githubData.pinnedRepos, limit, seed);
+    const topTags = getTopTags(ownedRepos, limit, seed);
 
     console.log(
-      `✅ Extracted ${topTags.length} tags from ${githubData.pinnedRepos.length} GitHub repos: ${topTags.join(', ')}`
+      `✅ Extracted ${topTags.length} tags from ${ownedRepos.length} owned GitHub repos (out of ${githubData.repos.length} total): ${topTags.join(', ')}`
     );
     cachedTopTags = topTags;
     return topTags;

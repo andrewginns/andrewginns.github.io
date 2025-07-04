@@ -1,0 +1,78 @@
+---
+export interface Props {
+  providers: string[];
+}
+
+const { providers } = Astro.props;
+---
+
+<div class="filter-group">
+  <h3>Providers</h3>
+  <div class="filter-controls">
+    {
+      providers.map((provider) => (
+        <label class="filter-checkbox">
+          <input
+            type="checkbox"
+            name="provider"
+            value={provider}
+            checked
+            data-provider={provider}
+          />
+          <span class="checkbox-label">{provider}</span>
+        </label>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .filter-group h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-controls {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .filter-checkbox input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--accent-primary);
+  }
+
+  .checkbox-label {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+  }
+
+  .filter-checkbox:hover .checkbox-label {
+    color: var(--accent-primary);
+  }
+
+  @media (max-width: 768px) {
+    .filter-controls {
+      gap: 0.75rem;
+    }
+
+    .checkbox-label {
+      font-size: 0.85rem;
+    }
+  }
+</style>
