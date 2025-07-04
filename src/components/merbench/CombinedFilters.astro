@@ -377,14 +377,74 @@ const { difficulties, providers } = Astro.props;
       }
     }
 
+    /* Custom checkbox styling */
+    .filter-checkbox input[type='checkbox'] {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      background: var(--bg-primary);
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-checkbox input[type='checkbox']:checked {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .filter-checkbox input[type='checkbox']:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: bold;
+      line-height: 1;
+    }
+
+    .filter-checkbox input[type='checkbox']:hover {
+      border-color: var(--accent-primary);
+    }
+
+    /* Mobile: Larger checkboxes */
+    @media (max-width: 768px) {
+      .filter-checkbox input[type='checkbox']:checked::after {
+        font-size: 0.8rem;
+      }
+    }
+
     .checkbox-label {
       font-size: 0.85rem;
       color: var(--text-primary);
       line-height: 1;
+      transition: color 0.2s ease;
     }
 
     .filter-checkbox:hover .checkbox-label {
       color: var(--accent-primary);
+    }
+
+    /* Mobile: Enhanced label styling */
+    @media (max-width: 768px) {
+      .filter-checkbox {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin: 0 -0.5rem;
+      }
+
+      .filter-checkbox:hover {
+        background: color-mix(in srgb, var(--accent-primary) 5%, var(--bg-primary));
+        border-color: color-mix(in srgb, var(--accent-primary) 30%, var(--border-color));
+      }
+
+      .checkbox-label {
+        font-size: 0.9rem;
+      }
     }
 
     .filter-actions {
@@ -404,18 +464,49 @@ const { difficulties, providers } = Astro.props;
     }
 
     .filter-action {
-      background: var(--bg-secondary);
-      color: var(--accent-primary);
-      border: 1px solid var(--border-color);
-      padding: 0.25rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       line-height: 1;
+      border: none;
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Mobile: Larger touch targets for action buttons */
+    /* "All" button - primary action */
+    .filter-action#select-all {
+      background: var(--accent-primary);
+      color: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-action#select-all:hover {
+      background: color-mix(in srgb, var(--accent-primary) 90%, black);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* "None" button - secondary action */
+    .filter-action#clear-all {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .filter-action#clear-all:hover {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border-color: color-mix(in srgb, var(--border-color) 50%, var(--accent-primary));
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Mobile: Enhanced touch-friendly buttons */
     @media (max-width: 768px) {
       .filter-action {
         padding: 0.75rem 1.5rem;
@@ -423,13 +514,23 @@ const { difficulties, providers } = Astro.props;
         border-radius: 8px;
         flex: 1;
         text-align: center;
+        min-height: 48px;
+        font-weight: 600;
       }
-    }
 
-    .filter-action:hover {
-      background: var(--accent-primary);
-      color: white;
-      border-color: var(--accent-primary);
+      .filter-action#select-all {
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+      }
+
+      .filter-action#select-all:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .filter-action#clear-all:active {
+        transform: translateY(1px);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
     }
 
     /* Desktop tablet optimizations */
