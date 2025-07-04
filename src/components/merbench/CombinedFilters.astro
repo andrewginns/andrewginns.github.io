@@ -280,20 +280,6 @@ const { difficulties, providers } = Astro.props;
         padding: 1rem;
         padding-bottom: 1.5rem;
       }
-
-      /* Add handle for drag indication */
-      .filter-inner::before {
-        content: '';
-        position: absolute;
-        top: 0.5rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 32px;
-        height: 4px;
-        background: var(--text-secondary);
-        border-radius: 2px;
-        opacity: 0.3;
-      }
     }
 
     .filter-row {
