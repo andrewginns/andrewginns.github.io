@@ -1,7 +1,7 @@
 ---
 // ThemeToggle component for switching between light and dark modes
 export interface Props {
-  variant?: 'sidebar' | 'mobile';
+  variant?: 'sidebar' | 'mobile' | 'mobile-header';
 }
 
 const { variant = 'sidebar' } = Astro.props;
@@ -202,6 +202,139 @@ const { variant = 'sidebar' } = Astro.props;
     width: 100%;
     margin-top: 1rem;
     padding: 0.75rem;
+  }
+
+  /* Mobile header variant - glass on glass effect */
+  .theme-toggle--mobile-header {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--bg-secondary) 25%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-color) 20%, transparent);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.06),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  }
+
+  /* Enhanced glass effect with backdrop-filter */
+  @supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+    .theme-toggle--mobile-header {
+      background: color-mix(in srgb, var(--bg-secondary) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--border-color) 12%, transparent);
+      backdrop-filter: blur(12px) brightness(1.03) saturate(1.1);
+      -webkit-backdrop-filter: blur(12px) brightness(1.03) saturate(1.1);
+    }
+  }
+
+  .theme-toggle--mobile-header:hover {
+    background: color-mix(in srgb, var(--bg-secondary) 15%, transparent);
+    border-color: color-mix(in srgb, var(--accent-primary) 25%, transparent);
+    transform: translateY(-1px);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      inset 0 1px 2px rgba(255, 255, 255, 0.12);
+  }
+
+  /* Dark mode adjustments for better contrast */
+  html[data-theme='dark'] .theme-toggle--mobile-header {
+    background: color-mix(in srgb, var(--bg-secondary) 20%, transparent);
+    border-color: color-mix(in srgb, var(--border-color) 15%, transparent);
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 1px rgba(255, 255, 255, 0.03);
+  }
+
+  @supports (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px)) {
+    html[data-theme='dark'] .theme-toggle--mobile-header {
+      background: color-mix(in srgb, var(--bg-secondary) 6%, transparent);
+      border-color: color-mix(in srgb, var(--border-color) 8%, transparent);
+      backdrop-filter: blur(12px) brightness(0.97) saturate(1.1);
+      -webkit-backdrop-filter: blur(12px) brightness(0.97) saturate(1.1);
+    }
+  }
+
+  html[data-theme='dark'] .theme-toggle--mobile-header:hover {
+    background: color-mix(in srgb, var(--bg-secondary) 12%, transparent);
+    border-color: color-mix(in srgb, var(--accent-primary) 20%, transparent);
+  }
+
+  .theme-toggle--mobile-header:focus {
+    outline-offset: 4px;
+  }
+
+  .theme-toggle--mobile-header .theme-toggle__label,
+  .theme-toggle--mobile-header .theme-toggle__state {
+    display: none;
+  }
+
+  .theme-toggle--mobile-header .theme-toggle__switch {
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .theme-toggle--mobile-header .theme-toggle__handle {
+    position: static;
+    transform: none !important;
+    width: 100%;
+    height: 100%;
+    background: none;
+    box-shadow: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .theme-toggle--mobile-header .theme-toggle__icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s ease;
+  }
+
+  .theme-toggle--mobile-header .theme-toggle__icon svg {
+    width: 24px;
+    height: 24px;
+    display: block;
+  }
+
+  /* Show sun icon in light mode */
+  .theme-toggle--mobile-header .theme-toggle__icon--sun {
+    opacity: 1;
+    color: var(--accent-tertiary);
+  }
+
+  .theme-toggle--mobile-header .theme-toggle__icon--moon {
+    opacity: 0;
+  }
+
+  /* Show moon icon in dark mode */
+  html[data-theme='dark'] .theme-toggle--mobile-header .theme-toggle__icon--sun {
+    opacity: 0;
+  }
+
+  html[data-theme='dark'] .theme-toggle--mobile-header .theme-toggle__icon--moon {
+    opacity: 1;
+    color: #2c3e50;
   }
 
   /* Enhanced hover states */
