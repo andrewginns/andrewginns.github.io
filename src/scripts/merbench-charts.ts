@@ -314,7 +314,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 40 : 60,
-          r: isMobile ? 40 : 120,
+          r: isMobile ? 0 : 120,
           t: 40,
           b: isMobile ? 160 : 60,
         },
@@ -410,7 +410,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 40 : 60,
-          r: isMobile ? 40 : 60,
+          r: isMobile ? 0 : 60,
           t: 40,
           b: isMobile ? 200 : 120,
         },
@@ -488,7 +488,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 50 : 80,
-          r: isMobile ? 40 : 60,
+          r: isMobile ? 0 : 60,
           t: 40,
           b: isMobile ? 200 : 120,
         },
@@ -554,7 +554,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 50 : 80,
-          r: isMobile ? 40 : 60,
+          r: isMobile ? 0 : 60,
           t: 40,
           b: isMobile ? 200 : 120,
         },
