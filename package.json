@@ -18,12 +18,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
     "validate": "npm run typecheck && npm run lint && npm run format:check",
-    "csp:extract": "tsx scripts/extract-csp-hashes.ts",
-    "csp:server": "tsx scripts/csp-test-server.ts",
-    "csp:test": "npx playwright test tests/csp-validation.spec.ts",
-    "csp:validate": "tsx scripts/validate-csp.ts",
-    "predeploy": "npm run build && npm run csp:validate",
-    "postbuild": "npm run csp:extract"
+    "predeploy": "npm run build"
   },
   "keywords": [
     "machine-learning",
