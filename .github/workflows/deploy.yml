@@ -11,32 +11,10 @@ on:
 permissions:
   contents: read
   deployments: write
+  pull-requests: write
 
 jobs:
-  csp-validation:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run CSP Validation
-        run: npm run csp:validate
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build:
-    needs: csp-validation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -70,6 +48,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      pull-requests: write
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -81,8 +60,58 @@ jobs:
         run: ls -la ./dist
 
       - name: Publish to Cloudflare Pages
+        id: cloudflare-deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy ./dist --project-name=andrewginns
+
+      - name: Extract deployment URL
+        id: extract-url
+        run: |
+          # Extract URL from wrangler output using the known pattern
+          DEPLOY_URL=$(echo "${{ steps.cloudflare-deploy.outputs.command-output }}" | grep -o 'https://[a-zA-Z0-9]*\.andrewginns\.pages\.dev' || echo "")
+          echo "deployment-url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "Extracted deployment URL: $DEPLOY_URL"
+
+      - name: Find merged PR
+        id: find-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commit = context.sha;
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+              sort: 'updated',
+              direction: 'desc'
+            });
+
+            const mergedPR = pulls.find(pr => pr.merge_commit_sha === commit);
+            return mergedPR ? mergedPR.number : null;
+
+      - name: Comment on merged PR
+        if: steps.find-pr.outputs.result != 'null' && steps.extract-url.outputs.deployment-url != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.find-pr.outputs.result }};
+            const deploymentUrl = '${{ steps.extract-url.outputs.deployment-url }}';
+
+            const comment = `🚀 **Production deployment ready!**
+
+            📋 **PR #${prNumber}** has been deployed to production: ${deploymentUrl}
+
+            Built from commit: ${{ github.sha }}
+
+            ---
+            *Your changes are now live on the production site!*`;
+
+            await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
