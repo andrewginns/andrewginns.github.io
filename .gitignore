@@ -44,6 +44,15 @@ memory-bank/*
 scripts/screenshots/*
 reference_files/*
 screenshots/*
+dark-mode-screenshots/*
+icon-check-screenshots/*
+icon-contrast-screenshots/*
+tests/floating-tags-interaction.spec.ts-snapshots/*
+theme-toggle-fix-screenshots/*
+refined-dark-mode-screenshots/*
+theme-toggle-screenshots/*
+toggle-visual-fix-screenshots/*
+
 
 # Project tracking
 TODO.md

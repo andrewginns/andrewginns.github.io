@@ -2,7 +2,7 @@ name: Deploy PR Preview to GitHub Pages
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     types: [opened, synchronize, reopened]
 
 permissions:
@@ -12,7 +12,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: "pages-pr-${{ github.event.number }}"
+  group: 'pages-pr-${{ github.event.number }}'
   cancel-in-progress: true
 
 jobs:
@@ -21,21 +21,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Build site
         run: npm run build
         env:
           # GitHub token for API access (automatically provided by Actions)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
@@ -56,21 +56,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        
+
       - name: Comment PR with preview URL
         uses: actions/github-script@v7
         with:
           script: |
             const deploymentUrl = '${{ steps.deployment.outputs.page_url }}';
-            const comment = `🚀 **Preview deployment ready!**
-            
+            const comment = `✅ **Preview deployment ready!**
+
             📋 **PR #${{ github.event.number }}** has been deployed to: ${deploymentUrl}
-            
+
             Built from commit: ${{ github.event.pull_request.head.sha }}
-            
+
             ---
             *This preview will be updated automatically when you push new commits to this PR.*`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

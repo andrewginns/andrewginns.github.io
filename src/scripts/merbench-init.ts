@@ -18,6 +18,9 @@ window.initializeMerbench = function (data: MerbenchData) {
   // Make charts instance globally available
   window.merbenchCharts = charts;
 
+  // Setup theme listener for chart updates
+  charts.setupThemeListener();
+
   // Store original data globally
   window.merbenchData = data;
 

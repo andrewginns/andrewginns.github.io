@@ -1,0 +1,232 @@
+---
+// MobileHeader component - no props needed
+---
+
+<header class="mobile-header" id="mobile-header">
+  <div class="backdrop"></div>
+  <div class="backdrop-edge"></div>
+
+  <button
+    class="mobile-hamburger"
+    id="mobile-hamburger"
+    aria-label="Toggle navigation menu"
+    aria-expanded="false"
+    aria-controls="mobile-nav"
+  >
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+    <span class="hamburger-line"></span>
+  </button>
+
+  <a href="/" class="mobile-brand" aria-label="Andrew Ginns - Home"> Andrew Ginns </a>
+
+  <div class="mobile-theme-toggle">
+    <slot name="theme-toggle" />
+  </div>
+</header>
+
+<style>
+  .mobile-header {
+    --glass-thickness: 3px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: color-mix(in srgb, var(--bg-primary) 95%, transparent);
+    border-bottom: 1px solid var(--border-color);
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    z-index: 1002;
+    transition:
+      transform 0.3s ease-in-out,
+      box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+
+  /* Progressive enhancement: Glass effect for browsers with backdrop-filter support */
+  @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+    .mobile-header {
+      background: color-mix(in srgb, var(--bg-primary) 50%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
+    }
+
+    .backdrop {
+      position: absolute;
+      inset: 0;
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--bg-primary) 30%, transparent),
+        transparent 50%
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .backdrop-edge {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--glass-thickness);
+      background: color-mix(in srgb, var(--bg-primary) 10%, transparent);
+      -webkit-backdrop-filter: blur(12px) brightness(0.96);
+      backdrop-filter: blur(12px) brightness(0.96);
+      transform: translateY(100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+  }
+
+  /* Performance optimization: mask-image for supported browsers */
+  @supports (mask-image: none) or (-webkit-mask-image: none) {
+    .backdrop {
+      height: 200%;
+      -webkit-mask-image: linear-gradient(to bottom, black 0% 50%, transparent 50% 100%);
+      mask-image: linear-gradient(to bottom, black 0% 50%, transparent 50% 100%);
+    }
+
+    .backdrop-edge {
+      height: 100%;
+      inset: 0;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        black 0,
+        black var(--glass-thickness),
+        transparent var(--glass-thickness)
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        black 0,
+        black var(--glass-thickness),
+        transparent var(--glass-thickness)
+      );
+    }
+  }
+
+  /* Enhanced shadow when scrolled */
+  .mobile-header.scrolled {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Show only on mobile/tablet */
+  @media (max-width: 1024px) {
+    .mobile-header {
+      display: flex;
+    }
+  }
+
+  /* Hamburger Menu Button */
+  .mobile-hamburger {
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    position: relative;
+    z-index: 2;
+  }
+
+  .mobile-hamburger:hover {
+    background-color: var(--hover-bg);
+  }
+
+  .mobile-hamburger:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .hamburger-line {
+    width: 24px;
+    height: 2px;
+    background-color: var(--text-primary);
+    transition: all 0.3s ease;
+    transform-origin: center;
+  }
+
+  /* Animated hamburger to X */
+  .mobile-hamburger[aria-expanded='true'] .hamburger-line:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .mobile-hamburger[aria-expanded='true'] .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  .mobile-hamburger[aria-expanded='true'] .hamburger-line:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  /* Brand/Logo */
+  .mobile-brand {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+    transition: opacity 0.2s ease;
+    position: relative;
+    z-index: 2;
+  }
+
+  .mobile-brand:hover {
+    opacity: 0.8;
+  }
+
+  .mobile-brand:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  /* Theme Toggle Container */
+  .mobile-theme-toggle {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Scroll-aware header (optional enhancement) */
+  .mobile-header.header-hidden {
+    transform: translateY(-100%);
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .mobile-header {
+      border-bottom-width: 2px;
+    }
+
+    .hamburger-line {
+      height: 3px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-header,
+    .mobile-hamburger,
+    .hamburger-line {
+      transition-duration: 0.01ms;
+    }
+  }
+</style>
+
+<script src="/src/scripts/mobile-header.ts"></script>
