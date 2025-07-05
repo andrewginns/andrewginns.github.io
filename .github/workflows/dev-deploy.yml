@@ -2,7 +2,7 @@ name: Deploy PR Preview to GitHub Pages
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     types: [opened, synchronize, reopened]
 
 permissions:
@@ -12,30 +12,107 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: "pages-pr-${{ github.event.number }}"
+  group: 'pages-pr-${{ github.event.number }}'
   cancel-in-progress: true
 
 jobs:
-  build:
+  csp-validation:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run CSP Validation
+        run: npm run csp:validate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment PR with CSP validation result
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '';
+
+            try {
+              // Check if CSP compliance report exists
+              if (fs.existsSync('csp-compliance-report.json')) {
+                const report = JSON.parse(fs.readFileSync('csp-compliance-report.json', 'utf8'));
+                
+                if (report.validation.passed) {
+                  comment = `✅ **CSP Validation Passed**
+                  
+                  🔒 All functionality works under strict CSP policies
+                  📊 Validated ${report.cspHashes.totalHashes} inline content hashes
+                  🚀 Ready for deployment
+                  
+                  ---
+                  *CSP validation ensures production compatibility*`;
+                } else {
+                  comment = `❌ **CSP Validation Failed**
+                  
+                  🚨 CSP violations detected that would break in production
+                  📋 Check the build logs for detailed violation reports
+                  🔧 Fix violations before deployment
+                  
+                  ---
+                  *This PR cannot be deployed until CSP issues are resolved*`;
+                }
+              } else {
+                comment = `⚠️ **CSP Validation Incomplete**
+                
+                CSP validation could not complete. Check build logs for details.`;
+              }
+            } catch (error) {
+              comment = `❌ **CSP Validation Failed**
+              
+              🚨 CSP violations detected - deployment blocked
+              📋 Check build logs for detailed error information
+              
+              ---
+              *Fix CSP issues before merging this PR*`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  build:
+    needs: csp-validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Build site
         run: npm run build
         env:
           # GitHub token for API access (automatically provided by Actions)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
       - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
@@ -56,21 +133,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        
+
       - name: Comment PR with preview URL
         uses: actions/github-script@v7
         with:
           script: |
             const deploymentUrl = '${{ steps.deployment.outputs.page_url }}';
             const comment = `🚀 **Preview deployment ready!**
-            
+
             📋 **PR #${{ github.event.number }}** has been deployed to: ${deploymentUrl}
-            
+
             Built from commit: ${{ github.event.pull_request.head.sha }}
-            
+
             ---
             *This preview will be updated automatically when you push new commits to this PR.*`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

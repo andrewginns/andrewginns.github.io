@@ -16,10 +16,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "playwright": "^1.53.1"
+    "playwright": "^1.53.1",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "@types/node": "^24.0.3",
+    "@types/express": "^4.17.21",
     "typescript": "^5.8.3"
   }
 }
