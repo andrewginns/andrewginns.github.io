@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import type { Page } from '@playwright/test';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
 
@@ -31,7 +30,6 @@ test.describe('Theme Toggle UX Validation', () => {
     // Test initial light mode state
     const toggle = page.locator('.theme-toggle--sidebar');
     const toggleInput = page.locator('.theme-toggle__input');
-    const switchElement = page.locator('.theme-toggle__switch');
 
     // Verify light mode state
     await expect(toggleInput).not.toBeChecked();
@@ -74,7 +72,6 @@ test.describe('Theme Toggle UX Validation', () => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
 
-    const toggle = page.locator('.theme-toggle--sidebar');
     const toggleInput = page.locator('.theme-toggle__input');
 
     // Test ARIA attributes
@@ -158,8 +155,6 @@ test.describe('Theme Toggle UX Validation', () => {
     await page.waitForLoadState('networkidle');
 
     const toggle = page.locator('.theme-toggle--sidebar');
-    const handle = page.locator('.theme-toggle__handle');
-    const switchBg = page.locator('.theme-toggle__switch');
 
     // Test hover state
     await toggle.hover();
