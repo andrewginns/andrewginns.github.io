@@ -230,25 +230,88 @@
 </style>
 
 <script>
-  // Add scroll detection for glass shadow effect
-  function initScrollDetection() {
+  // Smart auto-hide mobile header with scroll detection
+  function initSmartHeader() {
     const header = document.getElementById('mobile-header');
+    const hamburger = document.getElementById('mobile-hamburger');
     if (!header) return;
 
-    const scrollThreshold = 10;
+    // Configuration - optimized for industry best practices
+    const SCROLL_THRESHOLD = 10; // Minimum scroll for shadow effect
+    const HIDE_THRESHOLD = 40; // Scroll distance before hiding (reduced from 50px)
+    const SHOW_THRESHOLD = 20; // Upward scroll distance before showing (new)
+    const SHOW_TIMEOUT = 3000; // Show header after 3s of no scrolling (increased from 2s)
+
+    // State tracking
+    let lastScrollTop = 0;
+    let scrollTimeout;
+    let isMenuOpen = false;
+    let cumulativeUpwardScroll = 0; // Track cumulative upward movement
+
+    // Track menu state to prevent hiding during interaction
+    if (hamburger) {
+      const observer = new MutationObserver(() => {
+        isMenuOpen = hamburger.getAttribute('aria-expanded') === 'true';
+      });
+      observer.observe(hamburger, { attributes: true, attributeFilter: ['aria-expanded'] });
+    }
 
     function handleScroll() {
       if (!header) return;
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-      if (scrollTop > scrollThreshold) {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollDelta = scrollTop - lastScrollTop;
+
+      // Glass shadow effect (original functionality)
+      if (scrollTop > SCROLL_THRESHOLD) {
         header.classList.add('scrolled');
       } else {
         header.classList.remove('scrolled');
       }
+
+      // Smart auto-hide logic
+      if (scrollTop <= SCROLL_THRESHOLD) {
+        // Always show at top of page
+        header.classList.remove('header-hidden');
+        cumulativeUpwardScroll = 0; // Reset cumulative tracking
+      } else if (!isMenuOpen) {
+        // Only apply auto-hide when menu is closed
+        if (scrollDelta > 0) {
+          // Scrolling down
+          cumulativeUpwardScroll = 0; // Reset upward scroll tracking
+          if (scrollTop > HIDE_THRESHOLD) {
+            header.classList.add('header-hidden');
+          }
+        } else if (scrollDelta < 0) {
+          // Scrolling up - accumulate upward movement
+          cumulativeUpwardScroll += Math.abs(scrollDelta);
+
+          // Show header once we've scrolled up enough
+          if (cumulativeUpwardScroll >= SHOW_THRESHOLD) {
+            header.classList.remove('header-hidden');
+            cumulativeUpwardScroll = 0; // Reset after showing
+          }
+        }
+      }
+
+      // Clear existing timeout
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+
+      // Show header after period of no scrolling (for reading)
+      if (scrollTop > HIDE_THRESHOLD && !isMenuOpen) {
+        scrollTimeout = setTimeout(() => {
+          if (header) {
+            header.classList.remove('header-hidden');
+          }
+        }, SHOW_TIMEOUT);
+      }
+
+      lastScrollTop = scrollTop;
     }
 
-    // Throttle scroll events
+    // Throttle scroll events for performance
     let ticking = false;
     function requestTick() {
       if (!ticking) {
@@ -264,15 +327,29 @@
 
     // Check initial scroll position
     handleScroll();
+
+    // Cleanup function for ViewTransitions
+    return () => {
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+      window.removeEventListener('scroll', requestTick);
+    };
   }
 
   // Initialize on DOM ready
+  let cleanup;
+  function initialize() {
+    if (cleanup) cleanup(); // Clean up previous instance
+    cleanup = initSmartHeader();
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initScrollDetection);
+    document.addEventListener('DOMContentLoaded', initialize);
   } else {
-    initScrollDetection();
+    initialize();
   }
 
   // Re-initialize after ViewTransitions
-  document.addEventListener('astro:page-load', initScrollDetection);
+  document.addEventListener('astro:page-load', initialize);
 </script>
