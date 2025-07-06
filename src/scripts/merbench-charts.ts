@@ -17,6 +17,30 @@ export class MerbenchCharts {
   private plotlyLoaded = false;
   private charts = new Map<string, any>();
 
+  private isDarkMode(): boolean {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  private getThemeColors() {
+    const isDark = this.isDarkMode();
+    return {
+      background: isDark ? '#0d1117' : '#ffffff',
+      paper: isDark ? '#161b22' : '#ffffff',
+      text: isDark ? '#f0f6fc' : '#2c3e50',
+      textSecondary: isDark ? '#8b949e' : '#7f8c8d',
+      grid: isDark ? 'rgba(240, 246, 252, 0.05)' : '#dfe6e9',
+      gridLines: isDark ? 'rgba(240, 246, 252, 0.1)' : '#ecf0f1',
+      accent: isDark ? '#f85149' : '#e74c3c',
+      blue: isDark ? '#58a6ff' : '#3498db',
+      green: isDark ? '#3fb950' : '#27ae60',
+      yellow: isDark ? '#f2cc60' : '#f39c12',
+      purple: isDark ? '#a5a2ff' : '#9c27b0',
+      orange: isDark ? '#ffab70' : '#ff5722',
+      pink: isDark ? '#ff7b72' : '#e91e63',
+      cyan: isDark ? '#76e3ea' : '#17a2b8',
+    };
+  }
+
   async waitForPlotly(): Promise<void> {
     if (typeof window.Plotly !== 'undefined') {
       this.plotlyLoaded = true;
@@ -221,7 +245,7 @@ export class MerbenchCharts {
                   x: 1.05,
                 },
           line: {
-            color: 'white',
+            color: this.getThemeColors().text,
             width: 1,
           },
         },
@@ -241,31 +265,39 @@ export class MerbenchCharts {
           text: chartTitle,
           font: {
             size: 16,
-            color: '#2c3e50',
+            color: this.getThemeColors().text,
           },
         },
         xaxis: {
-          title: xAxisTitle,
+          title: {
+            text: xAxisTitle,
+            font: { color: this.getThemeColors().textSecondary },
+          },
           type: xAxisType,
-          gridcolor: '#e0e0e0',
+          gridcolor: this.getThemeColors().gridLines,
+          tickfont: { color: this.getThemeColors().textSecondary },
           zeroline: false,
           spikemode: 'across',
           spikethickness: 1,
-          spikecolor: '#999',
+          spikecolor: this.getThemeColors().text,
           spikedash: 'dot',
         },
         yaxis: {
-          title: 'Success Rate (%)',
-          gridcolor: '#e0e0e0',
+          title: {
+            text: 'Success Rate (%)',
+            font: { color: this.getThemeColors().textSecondary },
+          },
+          gridcolor: this.getThemeColors().gridLines,
+          tickfont: { color: this.getThemeColors().textSecondary },
           zeroline: false,
           range: [-5, Math.max(...dataWithCost.map((d) => d.Success_Rate)) + 5],
           spikemode: 'across',
           spikethickness: 1,
-          spikecolor: '#999',
+          spikecolor: this.getThemeColors().text,
           spikedash: 'dot',
         },
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
+        plot_bgcolor: this.getThemeColors().background,
+        paper_bgcolor: this.getThemeColors().paper,
         hovermode: 'closest',
         hoverdistance: -1, // This makes hover work across entire plot
         spikedistance: -1, // Show spikes for any distance
@@ -282,7 +314,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 40 : 60,
-          r: isMobile ? 40 : 120,
+          r: isMobile ? 0 : 120,
           t: 40,
           b: isMobile ? 160 : 60,
         },
@@ -306,7 +338,7 @@ export class MerbenchCharts {
           mode: 'lines',
           type: 'scatter',
           line: {
-            color: 'rgba(231, 76, 60, 0.3)',
+            color: this.isDarkMode() ? 'rgba(242, 139, 130, 0.3)' : 'rgba(231, 76, 60, 0.3)',
             width: 2,
             dash: 'dash',
           },
@@ -322,7 +354,8 @@ export class MerbenchCharts {
         staticPlot: window.innerWidth < 768,
       };
 
-      await window.Plotly.newPlot(containerId, traces, layout, config);
+      const plot = await window.Plotly.newPlot(containerId, traces, layout, config);
+      this.charts.set(containerId, plot);
       this.charts.set(containerId, { traces, layout, config, dataWithCost });
 
       // Add enhanced hover behavior for desktop
@@ -362,8 +395,8 @@ export class MerbenchCharts {
           range: [0, 105],
         },
         barmode: 'group',
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
+        plot_bgcolor: this.getThemeColors().background,
+        paper_bgcolor: this.getThemeColors().paper,
         legend: isMobile
           ? {
               orientation: 'h',
@@ -377,7 +410,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 40 : 60,
-          r: isMobile ? 40 : 60,
+          r: isMobile ? 0 : 60,
           t: 40,
           b: isMobile ? 200 : 120,
         },
@@ -389,7 +422,8 @@ export class MerbenchCharts {
         staticPlot: window.innerWidth < 768,
       };
 
-      await window.Plotly.newPlot(containerId, traces, layout, config);
+      const plot = await window.Plotly.newPlot(containerId, traces, layout, config);
+      this.charts.set(containerId, plot);
       this.charts.set(containerId, { traces, layout, config });
       this.hideLoading(containerId);
     } catch (error) {
@@ -439,8 +473,8 @@ export class MerbenchCharts {
           title: 'Average Tokens',
         },
         barmode: 'stack',
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
+        plot_bgcolor: this.getThemeColors().background,
+        paper_bgcolor: this.getThemeColors().paper,
         legend: isMobile
           ? {
               orientation: 'h',
@@ -454,7 +488,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 50 : 80,
-          r: isMobile ? 40 : 60,
+          r: isMobile ? 0 : 60,
           t: 40,
           b: isMobile ? 200 : 120,
         },
@@ -466,8 +500,8 @@ export class MerbenchCharts {
         staticPlot: window.innerWidth < 768,
       };
 
-      await window.Plotly.newPlot(containerId, [trace1, trace2], layout, config);
-      this.charts.set(containerId, { traces: [trace1, trace2], layout, config });
+      const plot = await window.Plotly.newPlot(containerId, [trace1, trace2], layout, config);
+      this.charts.set(containerId, plot);
       this.hideLoading(containerId);
     } catch (error) {
       console.error('Failed to initialize Token chart:', error);
@@ -505,8 +539,8 @@ export class MerbenchCharts {
           title: 'Number of Failures',
         },
         barmode: 'stack',
-        plot_bgcolor: 'white',
-        paper_bgcolor: 'white',
+        plot_bgcolor: this.getThemeColors().background,
+        paper_bgcolor: this.getThemeColors().paper,
         legend: isMobile
           ? {
               orientation: 'h',
@@ -520,7 +554,7 @@ export class MerbenchCharts {
             },
         margin: {
           l: isMobile ? 50 : 80,
-          r: isMobile ? 40 : 60,
+          r: isMobile ? 0 : 60,
           t: 40,
           b: isMobile ? 200 : 120,
         },
@@ -532,7 +566,8 @@ export class MerbenchCharts {
         staticPlot: window.innerWidth < 768,
       };
 
-      await window.Plotly.newPlot(containerId, traces, layout, config);
+      const plot = await window.Plotly.newPlot(containerId, traces, layout, config);
+      this.charts.set(containerId, plot);
       this.charts.set(containerId, { traces, layout, config });
       this.hideLoading(containerId);
     } catch (error) {
@@ -799,5 +834,31 @@ export class MerbenchCharts {
     const newB = Math.round(b * factor);
 
     return `rgb(${newR}, ${newG}, ${newB})`;
+  }
+
+  // Listen for theme changes and update all charts
+  setupThemeListener(): void {
+    window.addEventListener('theme-changed', () => {
+      this.refreshAllCharts();
+    });
+  }
+
+  private refreshAllCharts(): void {
+    // Refresh all existing charts with new theme colors
+    this.charts.forEach((_, id) => {
+      const colors = this.getThemeColors();
+      const update = {
+        plot_bgcolor: colors.background,
+        paper_bgcolor: colors.paper,
+        'xaxis.gridcolor': colors.grid,
+        'yaxis.gridcolor': colors.grid,
+        'xaxis.spikecolor': colors.text,
+        'yaxis.spikecolor': colors.text,
+      };
+
+      if (window.Plotly) {
+        window.Plotly.relayout(id, update);
+      }
+    });
   }
 }
