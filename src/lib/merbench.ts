@@ -274,24 +274,27 @@ export const updateSummaryStats = (filteredData: FilteredData): void => {
   const totalRuns = filteredData.rawData.length;
   const models = [...new Set(filteredData.rawData.map((d) => d.Model))];
 
-  // Calculate total cost from filtered raw data
-  const totalCost = filteredData.rawData.reduce((sum, d) => sum + d.total_cost, 0);
-  const avgCostPerRun = totalRuns > 0 ? totalCost / totalRuns : 0;
+  // Calculate unique test cases (difficulty levels) in filtered data
+  const testCases = [...new Set(filteredData.rawData.map((d) => d.test_group))];
 
   const statCards = document.querySelectorAll('.stat-card');
+
+  // Update Total Evaluation Runs (first card)
   if (statCards[0]) {
     const valueElement = statCards[0].querySelector('.stat-value');
     if (valueElement) valueElement.textContent = totalRuns.toString();
   }
+
+  // Update Models Evaluated (second card)
   if (statCards[1]) {
     const valueElement = statCards[1].querySelector('.stat-value');
     if (valueElement) valueElement.textContent = models.length.toString();
   }
+
+  // Update Test Cases (third card) with actual unique difficulty levels in filtered data
   if (statCards[2]) {
     const valueElement = statCards[2].querySelector('.stat-value');
-    if (valueElement) valueElement.textContent = `$${totalCost.toFixed(2)}`;
-    const detailElement = statCards[2].querySelector('.stat-detail');
-    if (detailElement) detailElement.textContent = `Avg: $${avgCostPerRun.toFixed(4)}/run`;
+    if (valueElement) valueElement.textContent = testCases.length.toString();
   }
 };
 
