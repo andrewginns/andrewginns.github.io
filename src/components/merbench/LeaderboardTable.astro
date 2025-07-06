@@ -18,17 +18,36 @@ const costRange = maxCost - minCost;
 <section class="leaderboard-section">
   <h2>Model Leaderboard</h2>
   <div class="leaderboard-table">
-    <table>
+    <table id="leaderboard-table">
       <thead>
         <tr>
           <th>Rank</th>
-          <th>Model</th>
-          <th>Success Rate</th>
-          <th>Avg Cost/Run</th>
-          <th>Avg Duration</th>
-          <th>Avg Tokens</th>
-          <th>Runs</th>
-          <th>Provider</th>
+          <th class="sortable" data-sort-key="Model" data-sort-type="string">
+            Model <span class="sort-indicator"></span>
+          </th>
+          <th
+            class="sortable active"
+            data-sort-key="Success_Rate"
+            data-sort-type="number"
+            data-sort-direction="desc"
+          >
+            Success Rate <span class="sort-indicator">↓</span>
+          </th>
+          <th class="sortable" data-sort-key="Avg_Cost" data-sort-type="number">
+            Avg Cost/Run <span class="sort-indicator"></span>
+          </th>
+          <th class="sortable" data-sort-key="Avg_Duration" data-sort-type="number">
+            Avg Duration <span class="sort-indicator"></span>
+          </th>
+          <th class="sortable" data-sort-key="Avg_Tokens" data-sort-type="number">
+            Avg Tokens <span class="sort-indicator"></span>
+          </th>
+          <th class="sortable" data-sort-key="Runs" data-sort-type="number">
+            Runs <span class="sort-indicator"></span>
+          </th>
+          <th class="sortable" data-sort-key="Provider" data-sort-type="string">
+            Provider <span class="sort-indicator"></span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -177,6 +196,42 @@ const costRange = maxCost - minCost;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+  }
+
+  /* Sortable header styles */
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: background-color 0.2s ease;
+  }
+
+  .sortable:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .sortable.active {
+    /* No special styling - only the arrow indicator shows active state */
+  }
+
+  .sort-indicator {
+    font-size: 0.8rem;
+    opacity: 0.5;
+    margin-left: 0.25rem;
+  }
+
+  .sortable.active .sort-indicator {
+    opacity: 1;
+    color: var(--accent-primary);
+  }
+
+  .sortable:not(.active) .sort-indicator {
+    opacity: 0;
+  }
+
+  .sortable:hover:not(.active) .sort-indicator {
+    opacity: 0.3;
   }
 
   tbody tr:hover {
