@@ -7,6 +7,12 @@ export interface Props {
 }
 
 const { leaderboard } = Astro.props;
+
+// Calculate cost range for progress bar normalization
+const costs = leaderboard.map((entry) => entry.Avg_Cost || calculateCost(entry.Avg_Tokens));
+const minCost = Math.min(...costs);
+const maxCost = Math.max(...costs);
+const costRange = maxCost - minCost;
 ---
 
 <section class="leaderboard-section">
@@ -46,7 +52,17 @@ const { leaderboard } = Astro.props;
                   <span class="progress-text">{entry.Success_Rate.toFixed(1)}%</span>
                 </div>
               </td>
-              <td class="cost">${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
+              <td class="cost">
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill progress-fill--cost"
+                    style={`width: ${costRange > 0 ? ((entry.Avg_Cost || calculateCost(entry.Avg_Tokens)) / maxCost) * 100 : 0}%`}
+                  />
+                  <span class="progress-text">
+                    ${(entry.Avg_Cost || calculateCost(entry.Avg_Tokens)).toFixed(4)}
+                  </span>
+                </div>
+              </td>
               <td class="duration">{entry.Avg_Duration.toFixed(2)}s</td>
               <td class="tokens">{entry.Avg_Tokens.toLocaleString()}</td>
               <td class="runs">{entry.Runs}</td>
@@ -263,6 +279,11 @@ const { leaderboard } = Astro.props;
 
   .progress-fill--low {
     background-color: var(--progress-low);
+  }
+
+  /* Cost progress bar - single muted color */
+  .progress-fill--cost {
+    background-color: #9ca3af; /* Muted gray for all cost bars */
   }
 
   @media (max-width: 768px) {

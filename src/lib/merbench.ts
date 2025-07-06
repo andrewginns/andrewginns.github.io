@@ -303,9 +303,20 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
   const tbody = document.querySelector('.leaderboard-table tbody');
   if (!tbody) return;
 
+  // Calculate cost range for progress bar normalization
+  const costs = filteredData.leaderboard.map(
+    (entry) => entry.Avg_Cost || calculateCost(entry.Avg_Tokens)
+  );
+  const minCost = Math.min(...costs);
+  const maxCost = Math.max(...costs);
+  const costRange = maxCost - minCost;
+
   tbody.innerHTML = filteredData.leaderboard
-    .map(
-      (entry, index) => `
+    .map((entry, index) => {
+      const currentCost = entry.Avg_Cost || calculateCost(entry.Avg_Tokens);
+      const costWidth = costRange > 0 ? (currentCost / maxCost) * 100 : 0;
+
+      return `
     <tr>
       <td class="rank">${index + 1}</td>
       <td class="model-name">${entry.Model}</td>
@@ -317,14 +328,19 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
           <span class="progress-text">${entry.Success_Rate.toFixed(1)}%</span>
         </div>
       </td>
-      <td class="cost">$${(entry.Avg_Cost || calculateCost(entry.Avg_Tokens)).toFixed(4)}</td>
+      <td class="cost">
+        <div class="progress-bar">
+          <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%"></div>
+          <span class="progress-text">$${currentCost.toFixed(4)}</span>
+        </div>
+      </td>
       <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
       <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
       <td class="runs">${entry.Runs}</td>
       <td class="provider">${entry.Provider}</td>
     </tr>
-  `
-    )
+  `;
+    })
     .join('');
 };
 
