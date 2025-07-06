@@ -1,5 +1,6 @@
 import { MerbenchCharts } from './merbench-charts';
 import { MerbenchFilters } from './merbench-filters';
+import { initializeLeaderboardSorting } from './merbench-sorting';
 import type { MerbenchData, RawData } from '../lib/merbench-types';
 
 declare global {
@@ -81,6 +82,9 @@ async function initializeMerbench() {
   // Initialize filters (will be used by the charts for updates)
   const filters = new MerbenchFilters(data, charts);
   filters.initialize();
+
+  // Initialize leaderboard sorting
+  initializeLeaderboardSorting(originalData.leaderboard);
 
   // Initialize charts with all data
   try {

@@ -1,9 +1,5 @@
-import {
-  getFilteredData,
-  updateSummaryStats,
-  updateLeaderboard,
-  showEmptyState,
-} from '../lib/merbench';
+import { getFilteredData, updateSummaryStats, showEmptyState } from '../lib/merbench';
+import { updateLeaderboardData } from './merbench-sorting';
 import type { RawData, TestGroupData, MerbenchData } from '../lib/merbench-types';
 import { MerbenchCharts } from './merbench-charts';
 
@@ -317,7 +313,8 @@ export class MerbenchFilters {
 
   private updateUI(filteredData: any): void {
     updateSummaryStats(filteredData);
-    updateLeaderboard(filteredData);
+    // Use sorting-aware leaderboard update instead of basic update
+    updateLeaderboardData(filteredData.leaderboard);
   }
 
   private showNoDataMessage(): void {

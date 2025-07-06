@@ -677,11 +677,11 @@ const { difficulties, providers } = Astro.props;
           (cb as HTMLInputElement).checked = true;
         });
 
-        // Update filter count and trigger change event
+        // Update filter count and trigger change event on all checkboxes
         updateFilterCount();
-        if (checkboxes.length > 0) {
-          checkboxes[0].dispatchEvent(new Event('change', { bubbles: true }));
-        }
+        checkboxes.forEach((cb) => {
+          cb.dispatchEvent(new Event('change', { bubbles: true }));
+        });
       });
     }
 
@@ -692,11 +692,11 @@ const { difficulties, providers } = Astro.props;
           (cb as HTMLInputElement).checked = false;
         });
 
-        // Update filter count and trigger change event
+        // Update filter count and trigger change event on all checkboxes
         updateFilterCount();
-        if (checkboxes.length > 0) {
-          checkboxes[0].dispatchEvent(new Event('change', { bubbles: true }));
-        }
+        checkboxes.forEach((cb) => {
+          cb.dispatchEvent(new Event('change', { bubbles: true }));
+        });
       });
     }
 

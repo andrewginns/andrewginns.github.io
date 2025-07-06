@@ -5,6 +5,7 @@ import type {
   FailureAnalysisData,
   ParetoData,
   ModelStats,
+  LeaderboardEntry,
 } from './merbench-types';
 
 // Calculate cost per run (simplified pricing model) - DEPRECATED
@@ -269,6 +270,60 @@ const calculateParetoFrontier = (data: Array<{ cost: number; Success_Rate: numbe
   return paretoPoints;
 };
 
+// Sorting utilities
+let currentSortKey = 'Success_Rate';
+let currentSortDirection: 'asc' | 'desc' = 'desc';
+
+export const sortLeaderboard = (
+  data: LeaderboardEntry[],
+  sortKey: string,
+  direction: 'asc' | 'desc'
+): LeaderboardEntry[] => {
+  const sorted = [...data].sort((a, b) => {
+    let aVal: any;
+    let bVal: any;
+
+    // Handle special cases for cost calculation
+    if (sortKey === 'Avg_Cost') {
+      aVal = a.Avg_Cost || calculateCost(a.Avg_Tokens);
+      bVal = b.Avg_Cost || calculateCost(b.Avg_Tokens);
+    } else {
+      aVal = a[sortKey as keyof LeaderboardEntry];
+      bVal = b[sortKey as keyof LeaderboardEntry];
+    }
+
+    // Handle null/undefined values
+    if (aVal == null && bVal == null) return 0;
+    if (aVal == null) return direction === 'asc' ? -1 : 1;
+    if (bVal == null) return direction === 'asc' ? 1 : -1;
+
+    // Numeric comparison
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return direction === 'asc' ? aVal - bVal : bVal - aVal;
+    }
+
+    // String comparison
+    const aStr = String(aVal).toLowerCase();
+    const bStr = String(bVal).toLowerCase();
+
+    if (aStr < bStr) return direction === 'asc' ? -1 : 1;
+    if (aStr > bStr) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  return sorted;
+};
+
+export const setSortState = (sortKey: string, direction: 'asc' | 'desc'): void => {
+  currentSortKey = sortKey;
+  currentSortDirection = direction;
+};
+
+export const getSortState = () => ({
+  key: currentSortKey,
+  direction: currentSortDirection,
+});
+
 // DOM manipulation utilities
 export const updateSummaryStats = (filteredData: FilteredData): void => {
   const totalRuns = filteredData.rawData.length;
@@ -303,9 +358,20 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
   const tbody = document.querySelector('.leaderboard-table tbody');
   if (!tbody) return;
 
+  // Calculate cost range for progress bar normalization
+  const costs = filteredData.leaderboard.map(
+    (entry) => entry.Avg_Cost || calculateCost(entry.Avg_Tokens)
+  );
+  const minCost = Math.min(...costs);
+  const maxCost = Math.max(...costs);
+  const costRange = maxCost - minCost;
+
   tbody.innerHTML = filteredData.leaderboard
-    .map(
-      (entry, index) => `
+    .map((entry, index) => {
+      const currentCost = entry.Avg_Cost || calculateCost(entry.Avg_Tokens);
+      const costWidth = costRange > 0 ? (currentCost / maxCost) * 100 : 0;
+
+      return `
     <tr>
       <td class="rank">${index + 1}</td>
       <td class="model-name">${entry.Model}</td>
@@ -317,14 +383,19 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
           <span class="progress-text">${entry.Success_Rate.toFixed(1)}%</span>
         </div>
       </td>
-      <td class="cost">$${(entry.Avg_Cost || calculateCost(entry.Avg_Tokens)).toFixed(4)}</td>
+      <td class="cost">
+        <div class="progress-bar">
+          <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%; background-color: #9ca3af;"></div>
+          <span class="progress-text">$${currentCost.toFixed(4)}</span>
+        </div>
+      </td>
       <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
       <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
       <td class="runs">${entry.Runs}</td>
       <td class="provider">${entry.Provider}</td>
     </tr>
-  `
-    )
+  `;
+    })
     .join('');
 };
 
