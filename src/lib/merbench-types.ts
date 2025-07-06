@@ -3,7 +3,11 @@ export interface Stats {
   total_runs: number;
   models_evaluated: number;
   test_cases: number;
+  test_groups: string[];
   providers: string[];
+  models: string[];
+  total_cost: number;
+  avg_cost_per_run: number;
 }
 
 export interface LeaderboardEntry {
@@ -11,6 +15,9 @@ export interface LeaderboardEntry {
   Success_Rate: number;
   Avg_Duration: number;
   Avg_Tokens: number;
+  Avg_Cost?: number;
+  Avg_Input_Cost?: number;
+  Avg_Output_Cost?: number;
   Runs: number;
   Provider: string;
 }
@@ -20,6 +27,9 @@ export interface ParetoData {
   Success_Rate: number;
   Duration: number;
   total_tokens: number;
+  total_cost?: number;
+  input_cost?: number;
+  output_cost?: number;
   cost?: number;
 }
 
@@ -27,6 +37,9 @@ export interface TestGroupData {
   Model: string;
   test_group: string;
   Score_MermaidDiagramValid: number;
+  total_cost?: number;
+  input_cost?: number;
+  output_cost?: number;
 }
 
 export interface RawData {
@@ -40,6 +53,9 @@ export interface RawData {
   Score_MermaidDiagramValid: number;
   Score_UsedBothMCPTools: number;
   Score_UsageLimitNotExceeded: number;
+  total_cost: number;
+  input_cost: number;
+  output_cost: number;
 }
 
 export interface FailureAnalysisData {
@@ -80,4 +96,7 @@ export interface ModelStats {
   totalRuns: number;
   totalDuration: number;
   totalTokens: number;
+  totalCost: number;
+  totalInputCost: number;
+  totalOutputCost: number;
 }

@@ -7,7 +7,8 @@ import type {
   ModelStats,
 } from './merbench-types';
 
-// Calculate cost per run (simplified pricing model)
+// Calculate cost per run (simplified pricing model) - DEPRECATED
+// Use actual costs from the data instead
 export const calculateCost = (tokens: number): number => {
   // Simplified pricing: $0.001 per 1000 tokens
   return (tokens / 1000) * 0.001;
@@ -73,12 +74,18 @@ export const getFilteredData = (
         totalRuns: 0,
         totalDuration: 0,
         totalTokens: 0,
+        totalCost: 0,
+        totalInputCost: 0,
+        totalOutputCost: 0,
       };
     }
 
     modelStats[d.Model].totalRuns++;
     modelStats[d.Model].totalDuration += d.Duration;
     modelStats[d.Model].totalTokens += d.total_tokens;
+    modelStats[d.Model].totalCost += d.total_cost;
+    modelStats[d.Model].totalInputCost += d.input_cost;
+    modelStats[d.Model].totalOutputCost += d.output_cost;
 
     if (d.Score_MermaidDiagramValid === 1) {
       modelStats[d.Model].successCount++;
@@ -91,6 +98,9 @@ export const getFilteredData = (
       Success_Rate: (stats.successCount / stats.totalRuns) * 100,
       Avg_Duration: stats.totalDuration / stats.totalRuns,
       Avg_Tokens: stats.totalTokens / stats.totalRuns,
+      Avg_Cost: stats.totalCost / stats.totalRuns,
+      Avg_Input_Cost: stats.totalInputCost / stats.totalRuns,
+      Avg_Output_Cost: stats.totalOutputCost / stats.totalRuns,
       Runs: stats.totalRuns,
       Provider: stats.Provider,
     }))
@@ -102,7 +112,10 @@ export const getFilteredData = (
     Success_Rate: d.Success_Rate,
     Duration: d.Avg_Duration,
     total_tokens: d.Avg_Tokens,
-    cost: calculateCost(d.Avg_Tokens),
+    total_cost: d.Avg_Cost,
+    input_cost: d.Avg_Input_Cost,
+    output_cost: d.Avg_Output_Cost,
+    cost: d.Avg_Cost,
   }));
 
   // Recalculate failure analysis data from filtered raw data
@@ -147,7 +160,7 @@ export const processChartData = {
   pareto: (data: ParetoData[]) => {
     const dataWithCost = data.map((d) => ({
       ...d,
-      cost: d.cost || calculateCost(d.total_tokens),
+      cost: d.cost || d.total_cost || calculateCost(d.total_tokens),
     }));
 
     return {
@@ -261,6 +274,10 @@ export const updateSummaryStats = (filteredData: FilteredData): void => {
   const totalRuns = filteredData.rawData.length;
   const models = [...new Set(filteredData.rawData.map((d) => d.Model))];
 
+  // Calculate total cost from filtered raw data
+  const totalCost = filteredData.rawData.reduce((sum, d) => sum + d.total_cost, 0);
+  const avgCostPerRun = totalRuns > 0 ? totalCost / totalRuns : 0;
+
   const statCards = document.querySelectorAll('.stat-card');
   if (statCards[0]) {
     const valueElement = statCards[0].querySelector('.stat-value');
@@ -269,6 +286,12 @@ export const updateSummaryStats = (filteredData: FilteredData): void => {
   if (statCards[1]) {
     const valueElement = statCards[1].querySelector('.stat-value');
     if (valueElement) valueElement.textContent = models.length.toString();
+  }
+  if (statCards[2]) {
+    const valueElement = statCards[2].querySelector('.stat-value');
+    if (valueElement) valueElement.textContent = `$${totalCost.toFixed(2)}`;
+    const detailElement = statCards[2].querySelector('.stat-detail');
+    if (detailElement) detailElement.textContent = `Avg: $${avgCostPerRun.toFixed(4)}/run`;
   }
 };
 
@@ -291,7 +314,7 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
           <span class="progress-text">${entry.Success_Rate.toFixed(1)}%</span>
         </div>
       </td>
-      <td class="cost">$${calculateCost(entry.Avg_Tokens).toFixed(4)}</td>
+      <td class="cost">$${(entry.Avg_Cost || calculateCost(entry.Avg_Tokens)).toFixed(4)}</td>
       <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
       <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
       <td class="runs">${entry.Runs}</td>

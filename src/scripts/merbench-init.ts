@@ -47,7 +47,10 @@ window.initializeMerbench = function (data: MerbenchData) {
           Success_Rate: entry.Success_Rate,
           Duration: entry.Avg_Duration,
           total_tokens: entry.Avg_Tokens,
-          cost: (entry.Avg_Tokens / 1000) * 0.001, // Calculate cost
+          total_cost: entry.Avg_Cost || 0,
+          input_cost: entry.Avg_Input_Cost || 0,
+          output_cost: entry.Avg_Output_Cost || 0,
+          cost: entry.Avg_Cost || 0, // Use actual cost from data
         })),
         testGroupsData: originalData.testGroupsData,
         rawData: originalData.rawData,
