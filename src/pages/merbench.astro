@@ -62,25 +62,14 @@ const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
   <!-- Load Plotly from CDN for charts -->
   <script is:inline src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 
-  <!-- Initialize Charts and Filtering with TypeScript Modules -->
-  <script>
-    import '../scripts/merbench-init';
-
-    // Initialize when DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof window.initializeMerbench === 'function') {
-        window.initializeMerbench((window as any).merbenchData);
-      } else {
-        console.error('Merbench initialization function not found');
-      }
-    });
-  </script>
-
-  <!-- Make data available globally -->
-  <script is:inline define:vars={{ data: merbenchData }}>
-    window.merbenchData = data;
-  </script>
+  <!-- Embed data as JSON (CSP-compliant) -->
+  <script is:inline type="application/json" id="merbench-data" set:html={JSON.stringify(data)} />
 </BaseLayout>
+
+<script>
+  // This script will be processed by Astro and made CSP-compliant
+  import '../scripts/merbench-init-csp';
+</script>
 
 <style is:global>
   .merbench-content {
