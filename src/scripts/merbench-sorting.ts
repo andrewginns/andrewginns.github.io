@@ -98,22 +98,27 @@ const renderLeaderboard = (data: LeaderboardEntry[]): void => {
       const currentCost = entry.Avg_Cost || calculateCost(entry.Avg_Tokens);
       const costWidth = costRange > 0 ? (currentCost / maxCost) * 100 : 0;
 
+      const successRateClass =
+        entry.Success_Rate >= 30
+          ? 'progress-fill--high'
+          : entry.Success_Rate >= 15
+            ? 'progress-fill--medium'
+            : 'progress-fill--low';
+
       return `
     <tr>
       <td class="rank">${index + 1}</td>
       <td class="model-name">${entry.Model}</td>
       <td class="success-rate">
         <div class="progress-bar">
-          <div class="progress-fill" style="width: ${entry.Success_Rate}%; background-color: ${
-            entry.Success_Rate >= 30 ? '#27ae60' : entry.Success_Rate >= 15 ? '#f39c12' : '#e74c3c'
-          }"></div>
-          <span class="progress-text">${entry.Success_Rate.toFixed(1)}%</span>
+          <div class="progress-fill ${successRateClass}" style="width: ${entry.Success_Rate}%;"></div>
+          <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">${entry.Success_Rate.toFixed(1)}%</span>
         </div>
       </td>
       <td class="cost">
         <div class="progress-bar">
           <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%; background-color: #9ca3af;"></div>
-          <span class="progress-text">$${currentCost.toFixed(4)}</span>
+          <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">$${currentCost.toFixed(4)}</span>
         </div>
       </td>
       <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
