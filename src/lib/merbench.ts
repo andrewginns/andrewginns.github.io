@@ -385,7 +385,7 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
       </td>
       <td class="cost">
         <div class="progress-bar">
-          <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%"></div>
+          <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%; background-color: #9ca3af;"></div>
           <span class="progress-text">$${currentCost.toFixed(4)}</span>
         </div>
       </td>
