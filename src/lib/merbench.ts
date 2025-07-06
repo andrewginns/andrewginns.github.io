@@ -384,7 +384,7 @@ export const updateLeaderboard = (filteredData: FilteredData): void => {
       <td class="model-name">${entry.Model}</td>
       <td class="success-rate">
         <div class="progress-bar">
-          <div class="progress-fill ${successRateClass}" style="width: ${entry.Success_Rate}%;"></div>
+          <div class="progress-fill ${successRateClass}" style="width: ${entry.Success_Rate}%; background-color: ${entry.Success_Rate >= 30 ? 'var(--progress-high)' : entry.Success_Rate >= 15 ? 'var(--progress-medium)' : 'var(--progress-low)'};"></div>
           <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">${entry.Success_Rate.toFixed(1)}%</span>
         </div>
       </td>
