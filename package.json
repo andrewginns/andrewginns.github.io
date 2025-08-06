@@ -2,7 +2,7 @@
   "name": "andrewginns.github.io",
   "type": "module",
   "version": "1.0.0",
-  "description": "Andrew Ginns - Machine Learning Engineer Personal Website",
+  "description": "Andrew Ginns - AI Solutions Architect Personal Website",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
