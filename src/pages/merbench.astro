@@ -14,6 +14,16 @@ import merbenchData from '../data/merbench_data.json';
 const data = merbenchData as MerbenchData;
 
 const { stats, leaderboard, config } = data;
+
+// Calculate Price_per_Success for the initial leaderboard data
+leaderboard.forEach((entry) => {
+  if (entry.Success_Rate > 0 && entry.Avg_Cost != null) {
+    entry.Price_per_Success = entry.Avg_Cost / (entry.Success_Rate / 100);
+  } else {
+    entry.Price_per_Success = null;
+  }
+});
+
 const formattedDescription = renderMarkdownToHTML(config.description);
 
 // Fetch last commit info for the merbench data file

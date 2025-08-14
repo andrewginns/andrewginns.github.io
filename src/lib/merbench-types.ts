@@ -18,6 +18,7 @@ export interface LeaderboardEntry {
   Avg_Cost?: number;
   Avg_Input_Cost?: number;
   Avg_Output_Cost?: number;
+  Price_per_Success?: number;
   Runs: number;
   Provider: string;
 }

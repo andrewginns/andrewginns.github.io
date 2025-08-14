@@ -94,17 +94,24 @@ export const getFilteredData = (
   });
 
   const filteredLeaderboard = Object.values(modelStats)
-    .map((stats) => ({
-      Model: stats.Model,
-      Success_Rate: (stats.successCount / stats.totalRuns) * 100,
-      Avg_Duration: stats.totalDuration / stats.totalRuns,
-      Avg_Tokens: stats.totalTokens / stats.totalRuns,
-      Avg_Cost: stats.totalCost / stats.totalRuns,
-      Avg_Input_Cost: stats.totalInputCost / stats.totalRuns,
-      Avg_Output_Cost: stats.totalOutputCost / stats.totalRuns,
-      Runs: stats.totalRuns,
-      Provider: stats.Provider,
-    }))
+    .map((stats) => {
+      const successRate = stats.totalRuns > 0 ? (stats.successCount / stats.totalRuns) * 100 : 0;
+      const avgCost = stats.totalRuns > 0 ? stats.totalCost / stats.totalRuns : 0;
+      const pricePerSuccess = successRate > 0 ? avgCost / (successRate / 100) : null;
+
+      return {
+        Model: stats.Model,
+        Success_Rate: successRate,
+        Avg_Duration: stats.totalRuns > 0 ? stats.totalDuration / stats.totalRuns : 0,
+        Avg_Tokens: stats.totalRuns > 0 ? stats.totalTokens / stats.totalRuns : 0,
+        Avg_Cost: avgCost,
+        Avg_Input_Cost: stats.totalRuns > 0 ? stats.totalInputCost / stats.totalRuns : 0,
+        Avg_Output_Cost: stats.totalRuns > 0 ? stats.totalOutputCost / stats.totalRuns : 0,
+        Price_per_Success: pricePerSuccess,
+        Runs: stats.totalRuns,
+        Provider: stats.Provider,
+      };
+    })
     .sort((a, b) => b.Success_Rate - a.Success_Rate);
 
   // Recalculate pareto data
@@ -280,8 +287,8 @@ export const sortLeaderboard = (
   direction: 'asc' | 'desc'
 ): LeaderboardEntry[] => {
   const sorted = [...data].sort((a, b) => {
-    let aVal: any;
-    let bVal: any;
+    let aVal: LeaderboardEntry[keyof LeaderboardEntry];
+    let bVal: LeaderboardEntry[keyof LeaderboardEntry];
 
     // Handle special cases for cost calculation
     if (sortKey === 'Avg_Cost') {
