@@ -121,6 +121,9 @@ const renderLeaderboard = (data: LeaderboardEntry[]): void => {
           <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">$${currentCost.toFixed(4)}</span>
         </div>
       </td>
+      <td class="cost">
+        ${entry.Price_per_Success != null ? `$${entry.Price_per_Success.toFixed(4)}` : 'N/A'}
+      </td>
       <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
       <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
       <td class="runs">${entry.Runs}</td>
