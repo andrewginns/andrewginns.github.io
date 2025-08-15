@@ -20,7 +20,7 @@ leaderboard.forEach((entry) => {
   if (entry.Success_Rate > 0 && entry.Avg_Cost != null) {
     entry.Price_per_Success = entry.Avg_Cost / (entry.Success_Rate / 100);
   } else {
-    entry.Price_per_Success = null;
+    entry.Price_per_Success = undefined;
   }
 });
 

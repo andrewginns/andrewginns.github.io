@@ -97,7 +97,7 @@ export const getFilteredData = (
     .map((stats) => {
       const successRate = stats.totalRuns > 0 ? (stats.successCount / stats.totalRuns) * 100 : 0;
       const avgCost = stats.totalRuns > 0 ? stats.totalCost / stats.totalRuns : 0;
-      const pricePerSuccess = successRate > 0 ? avgCost / (successRate / 100) : null;
+      const pricePerSuccess = successRate > 0 ? avgCost / (successRate / 100) : undefined;
 
       return {
         Model: stats.Model,
