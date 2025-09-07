@@ -36,6 +36,9 @@ const costRange = maxCost - minCost;
           <th class="sortable" data-sort-key="Avg_Cost" data-sort-type="number">
             Avg Cost/Run <span class="sort-indicator"></span>
           </th>
+          <th class="sortable" data-sort-key="Price_per_Success" data-sort-type="number">
+            Price/Success <span class="sort-indicator"></span>
+          </th>
           <th class="sortable" data-sort-key="Avg_Duration" data-sort-type="number">
             Avg Duration <span class="sort-indicator"></span>
           </th>
@@ -90,6 +93,9 @@ const costRange = maxCost - minCost;
                   </span>
                 </div>
               </td>
+              <td class="cost">
+                {entry.Price_per_Success != null ? `$${entry.Price_per_Success.toFixed(4)}` : 'N/A'}
+              </td>
               <td class="duration">{entry.Avg_Duration.toFixed(2)}s</td>
               <td class="tokens">{entry.Avg_Tokens.toLocaleString()}</td>
               <td class="runs">{entry.Runs}</td>
@@ -112,8 +118,8 @@ const costRange = maxCost - minCost;
   }
 
   .leaderboard-section h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
+    margin-top: -1rem;
+    margin-bottom: 0.5rem;
   }
 
   .leaderboard-table {
@@ -204,6 +210,7 @@ const costRange = maxCost - minCost;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: relative; /* Needed for tooltip positioning */
   }
 
   /* Sortable header styles */
