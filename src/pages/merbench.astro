@@ -57,7 +57,11 @@ const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
       lastUpdated={lastUpdated || undefined}
     />
 
-    <CombinedFilters difficulties={['easy', 'medium', 'hard']} providers={stats.providers} />
+    <CombinedFilters
+      difficulties={['easy', 'medium', 'hard']}
+      providers={stats.providers}
+      models={stats.models}
+    />
 
     <section class="leaderboard-section">
       <details class="metrics-glossary">

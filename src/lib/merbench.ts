@@ -40,7 +40,8 @@ export const getFilteredData = (
   selectedDifficulties: string[],
   originalRawData: RawData[],
   originalTestGroupsData: TestGroupData[],
-  selectedProviders?: string[]
+  selectedProviders?: string[],
+  selectedModels?: string[]
 ): FilteredData => {
   // Filter raw data with AND logic
   const filteredRawData = originalRawData.filter((d) => {
@@ -50,7 +51,9 @@ export const getFilteredData = (
       !selectedProviders ||
       selectedProviders.length === 0 ||
       selectedProviders.includes(d.provider);
-    return difficultyMatch && providerMatch;
+    const modelMatch =
+      !selectedModels || selectedModels.length === 0 || selectedModels.includes(d.Model);
+    return difficultyMatch && providerMatch && modelMatch;
   });
 
   // Get the list of models that remain after filtering raw data
