@@ -212,7 +212,7 @@ export class MerbenchFilters {
 
   private setupEventListeners(): void {
     const checkboxes = document.querySelectorAll(
-      'input[name="difficulty"], input[name="provider"]'
+      'input[name="difficulty"], input[name="provider"], input[name="model"]'
     );
     checkboxes.forEach((checkbox) => {
       checkbox.addEventListener('change', () => {
@@ -234,6 +234,11 @@ export class MerbenchFilters {
     return Array.from(selectedCheckboxes).map((cb) => (cb as HTMLInputElement).value);
   }
 
+  private getSelectedModels(): string[] {
+    const selectedCheckboxes = document.querySelectorAll('input[name="model"]:checked');
+    return Array.from(selectedCheckboxes).map((cb) => (cb as HTMLInputElement).value);
+  }
+
   private async handleFilterChange(): Promise<void> {
     try {
       // Capture scroll state before any changes
@@ -241,8 +246,13 @@ export class MerbenchFilters {
 
       const selectedDifficulties = this.getSelectedDifficulties();
       const selectedProviders = this.getSelectedProviders();
+      const selectedModels = this.getSelectedModels();
 
-      if (selectedDifficulties.length === 0 && selectedProviders.length === 0) {
+      if (
+        selectedDifficulties.length === 0 &&
+        selectedProviders.length === 0 &&
+        selectedModels.length === 0
+      ) {
         this.showNoDataMessage();
         this.charts.purgeCharts();
         return;
@@ -252,7 +262,8 @@ export class MerbenchFilters {
         selectedDifficulties,
         this.originalRawData,
         this.originalTestGroupsData,
-        selectedProviders
+        selectedProviders,
+        selectedModels
       );
 
       this.updateUI(filteredData);
@@ -342,7 +353,7 @@ export class MerbenchFilters {
   // Method to reset all filters
   public resetFilters(): void {
     const checkboxes = document.querySelectorAll(
-      'input[name="difficulty"], input[name="provider"]'
+      'input[name="difficulty"], input[name="provider"], input[name="model"]'
     ) as NodeListOf<HTMLInputElement>;
     checkboxes.forEach((checkbox) => {
       checkbox.checked = true;
@@ -351,10 +362,11 @@ export class MerbenchFilters {
   }
 
   // Method to get current filter state
-  public getCurrentFilters(): { difficulties: string[]; providers: string[] } {
+  public getCurrentFilters(): { difficulties: string[]; providers: string[]; models: string[] } {
     return {
       difficulties: this.getSelectedDifficulties(),
       providers: this.getSelectedProviders(),
+      models: this.getSelectedModels(),
     };
   }
 }

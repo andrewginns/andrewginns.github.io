@@ -2,9 +2,10 @@
 export interface Props {
   difficulties: string[];
   providers: string[];
+  models: string[];
 }
 
-const { difficulties, providers } = Astro.props;
+const { difficulties, providers, models } = Astro.props;
 ---
 
 <div class="filter-container" id="filter-container">
@@ -59,6 +60,21 @@ const { difficulties, providers } = Astro.props;
                     data-provider={provider}
                   />
                   <span class="checkbox-label">{provider}</span>
+                </label>
+              ))
+            }
+          </div>
+        </div>
+
+        <!-- Model Filter Group -->
+        <div class="filter-group">
+          <span class="filter-label">Model:</span>
+          <div class="filter-controls">
+            {
+              models.map((model) => (
+                <label class="filter-checkbox">
+                  <input type="checkbox" name="model" value={model} checked data-model={model} />
+                  <span class="checkbox-label">{model}</span>
                 </label>
               ))
             }
