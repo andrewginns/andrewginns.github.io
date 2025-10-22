@@ -14,6 +14,16 @@ import merbenchData from '../data/merbench_data.json';
 const data = merbenchData as MerbenchData;
 
 const { stats, leaderboard, config } = data;
+
+// Calculate Price_per_Success for the initial leaderboard data
+leaderboard.forEach((entry) => {
+  if (entry.Success_Rate > 0 && entry.Avg_Cost != null) {
+    entry.Price_per_Success = entry.Avg_Cost / (entry.Success_Rate / 100);
+  } else {
+    entry.Price_per_Success = undefined;
+  }
+});
+
 const formattedDescription = renderMarkdownToHTML(config.description);
 
 // Fetch last commit info for the merbench data file
@@ -49,7 +59,66 @@ const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
 
     <CombinedFilters difficulties={['easy', 'medium', 'hard']} providers={stats.providers} />
 
-    <LeaderboardTable leaderboard={leaderboard} />
+    <section class="leaderboard-section">
+      <details class="metrics-glossary">
+        <summary>
+          <svg
+            class="icon"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8 15C11.866 15 15 11.866 15 8C15 4.13401 11.866 1 8 1C4.13401 1 1 4.13401 1 8C1 11.866 4.13401 15 8 15Z"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+            <path
+              d="M8 10.5V8"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+            <path
+              d="M8 5.5H8.0075"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
+          </svg>
+          What do these metrics mean?
+        </summary>
+        <div class="glossary-content">
+          <dl>
+            <dt>Success Rate</dt>
+            <dd>The percentage of successful Mermaid diagram generations out of all runs.</dd>
+
+            <dt>Avg Cost/Run</dt>
+            <dd>The average cost in USD to generate one diagram, based on provider pricing.</dd>
+
+            <dt>Price/Success</dt>
+            <dd>
+              The effective cost for each successful diagram, calculated as (Avg Cost / Success
+              Rate).
+            </dd>
+
+            <dt>Avg Duration</dt>
+            <dd>The average time in seconds taken to generate a diagram.</dd>
+
+            <dt>Avg Tokens</dt>
+            <dd>The average number of tokens (input + output) used per run.</dd>
+
+            <dt>Runs</dt>
+            <dd>The total number of times this model was run in the evaluation.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <LeaderboardTable leaderboard={leaderboard} />
+    </section>
 
     <ChartContainer chartId="pareto-chart" title="Performance vs Efficiency Trade-offs" />
     <ChartContainer chartId="test-group-chart" title="Performance by Difficulty Level" />
@@ -237,6 +306,58 @@ const lastUpdated = fileCommitInfo ? formatDate(fileCommitInfo.date) : null;
   .leaderboard-section h2 {
     margin-top: 0;
     margin-bottom: 1.5rem;
+  }
+
+  .metrics-glossary {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    padding: 0;
+  }
+
+  .metrics-glossary summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    user-select: none;
+  }
+
+  .metrics-glossary summary:hover {
+    color: var(--text-primary);
+  }
+
+  .glossary-content {
+    padding: 0 1rem 1rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .glossary-content dl {
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .glossary-content dt {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .glossary-content dd {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* Rotate chevron on open */
+  .metrics-glossary[open] summary::after {
+    transform: rotate(180deg);
   }
 
   .leaderboard-table {
