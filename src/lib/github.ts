@@ -284,7 +284,7 @@ export async function getGitHubProfile(username: string) {
     const roleMatch = bio.match(
       /(?:I'm\s+(?:a\s+)?|I\s+am\s+(?:a\s+)?|Currently\s+(?:a\s+)?|Working\s+as\s+(?:a\s+)?)([^.]+(?:Engineer|Scientist|Developer|Manager|Architect|Lead|Director|Consultant))/i
     );
-    const role = roleMatch ? roleMatch[1].trim() : 'AI Solutions Architect';
+    const role = roleMatch ? roleMatch[1].trim() : 'Solutions Architect';
 
     return {
       company: profile.company || 'Motorway',
@@ -319,8 +319,8 @@ export async function getGitHubProfile(username: string) {
     };
 
     return {
-      company: 'Google',
-      role: 'AI Solutions Architect',
+      company: 'OpenAI',
+      role: 'Solutions Architect',
       bio: '',
       profile: defaultProfile,
     };
