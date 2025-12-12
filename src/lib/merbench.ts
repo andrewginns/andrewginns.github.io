@@ -112,7 +112,15 @@ export const getFilteredData = (
         Provider: stats.Provider,
       };
     })
-    .sort((a, b) => b.Success_Rate - a.Success_Rate);
+    .sort((a, b) => {
+      const successDiff = b.Success_Rate - a.Success_Rate;
+      if (successDiff !== 0) return successDiff;
+
+      // Tie-break: lower Avg Cost/Run first
+      const aCost = a.Avg_Cost ?? calculateCost(a.Avg_Tokens);
+      const bCost = b.Avg_Cost ?? calculateCost(b.Avg_Tokens);
+      return aCost - bCost;
+    });
 
   // Recalculate pareto data
   const filteredParetoData = filteredLeaderboard.map((d) => ({
@@ -306,6 +314,14 @@ export const sortLeaderboard = (
 
     // Numeric comparison
     if (typeof aVal === 'number' && typeof bVal === 'number') {
+      // Special-case: Success Rate ties are broken by lower Avg Cost/Run (ascending)
+      if (sortKey === 'Success_Rate' && aVal === bVal) {
+        const aCost = a.Avg_Cost ?? calculateCost(a.Avg_Tokens);
+        const bCost = b.Avg_Cost ?? calculateCost(b.Avg_Tokens);
+        if (aCost !== bCost) return aCost - bCost;
+        return 0;
+      }
+
       return direction === 'asc' ? aVal - bVal : bVal - aVal;
     }
 

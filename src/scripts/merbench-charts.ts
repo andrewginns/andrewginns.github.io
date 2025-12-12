@@ -388,7 +388,12 @@ export class MerbenchCharts {
         },
         xaxis: {
           title: isMobile ? '' : 'Model',
-          tickangle: -45,
+          tickangle: isMobile ? -65 : -55,
+          automargin: true,
+          tickfont: {
+            size: isMobile ? 8 : 10,
+            color: this.getThemeColors().textSecondary,
+          },
         },
         yaxis: {
           title: 'Success Rate (%)',
@@ -412,7 +417,7 @@ export class MerbenchCharts {
           l: isMobile ? 40 : 60,
           r: isMobile ? 0 : 60,
           t: 40,
-          b: isMobile ? 200 : 120,
+          b: isMobile ? 240 : 160,
         },
       };
 
@@ -467,7 +472,12 @@ export class MerbenchCharts {
         },
         xaxis: {
           title: isMobile ? '' : 'Model',
-          tickangle: -45,
+          tickangle: isMobile ? -65 : -55,
+          automargin: true,
+          tickfont: {
+            size: isMobile ? 8 : 10,
+            color: this.getThemeColors().textSecondary,
+          },
         },
         yaxis: {
           title: 'Average Tokens',
@@ -490,7 +500,7 @@ export class MerbenchCharts {
           l: isMobile ? 50 : 80,
           r: isMobile ? 0 : 60,
           t: 40,
-          b: isMobile ? 200 : 120,
+          b: isMobile ? 240 : 160,
         },
       };
 
@@ -533,7 +543,12 @@ export class MerbenchCharts {
         },
         xaxis: {
           title: isMobile ? '' : 'Model',
-          tickangle: -45,
+          tickangle: isMobile ? -65 : -55,
+          automargin: true,
+          tickfont: {
+            size: isMobile ? 8 : 10,
+            color: this.getThemeColors().textSecondary,
+          },
         },
         yaxis: {
           title: 'Number of Failures',
@@ -556,7 +571,7 @@ export class MerbenchCharts {
           l: isMobile ? 50 : 80,
           r: isMobile ? 0 : 60,
           t: 40,
-          b: isMobile ? 200 : 120,
+          b: isMobile ? 240 : 160,
         },
       };
 

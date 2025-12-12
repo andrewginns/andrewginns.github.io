@@ -5,7 +5,7 @@ import SummaryStats from '../components/merbench/SummaryStats.astro';
 import LeaderboardTable from '../components/merbench/LeaderboardTable.astro';
 import CombinedFilters from '../components/merbench/CombinedFilters.astro';
 import ChartContainer from '../components/merbench/ChartContainer.astro';
-import { renderMarkdownToHTML } from '../lib/merbench';
+import { calculateCost, renderMarkdownToHTML } from '../lib/merbench';
 import { getCachedFileLastCommit } from '../lib/github';
 import type { MerbenchData } from '../lib/merbench-types';
 
@@ -22,6 +22,16 @@ leaderboard.forEach((entry) => {
   } else {
     entry.Price_per_Success = undefined;
   }
+});
+
+// Default leaderboard ordering: Success Rate (desc), then Avg Cost/Run (asc)
+leaderboard.sort((a, b) => {
+  const successDiff = b.Success_Rate - a.Success_Rate;
+  if (successDiff !== 0) return successDiff;
+
+  const aCost = a.Avg_Cost ?? calculateCost(a.Avg_Tokens);
+  const bCost = b.Avg_Cost ?? calculateCost(b.Avg_Tokens);
+  return aCost - bCost;
 });
 
 const formattedDescription = renderMarkdownToHTML(config.description);

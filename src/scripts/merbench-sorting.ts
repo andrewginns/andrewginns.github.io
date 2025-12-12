@@ -118,14 +118,14 @@ const renderLeaderboard = (data: LeaderboardEntry[]): void => {
       <td class="cost">
         <div class="progress-bar">
           <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%; background-color: #9ca3af;"></div>
-          <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">$${currentCost.toFixed(4)}</span>
+          <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">$${currentCost.toFixed(2)}</span>
         </div>
       </td>
       <td class="cost">
-        ${entry.Price_per_Success != null ? `$${entry.Price_per_Success.toFixed(4)}` : 'N/A'}
+        ${entry.Price_per_Success != null ? `$${entry.Price_per_Success.toFixed(2)}` : 'N/A'}
       </td>
       <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
-      <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
+      <td class="tokens">${Math.ceil(entry.Avg_Tokens).toLocaleString()}</td>
       <td class="runs">${entry.Runs}</td>
       <td class="provider">${entry.Provider}</td>
     </tr>
