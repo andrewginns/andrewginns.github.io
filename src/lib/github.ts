@@ -1,5 +1,7 @@
 import { getCachedGitHubData as getCachedData } from '../utils/github-cache';
 
+const CURRENT_ROLE = 'Deployment Engineer';
+
 export interface GitHubRepo {
   name: string;
   description: string;
@@ -284,7 +286,7 @@ export async function getGitHubProfile(username: string) {
     const roleMatch = bio.match(
       /(?:I'm\s+(?:a\s+)?|I\s+am\s+(?:a\s+)?|Currently\s+(?:a\s+)?|Working\s+as\s+(?:a\s+)?)([^.]+(?:Engineer|Scientist|Developer|Manager|Architect|Lead|Director|Consultant))/i
     );
-    const role = roleMatch ? roleMatch[1].trim() : 'Solutions Architect';
+    const role = roleMatch ? roleMatch[1].trim() : CURRENT_ROLE;
 
     return {
       company: profile.company || 'Motorway',
@@ -320,7 +322,7 @@ export async function getGitHubProfile(username: string) {
 
     return {
       company: 'OpenAI',
-      role: 'Solutions Architect',
+      role: CURRENT_ROLE,
       bio: '',
       profile: defaultProfile,
     };
