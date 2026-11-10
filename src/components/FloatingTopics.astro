@@ -1,0 +1,152 @@
+---
+import { profile } from '../data/profile';
+---
+
+<aside class="floating-topics" aria-label="Explore my interests on GitHub">
+  <div class="topic-orbit" aria-hidden="true"></div>
+  {profile.topics.map(({ label, topic }, index) => (
+    <a
+      class="floating-topic"
+      style={`--i:${index}; --depth:${index % 2 === 0 ? 1 : -0.7}`}
+      href={
+        topic
+          ? `https://github.com/search?q=owner%3Aandrewginns+topic%3A${encodeURIComponent(topic)}&type=repositories`
+          : profile.github
+      }
+      aria-label={`Explore ${label} on GitHub`}
+    >
+      <span>{label}</span>
+    </a>
+  ))}
+</aside>
+<script>
+  const rail = document.querySelector<HTMLElement>('.floating-topics');
+  const enabled = window.matchMedia(
+    '(min-width: 1280px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)',
+  );
+  let frame = 0;
+  function update() {
+    frame = 0;
+    // Bounded movement keeps the links inside their own margin on long pages.
+    rail?.style.setProperty(
+      '--scroll-shift',
+      enabled.matches ? `${Math.sin(window.scrollY / 650) * 22}px` : '0px',
+    );
+  }
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (enabled.matches && !frame) frame = requestAnimationFrame(update);
+    },
+    { passive: true },
+  );
+  enabled.addEventListener('change', update);
+  update();
+</script>
+<style>
+  .floating-topics {
+    display: none;
+  }
+  @media (min-width: 1280px) and (min-height: 560px) {
+    .floating-topics {
+      --scroll-shift: 0px;
+      --motion-scale: 1;
+      display: block;
+      position: fixed;
+      top: 70px;
+      right: max(20px, calc((100vw - 1550px) / 2));
+      width: 190px;
+      height: 640px;
+      max-height: calc(100dvh - 110px);
+    }
+    .topic-orbit {
+      position: absolute;
+      inset: 30px 24px 40px;
+      border: 1px solid var(--border-color);
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      transform: rotate(-15deg);
+      opacity: 0.65;
+    }
+    .floating-topic {
+      position: absolute;
+      top: calc(var(--i) * 13.5%);
+      left: 18px;
+      transform: translateY(
+        calc(var(--scroll-shift) * var(--depth) * var(--motion-scale))
+      );
+      text-decoration: none;
+    }
+    .floating-topic:nth-of-type(1) {
+      left: 36px;
+    }
+    .floating-topic:nth-of-type(2) {
+      left: 85px;
+    }
+    .floating-topic:nth-of-type(3) {
+      left: 0;
+      top: 28%;
+    }
+    .floating-topic:nth-of-type(4) {
+      left: 92px;
+      top: 43%;
+    }
+    .floating-topic:nth-of-type(5) {
+      left: 24px;
+      top: 57%;
+    }
+    .floating-topic:nth-of-type(6) {
+      left: 0;
+      top: 72%;
+    }
+    .floating-topic:nth-of-type(7) {
+      left: 62px;
+      top: 87%;
+    }
+    .floating-topic span {
+      display: block;
+      padding: 0.7rem 0.9rem;
+      min-height: 44px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-secondary);
+      box-shadow: 0 3px 10px var(--shadow-light);
+      color: var(--text-secondary);
+      font:
+        500 0.76rem ui-monospace,
+        SFMono-Regular,
+        Consolas,
+        monospace;
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s,
+        box-shadow 0.25s;
+    }
+    .floating-topic:nth-of-type(2n) span {
+      color: var(--accent-primary);
+      transform: rotate(3deg);
+    }
+    .floating-topic:nth-of-type(3n) span {
+      transform: rotate(-3deg);
+    }
+    .floating-topic:hover span,
+    .floating-topic:focus-visible span {
+      transform: translateY(-5px) rotate(-2deg) scale(1.05);
+      border-color: var(--accent-primary);
+      box-shadow: 0 7px 20px var(--shadow-medium);
+    }
+  }
+  @media (max-height: 759px) {
+    .floating-topics {
+      --motion-scale: 0.25;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .floating-topic,
+    .floating-topic span {
+      transform: none !important;
+      transition: none;
+    }
+  }
+</style>

@@ -9,13 +9,24 @@ import type {
 
 declare global {
   interface Window {
-    Plotly: any;
+    // The pinned browser bundle has no declarations; only its four used APIs cross this boundary.
+    Plotly: {
+      newPlot: (
+        id: string,
+        traces: object[],
+        layout: object,
+        config: object,
+      ) => Promise<unknown>;
+      relayout: (id: string, changes: object) => Promise<unknown>;
+      purge: (id: string) => void;
+      Plots: { resize: (id: string) => Promise<unknown> };
+    };
   }
 }
 
 export class MerbenchCharts {
   private plotlyLoaded = false;
-  private charts = new Map<string, any>();
+  private charts = new Set<string>();
 
   private isDarkMode(): boolean {
     return document.documentElement.getAttribute('data-theme') === 'dark';
@@ -24,10 +35,18 @@ export class MerbenchCharts {
   private getThemeColors() {
     const isDark = this.isDarkMode();
     return {
-      background: isDark ? '#0d1117' : '#ffffff',
-      paper: isDark ? '#161b22' : '#ffffff',
-      text: isDark ? '#f0f6fc' : '#2c3e50',
-      textSecondary: isDark ? '#8b949e' : '#7f8c8d',
+      background: getComputedStyle(document.documentElement)
+        .getPropertyValue('--bg-secondary')
+        .trim(),
+      paper: getComputedStyle(document.documentElement)
+        .getPropertyValue('--bg-secondary')
+        .trim(),
+      text: getComputedStyle(document.documentElement)
+        .getPropertyValue('--text-primary')
+        .trim(),
+      textSecondary: getComputedStyle(document.documentElement)
+        .getPropertyValue('--text-secondary')
+        .trim(),
       grid: isDark ? 'rgba(240, 246, 252, 0.05)' : '#dfe6e9',
       gridLines: isDark ? 'rgba(240, 246, 252, 0.1)' : '#ecf0f1',
       accent: isDark ? '#f85149' : '#e74c3c',
@@ -47,11 +66,14 @@ export class MerbenchCharts {
       return;
     }
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      const deadline = Date.now() + 10000;
       const checkPlotly = () => {
         if (typeof window.Plotly !== 'undefined') {
           this.plotlyLoaded = true;
           resolve();
+        } else if (Date.now() > deadline) {
+          reject(new Error('Chart library did not load'));
         } else {
           setTimeout(checkPlotly, 100);
         }
@@ -61,7 +83,9 @@ export class MerbenchCharts {
   }
 
   private hideLoading(containerId: string): void {
-    const loadingElement = document.getElementById(`chart-loading-${containerId}`);
+    const loadingElement = document.getElementById(
+      `chart-loading-${containerId}`,
+    );
     if (loadingElement) {
       loadingElement.classList.add('hidden');
     }
@@ -70,25 +94,34 @@ export class MerbenchCharts {
   private showChartError(containerId: string, message: string): void {
     const container = document.getElementById(containerId);
     if (container) {
-      container.innerHTML = `
-        <div class="chart-error">
-          <p>Failed to load chart: ${message}</p>
-          <button onclick="location.reload()">Retry</button>
-        </div>
-      `;
+      this.hideLoading(containerId);
+      const paragraph = document.createElement('p');
+      paragraph.textContent = `${message}. The results are available in the table above.`;
+      container.replaceChildren(paragraph);
     }
   }
 
   async initParetoChart(
     data: ParetoData[],
     containerId: string,
-    metric: 'cost' | 'time' | 'tokens' = 'cost'
+    metric: 'cost' | 'time' | 'tokens' = 'cost',
   ): Promise<void> {
     try {
       if (!this.plotlyLoaded) await this.waitForPlotly();
 
       const processed = processChartData.pareto(data);
-      const { dataWithCost } = processed;
+      // Unknown costs are omitted only from the cost view, never estimated.
+      const dataWithCost = processed.dataWithCost.filter(
+        (point) => metric !== 'cost' || Number.isFinite(point.cost),
+      );
+
+      if (!dataWithCost.length) {
+        this.showChartError(
+          containerId,
+          'No recorded costs for this selection',
+        );
+        return;
+      }
 
       // Get X-axis data based on selected metric
       let xData: number[];
@@ -106,14 +139,18 @@ export class MerbenchCharts {
         case 'tokens':
           xData = dataWithCost.map((d) => d.total_tokens);
           xAxisTitle = 'Average Tokens per Run';
-          xAxisType = 'log';
+          xAxisType = dataWithCost.some((point) => point.total_tokens === 0)
+            ? 'linear'
+            : 'log';
           chartTitle = 'Model Performance vs Token Usage Trade-off';
           break;
         case 'cost':
         default:
           xData = dataWithCost.map((d) => d.cost);
           xAxisTitle = 'Average Cost per Run ($)';
-          xAxisType = 'log';
+          xAxisType = dataWithCost.some((point) => point.cost === 0)
+            ? 'linear'
+            : 'log';
           chartTitle = 'Model Performance vs Cost Trade-off';
           break;
       }
@@ -123,13 +160,21 @@ export class MerbenchCharts {
         .map((d, index) => ({ ...d, originalIndex: index }))
         .sort((a, b) => {
           const aValue =
-            metric === 'time' ? a.Duration : metric === 'tokens' ? a.total_tokens : a.cost;
+            metric === 'time'
+              ? a.Duration
+              : metric === 'tokens'
+                ? a.total_tokens
+                : a.cost;
           const bValue =
-            metric === 'time' ? b.Duration : metric === 'tokens' ? b.total_tokens : b.cost;
-          return aValue - bValue;
+            metric === 'time'
+              ? b.Duration
+              : metric === 'tokens'
+                ? b.total_tokens
+                : b.cost;
+          return aValue - bValue || b.Success_Rate - a.Success_Rate;
         });
 
-      const paretoFrontier: any[] = [];
+      const paretoFrontier: typeof paretoData = [];
       let maxSuccessRate = -1;
 
       for (const point of paretoData) {
@@ -138,22 +183,6 @@ export class MerbenchCharts {
           maxSuccessRate = point.Success_Rate;
         }
       }
-
-      // Calculate colors for each point based on Duration values
-      const durations = dataWithCost.map((d) => d.Duration);
-      const minDuration = Math.min(...durations);
-      const maxDuration = Math.max(...durations);
-
-      // Get colors for each point using the Viridis colorscale
-      const markerColors = dataWithCost.map((d) => {
-        const normalized = (d.Duration - minDuration) / (maxDuration - minDuration);
-        return this.getViridisColor(normalized);
-      });
-
-      // Calculate appropriate text colors based on background luminance
-      const textColors = markerColors.map((bgColor) => {
-        return this.getContrastColor(bgColor);
-      });
 
       // Create hover template based on selected metric
       let hoverTemplate: string;
@@ -191,26 +220,21 @@ export class MerbenchCharts {
       const trace = {
         x: xData,
         y: dataWithCost.map((d) => d.Success_Rate),
-        mode: 'markers+text',
+        mode: 'markers',
         type: 'scatter',
         text: dataWithCost.map((d) => d.Model),
-        textposition: 'top center',
-        textfont: {
-          size: window.innerWidth < 768 ? 8 : 10,
-          color: '#666',
-        },
         showlegend: false,
         hoverlabel: {
-          bgcolor: markerColors,
-          bordercolor: markerColors.map((color) => this.darkenColor(color, 0.2)),
+          bgcolor: this.getThemeColors().background,
+          bordercolor: this.getThemeColors().textSecondary,
           font: {
             family: 'system-ui, -apple-system, sans-serif',
             size: 14,
-            color: textColors,
+            color: this.getThemeColors().text,
           },
         },
         marker: {
-          size: dataWithCost.map((d) => Math.log(d.Duration + 1) * 5 + 10),
+          size: 12,
           color: dataWithCost.map((d) => d.Duration),
           colorscale: 'Viridis',
           showscale: true,
@@ -261,6 +285,7 @@ export class MerbenchCharts {
       const isMobile = window.innerWidth < 768;
 
       const layout = {
+        font: { color: this.getThemeColors().text },
         title: {
           text: chartTitle,
           font: {
@@ -299,6 +324,7 @@ export class MerbenchCharts {
         plot_bgcolor: this.getThemeColors().background,
         paper_bgcolor: this.getThemeColors().paper,
         hovermode: 'closest',
+        dragmode: false,
         hoverdistance: -1, // This makes hover work across entire plot
         spikedistance: -1, // Show spikes for any distance
         legend: isMobile
@@ -320,7 +346,7 @@ export class MerbenchCharts {
         },
       };
 
-      const traces: any[] = [trace];
+      const traces: Record<string, unknown>[] = [trace];
       if (paretoFrontier.length > 1) {
         const paretoTrace = {
           x: paretoFrontier.map((p) => {
@@ -338,7 +364,9 @@ export class MerbenchCharts {
           mode: 'lines',
           type: 'scatter',
           line: {
-            color: this.isDarkMode() ? 'rgba(242, 139, 130, 0.3)' : 'rgba(231, 76, 60, 0.3)',
+            color: this.isDarkMode()
+              ? 'rgba(242, 139, 130, 0.3)'
+              : 'rgba(231, 76, 60, 0.3)',
             width: 2,
             dash: 'dash',
           },
@@ -351,18 +379,13 @@ export class MerbenchCharts {
       const config = {
         responsive: true,
         displayModeBar: false,
-        staticPlot: window.innerWidth < 768,
+        scrollZoom: false,
+        doubleClick: false,
       };
 
-      const plot = await window.Plotly.newPlot(containerId, traces, layout, config);
-      this.charts.set(containerId, plot);
-      this.charts.set(containerId, { traces, layout, config, dataWithCost });
-
-      // Add enhanced hover behavior for desktop
-      if (!window.innerWidth || window.innerWidth >= 768) {
-        this.addEnhancedHover(containerId, dataWithCost, metric);
-      }
-
+      await window.Plotly.newPlot(containerId, traces, layout, config);
+      this.charts.add(containerId);
+      this.refreshChartTheme(containerId);
       this.hideLoading(containerId);
     } catch (error) {
       console.error('Failed to initialize Pareto chart:', error);
@@ -370,7 +393,10 @@ export class MerbenchCharts {
     }
   }
 
-  async initTestGroupChart(data: TestGroupData[], containerId: string): Promise<void> {
+  async initTestGroupChart(
+    data: TestGroupData[],
+    containerId: string,
+  ): Promise<void> {
     try {
       if (!this.plotlyLoaded) await this.waitForPlotly();
 
@@ -379,15 +405,16 @@ export class MerbenchCharts {
       const isMobile = window.innerWidth < 768;
 
       const layout = {
+        font: { color: this.getThemeColors().text },
         title: {
           text: 'Success Rate by Test Difficulty',
           font: {
             size: 16,
-            color: '#2c3e50',
+            color: this.getThemeColors().text,
           },
         },
         xaxis: {
-          title: isMobile ? '' : 'Model',
+          title: { text: isMobile ? '' : 'Model' },
           tickangle: isMobile ? -65 : -55,
           automargin: true,
           tickfont: {
@@ -396,7 +423,7 @@ export class MerbenchCharts {
           },
         },
         yaxis: {
-          title: 'Success Rate (%)',
+          title: { text: 'Success Rate (%)' },
           range: [0, 105],
         },
         barmode: 'group',
@@ -424,12 +451,13 @@ export class MerbenchCharts {
       const config = {
         responsive: true,
         displayModeBar: false,
-        staticPlot: window.innerWidth < 768,
+        scrollZoom: false,
+        doubleClick: false,
       };
 
-      const plot = await window.Plotly.newPlot(containerId, traces, layout, config);
-      this.charts.set(containerId, plot);
-      this.charts.set(containerId, { traces, layout, config });
+      await window.Plotly.newPlot(containerId, traces, layout, config);
+      this.charts.add(containerId);
+      this.refreshChartTheme(containerId);
       this.hideLoading(containerId);
     } catch (error) {
       console.error('Failed to initialize Test Group chart:', error);
@@ -463,15 +491,16 @@ export class MerbenchCharts {
       const isMobile = window.innerWidth < 768;
 
       const layout = {
+        font: { color: this.getThemeColors().text },
         title: {
           text: 'Average Token Usage per Model',
           font: {
             size: 16,
-            color: '#2c3e50',
+            color: this.getThemeColors().text,
           },
         },
         xaxis: {
-          title: isMobile ? '' : 'Model',
+          title: { text: isMobile ? '' : 'Model' },
           tickangle: isMobile ? -65 : -55,
           automargin: true,
           tickfont: {
@@ -480,7 +509,7 @@ export class MerbenchCharts {
           },
         },
         yaxis: {
-          title: 'Average Tokens',
+          title: { text: 'Average Tokens' },
         },
         barmode: 'stack',
         plot_bgcolor: this.getThemeColors().background,
@@ -507,11 +536,18 @@ export class MerbenchCharts {
       const config = {
         responsive: true,
         displayModeBar: false,
-        staticPlot: window.innerWidth < 768,
+        scrollZoom: false,
+        doubleClick: false,
       };
 
-      const plot = await window.Plotly.newPlot(containerId, [trace1, trace2], layout, config);
-      this.charts.set(containerId, plot);
+      await window.Plotly.newPlot(
+        containerId,
+        [trace1, trace2],
+        layout,
+        config,
+      );
+      this.charts.add(containerId);
+      this.refreshChartTheme(containerId);
       this.hideLoading(containerId);
     } catch (error) {
       console.error('Failed to initialize Token chart:', error);
@@ -519,7 +555,10 @@ export class MerbenchCharts {
     }
   }
 
-  async initFailureAnalysisChart(data: FailureAnalysisData[], containerId: string): Promise<void> {
+  async initFailureAnalysisChart(
+    data: FailureAnalysisData[],
+    containerId: string,
+  ): Promise<void> {
     try {
       if (!this.plotlyLoaded) await this.waitForPlotly();
 
@@ -534,15 +573,16 @@ export class MerbenchCharts {
       const isMobile = window.innerWidth < 768;
 
       const layout = {
+        font: { color: this.getThemeColors().text },
         title: {
           text: 'Failure Analysis by Reason',
           font: {
             size: 16,
-            color: '#2c3e50',
+            color: this.getThemeColors().text,
           },
         },
         xaxis: {
-          title: isMobile ? '' : 'Model',
+          title: { text: isMobile ? '' : 'Model' },
           tickangle: isMobile ? -65 : -55,
           automargin: true,
           tickfont: {
@@ -551,7 +591,7 @@ export class MerbenchCharts {
           },
         },
         yaxis: {
-          title: 'Number of Failures',
+          title: { text: 'Number of Failures' },
         },
         barmode: 'stack',
         plot_bgcolor: this.getThemeColors().background,
@@ -578,12 +618,13 @@ export class MerbenchCharts {
       const config = {
         responsive: true,
         displayModeBar: false,
-        staticPlot: window.innerWidth < 768,
+        scrollZoom: false,
+        doubleClick: false,
       };
 
-      const plot = await window.Plotly.newPlot(containerId, traces, layout, config);
-      this.charts.set(containerId, plot);
-      this.charts.set(containerId, { traces, layout, config });
+      await window.Plotly.newPlot(containerId, traces, layout, config);
+      this.charts.add(containerId);
+      this.refreshChartTheme(containerId);
       this.hideLoading(containerId);
     } catch (error) {
       console.error('Failed to initialize Failure Analysis chart:', error);
@@ -591,34 +632,41 @@ export class MerbenchCharts {
     }
   }
 
-  async initializeAllCharts(data: {
-    paretoData: ParetoData[];
-    testGroupsData: TestGroupData[];
-    rawData: RawData[];
-    failureAnalysisData: FailureAnalysisData[];
-  }): Promise<void> {
+  async updateAllCharts(
+    data: FilteredData,
+    metric: 'cost' | 'time' | 'tokens' = 'cost',
+  ): Promise<void> {
+    if (!this.plotlyLoaded) return;
+    if (!data.rawData.length) {
+      this.purgeCharts();
+      for (const id of [
+        'pareto-chart',
+        'test-group-chart',
+        'token-chart',
+        'failure-analysis-chart',
+      ]) {
+        this.hideLoading(id);
+        const container = document.getElementById(id);
+        if (container)
+          container.textContent = 'No matching runs. Adjust the filters above.';
+      }
+      return;
+    }
     await Promise.all([
-      this.initParetoChart(data.paretoData, 'pareto-chart'),
+      this.initParetoChart(data.paretoData, 'pareto-chart', metric),
       this.initTestGroupChart(data.testGroupsData, 'test-group-chart'),
       this.initTokenChart(data.rawData, 'token-chart'),
-      this.initFailureAnalysisChart(data.failureAnalysisData, 'failure-analysis-chart'),
+      this.initFailureAnalysisChart(
+        data.failureAnalysisData,
+        'failure-analysis-chart',
+      ),
     ]);
   }
 
-  updateAllCharts(filteredData: FilteredData, paretoMetric?: 'cost' | 'time' | 'tokens'): void {
-    if (!this.plotlyLoaded) return;
-
-    try {
-      this.initParetoChart(filteredData.paretoData, 'pareto-chart', paretoMetric);
-      this.initTestGroupChart(filteredData.testGroupsData, 'test-group-chart');
-      this.initTokenChart(filteredData.rawData, 'token-chart');
-      this.initFailureAnalysisChart(filteredData.failureAnalysisData, 'failure-analysis-chart');
-    } catch (error) {
-      console.error('Failed to update charts:', error);
-    }
-  }
-
-  updateParetoChart(data: ParetoData[], metric: 'cost' | 'time' | 'tokens'): void {
+  updateParetoChart(
+    data: ParetoData[],
+    metric: 'cost' | 'time' | 'tokens',
+  ): void {
     if (!this.plotlyLoaded) return;
 
     try {
@@ -628,142 +676,17 @@ export class MerbenchCharts {
     }
   }
 
-  private addEnhancedHover(
-    containerId: string,
-    dataWithCost: any[],
-    metric: 'cost' | 'time' | 'tokens' = 'cost'
-  ): void {
-    const plotElement = document.getElementById(containerId);
-    if (!plotElement) return;
-
-    // Store the current hover data
-    let currentHoverIndex = -1;
-
-    // Function to find the nearest point
-    const findNearestPoint = (xPixel: number, yPixel: number) => {
-      const plotly = (plotElement as any)._fullLayout;
-      if (!plotly) return -1;
-
-      // Convert pixel coordinates to data coordinates
-      const xaxis = plotly.xaxis;
-      const yaxis = plotly.yaxis;
-
-      // Get data coordinates from pixel coordinates
-      const xData = xaxis.p2d ? xaxis.p2d(xPixel) : xaxis.p2c(xPixel);
-      const yData = yaxis.p2d ? yaxis.p2d(yPixel) : yaxis.p2c(yPixel);
-
-      // Find the nearest point
-      let minDistance = Infinity;
-      let nearestIndex = -1;
-
-      dataWithCost.forEach((point, index) => {
-        // Calculate distance based on current metric
-        let xDist: number;
-        if (metric === 'time') {
-          // Linear scale for time
-          xDist = (point.Duration - xData) / 60; // Normalize by 60 seconds
-        } else if (metric === 'tokens') {
-          // Log scale for tokens
-          xDist = Math.log10(point.total_tokens) - Math.log10(xData);
-        } else {
-          // Log scale for cost (default)
-          xDist = Math.log10(point.cost) - Math.log10(xData);
-        }
-
-        const yDist = (point.Success_Rate - yData) / 100; // Normalize y distance
-        const distance = Math.sqrt(xDist * xDist + yDist * yDist);
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestIndex = index;
-        }
-      });
-
-      return nearestIndex;
-    };
-
-    // Mouse move handler
-    const handleMouseMove = (event: MouseEvent) => {
-      const rect = plotElement.getBoundingClientRect();
-      const plotly = (plotElement as any)._fullLayout;
-      if (!plotly) return;
-
-      // Get mouse position relative to plot area
-      const xPixel = event.clientX - rect.left - plotly.margin.l;
-      const yPixel = event.clientY - rect.top - plotly.margin.t;
-
-      // Check if mouse is within plot area
-      const plotWidth = rect.width - plotly.margin.l - plotly.margin.r;
-      const plotHeight = rect.height - plotly.margin.t - plotly.margin.b;
-
-      if (xPixel >= 0 && xPixel <= plotWidth && yPixel >= 0 && yPixel <= plotHeight) {
-        const nearestIndex = findNearestPoint(xPixel, yPixel);
-
-        if (nearestIndex !== -1 && nearestIndex !== currentHoverIndex) {
-          currentHoverIndex = nearestIndex;
-
-          // Trigger hover on the nearest point
-          window.Plotly.Fx.hover(plotElement, [
-            {
-              curveNumber: 0,
-              pointNumber: nearestIndex,
-            },
-          ]);
-        }
-      } else {
-        // Mouse is outside plot area
-        currentHoverIndex = -1;
-        window.Plotly.Fx.unhover(plotElement);
-      }
-    };
-
-    // Mouse leave handler
-    const handleMouseLeave = () => {
-      currentHoverIndex = -1;
-      window.Plotly.Fx.unhover(plotElement);
-    };
-
-    // Add event listeners
-    plotElement.addEventListener('mousemove', handleMouseMove);
-    plotElement.addEventListener('mouseleave', handleMouseLeave);
-
-    // Store cleanup function
-    const chartData = this.charts.get(containerId);
-    if (chartData) {
-      chartData.cleanup = () => {
-        plotElement.removeEventListener('mousemove', handleMouseMove);
-        plotElement.removeEventListener('mouseleave', handleMouseLeave);
-      };
-    }
-  }
-
   resizeCharts(): void {
-    if (!this.plotlyLoaded || typeof window.Plotly === 'undefined') return;
-
-    try {
-      window.Plotly.Plots.resize('pareto-chart');
-      window.Plotly.Plots.resize('test-group-chart');
-      window.Plotly.Plots.resize('token-chart');
-      window.Plotly.Plots.resize('failure-analysis-chart');
-    } catch (error) {
-      console.error('Failed to resize charts:', error);
-    }
+    if (!this.plotlyLoaded) return;
+    void Promise.all(
+      [...this.charts].map((id) => window.Plotly.Plots.resize(id)),
+    ).catch((error) => console.error('Failed to resize charts:', error));
   }
 
   purgeCharts(): void {
     if (!this.plotlyLoaded || typeof window.Plotly === 'undefined') return;
 
     try {
-      // Clean up event listeners before purging
-      ['pareto-chart', 'test-group-chart', 'token-chart', 'failure-analysis-chart'].forEach(
-        (id) => {
-          const chartData = this.charts.get(id);
-          if (chartData && chartData.cleanup) {
-            chartData.cleanup();
-          }
-        }
-      );
-
       window.Plotly.purge('pareto-chart');
       window.Plotly.purge('test-group-chart');
       window.Plotly.purge('token-chart');
@@ -775,105 +698,31 @@ export class MerbenchCharts {
     }
   }
 
-  // Color helper methods
-  private getViridisColor(value: number): string {
-    // Viridis colorscale approximation using RGB values
-    // Value should be between 0 and 1
-    const clampedValue = Math.max(0, Math.min(1, value));
-
-    // Define key points in the Viridis colorscale
-    const colorPoints = [
-      { pos: 0.0, r: 68, g: 1, b: 84 }, // Dark purple
-      { pos: 0.25, r: 58, g: 82, b: 139 }, // Blue
-      { pos: 0.5, r: 32, g: 144, b: 140 }, // Teal
-      { pos: 0.75, r: 94, g: 201, b: 97 }, // Green
-      { pos: 1.0, r: 253, g: 231, b: 36 }, // Yellow
-    ];
-
-    // Find the two colors to interpolate between
-    let lowerIndex = 0;
-    let upperIndex = colorPoints.length - 1;
-
-    for (let i = 0; i < colorPoints.length - 1; i++) {
-      if (clampedValue >= colorPoints[i].pos && clampedValue <= colorPoints[i + 1].pos) {
-        lowerIndex = i;
-        upperIndex = i + 1;
-        break;
-      }
-    }
-
-    const lower = colorPoints[lowerIndex];
-    const upper = colorPoints[upperIndex];
-
-    // Interpolate between the colors
-    const range = upper.pos - lower.pos;
-    const t = range === 0 ? 0 : (clampedValue - lower.pos) / range;
-
-    const r = Math.round(lower.r + (upper.r - lower.r) * t);
-    const g = Math.round(lower.g + (upper.g - lower.g) * t);
-    const b = Math.round(lower.b + (upper.b - lower.b) * t);
-
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-
-  private getContrastColor(bgColor: string): string {
-    // Extract RGB values from the color string
-    const rgbMatch = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!rgbMatch) return '#000000'; // Default to black if parsing fails
-
-    const r = parseInt(rgbMatch[1]);
-    const g = parseInt(rgbMatch[2]);
-    const b = parseInt(rgbMatch[3]);
-
-    // Calculate relative luminance using WCAG formula
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-    // Return white for dark backgrounds, black for light backgrounds
-    // Using a threshold of 0.5 for good contrast
-    return luminance > 0.5 ? '#000000' : '#ffffff';
-  }
-
-  private darkenColor(color: string, amount: number): string {
-    // Extract RGB values
-    const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-    if (!rgbMatch) return color;
-
-    const r = parseInt(rgbMatch[1]);
-    const g = parseInt(rgbMatch[2]);
-    const b = parseInt(rgbMatch[3]);
-
-    // Darken by reducing each component
-    const factor = 1 - amount;
-    const newR = Math.round(r * factor);
-    const newG = Math.round(g * factor);
-    const newB = Math.round(b * factor);
-
-    return `rgb(${newR}, ${newG}, ${newB})`;
-  }
-
   // Listen for theme changes and update all charts
   setupThemeListener(): void {
     window.addEventListener('theme-changed', () => {
-      this.refreshAllCharts();
+      this.charts.forEach((id) => this.refreshChartTheme(id));
     });
   }
 
-  private refreshAllCharts(): void {
-    // Refresh all existing charts with new theme colors
-    this.charts.forEach((_, id) => {
-      const colors = this.getThemeColors();
-      const update = {
-        plot_bgcolor: colors.background,
-        paper_bgcolor: colors.paper,
-        'xaxis.gridcolor': colors.grid,
-        'yaxis.gridcolor': colors.grid,
-        'xaxis.spikecolor': colors.text,
-        'yaxis.spikecolor': colors.text,
-      };
+  // Apply the current theme after rendering too: the theme can change while newPlot awaits.
+  private refreshChartTheme(id: string): void {
+    const colors = this.getThemeColors();
+    const update = {
+      plot_bgcolor: colors.background,
+      paper_bgcolor: colors.paper,
+      'xaxis.gridcolor': colors.grid,
+      'yaxis.gridcolor': colors.grid,
+      'xaxis.spikecolor': colors.text,
+      'yaxis.spikecolor': colors.text,
+      'font.color': colors.text,
+      'title.font.color': colors.text,
+      'xaxis.tickfont.color': colors.textSecondary,
+      'yaxis.tickfont.color': colors.textSecondary,
+      'xaxis.title.font.color': colors.textSecondary,
+      'yaxis.title.font.color': colors.textSecondary,
+    };
 
-      if (window.Plotly) {
-        window.Plotly.relayout(id, update);
-      }
-    });
+    void window.Plotly.relayout(id, update);
   }
 }

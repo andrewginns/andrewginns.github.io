@@ -54,9 +54,9 @@ export interface RawData {
   Score_MermaidDiagramValid: number;
   Score_UsedBothMCPTools: number;
   Score_UsageLimitNotExceeded: number;
-  total_cost: number;
-  input_cost: number;
-  output_cost: number;
+  total_cost?: number;
+  input_cost?: number;
+  output_cost?: number;
 }
 
 export interface FailureAnalysisData {
@@ -97,7 +97,7 @@ export interface ModelStats {
   totalRuns: number;
   totalDuration: number;
   totalTokens: number;
-  totalCost: number;
-  totalInputCost: number;
-  totalOutputCost: number;
+  totalCost?: number;
+  totalInputCost?: number;
+  totalOutputCost?: number;
 }

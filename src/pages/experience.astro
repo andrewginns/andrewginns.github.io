@@ -1,21 +1,25 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import LastUpdated from '../components/LastUpdated.astro';
+import { profile } from '../data/profile';
 ---
 
-<BaseLayout title="Experience - Andrew Ginns">
+<BaseLayout
+  title="Experience — Andrew Ginns"
+  description="Andrew Ginns’ experience in AI solutions architecture, machine learning engineering, and data science at OpenAI, Google, Motorway, Michelin, and Accenture."
+>
   <div class="experience-content">
     <h1>Professional Experience</h1>
 
     <section class="current-role">
       <div class="role">
-        <h2>Solutions Architect</h2>
-        <div class="company">OpenAI</div>
+        <h2>{profile.role}</h2>
+        <div class="company">{profile.company}</div>
         <div class="period">November 2025 - Present</div>
         <ul class="responsibilities">
           <li>
-            Partnering with customers to safely deploy generative AI and build real-world
-            applications that support OpenAI's mission to ensure AGI benefits all of humanity.
+            Partnering with customers to safely deploy generative AI and build
+            real-world applications that support OpenAI's mission to ensure AGI
+            benefits all of humanity.
           </li>
         </ul>
       </div>
@@ -28,24 +32,25 @@ import LastUpdated from '../components/LastUpdated.astro';
         <div class="period">August 2025 - November 2025</div>
         <ul class="responsibilities">
           <li>
-            Designing and rapidly prototyping Generative AI solutions for enterprise customers
-            across the full Google Cloud stack
+            Designing and rapidly prototyping Generative AI solutions for
+            enterprise customers across the full Google Cloud stack
           </li>
           <li>
-            Leveraging expertise in cutting-edge AI/ML developments, frameworks, and industry best
-            practices to deliver state-of-the-art solutions
+            Leveraging expertise in cutting-edge AI/ML developments, frameworks,
+            and industry best practices to deliver state-of-the-art solutions
           </li>
           <li>
-            Creating reusable technical assets including reference architectures, templates, and
-            scripts to accelerate customer adoption
+            Creating reusable technical assets including reference
+            architectures, templates, and scripts to accelerate customer
+            adoption
           </li>
           <li>
-            Leading cross-functional initiatives to shape AI/ML strategy based on enterprise
-            requirements
+            Leading cross-functional initiatives to shape AI/ML strategy based
+            on enterprise requirements
           </li>
           <li>
-            Communicating AI solution capabilities through technical demonstrations and strategic
-            business value workshops
+            Communicating AI solution capabilities through technical
+            demonstrations and strategic business value workshops
           </li>
         </ul>
       </div>
@@ -55,14 +60,17 @@ import LastUpdated from '../components/LastUpdated.astro';
         <div class="period">January 2024 - August 2025</div>
         <ul class="responsibilities">
           <li>
-            Leading the deployment, monitoring, and maintenance of ML models in production to ensure
-            optimal performance and scalability
+            Leading the deployment, monitoring, and maintenance of ML models in
+            production to ensure optimal performance and scalability
           </li>
           <li>
-            Spearheading GenAI initiatives focussing on vendor evaluations and projects integrating
-            enterprise grade LLMs in production
+            Spearheading GenAI initiatives focussing on vendor evaluations and
+            projects integrating enterprise grade LLMs in production
           </li>
-          <li>Supporting cutting-edge MLOps practices and infrastructure across multiple teams</li>
+          <li>
+            Supporting cutting-edge MLOps practices and infrastructure across
+            multiple teams
+          </li>
           <li>Driving technical strategy and team growth</li>
         </ul>
       </div>
@@ -71,13 +79,22 @@ import LastUpdated from '../components/LastUpdated.astro';
         <div class="company">Michelin Connected Fleet</div>
         <div class="period">July 2021 - December 2023</div>
         <ul class="responsibilities">
-          <li>Scaled Data Science team from 2 to 18 members across 3 countries</li>
+          <li>
+            Scaled Data Science team from 2 to 18 members across 3 countries
+          </li>
           <li>Designed and built an ML platform from the ground up on AWS</li>
           <li>
-            Reduced model deployment time from 0.5 days to 2 hours through MLOps best practices
+            Reduced model deployment time from 0.5 days to 2 hours through MLOps
+            best practices
           </li>
-          <li>Led development of predictive models for tyre wear and telematics use-cases</li>
-          <li>Kickstarted research into RAG + LLM systems using Chroma and Llama 2-based models</li>
+          <li>
+            Led development of predictive models for tyre wear and telematics
+            use-cases
+          </li>
+          <li>
+            Kickstarted research into RAG + LLM systems using Chroma and Llama
+            2-based models
+          </li>
         </ul>
       </div>
 
@@ -90,7 +107,8 @@ import LastUpdated from '../components/LastUpdated.astro';
           <li>Developed end-to-end DS pipelines on Azure, AWS, and GCP</li>
           <li>Led team of consultants on strategic engagement</li>
           <li>
-            Applied HMMs, NLP, and computer vision to solve complex business problems for clients
+            Applied HMMs, NLP, and computer vision to solve complex business
+            problems for clients
           </li>
         </ul>
       </div>
@@ -114,7 +132,9 @@ import LastUpdated from '../components/LastUpdated.astro';
         <h3>MSc Advanced Computing</h3>
         <div class="institution">University of Bristol</div>
         <div class="period">2017 - 2018</div>
-        <div class="grade">Thesis on GAN deployment and optimisation awarded a Distinction</div>
+        <div class="grade">
+          Thesis on GAN deployment and optimisation awarded a Distinction
+        </div>
         <p>Specialisation: ML, HPC, and Data Mining</p>
       </div>
 
@@ -134,8 +154,6 @@ import LastUpdated from '../components/LastUpdated.astro';
         <li>Microsoft Azure Data Scientist Associate</li>
       </ul>
     </section>
-
-    <LastUpdated />
   </div>
 </BaseLayout>
 
@@ -152,7 +170,7 @@ import LastUpdated from '../components/LastUpdated.astro';
   .degree {
     margin-bottom: 2.5rem;
     padding-bottom: 2rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .role:last-child,

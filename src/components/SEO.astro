@@ -1,67 +1,79 @@
 ---
-import { SEO as AstroSEO } from 'astro-seo';
-import { Schema } from 'astro-seo-schema';
-
-export interface Props {
+import { profile } from '../data/profile';
+interface Props {
   title: string;
   description: string;
   image?: string;
   type?: 'website' | 'article';
   publishDate?: Date;
   author?: string;
+  noindex?: boolean;
 }
-
 const {
   title,
   description,
   image = '/og-default.jpg',
   type = 'website',
   publishDate,
-  author = 'Andrew Ginns',
+  author = profile.name,
+  noindex = false,
 } = Astro.props;
-
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const imageURL = new URL(image, Astro.site);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const imageURL = new URL(image, Astro.site).href;
+const schema =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: title,
+        description,
+        url: canonical,
+        image: imageURL,
+        datePublished: publishDate?.toISOString(),
+        author: { '@type': 'Person', name: author, url: Astro.site?.href },
+      }
+    : Astro.url.pathname === '/'
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name: profile.name,
+          url: Astro.site?.href,
+          image: new URL('/andrew-headshot.jpeg', Astro.site).href,
+          jobTitle: profile.role,
+          worksFor: { '@type': 'Organization', name: profile.company },
+          alumniOf: [
+            { '@type': 'CollegeOrUniversity', name: 'University of Bristol' },
+            {
+              '@type': 'CollegeOrUniversity',
+              name: 'University of Birmingham',
+            },
+          ],
+          sameAs: [profile.github, profile.linkedin, profile.medium],
+        }
+      : null;
 ---
 
-<AstroSEO
-  title={title}
-  description={description}
-  canonical={canonicalURL.href}
-  openGraph={{
-    basic: {
-      title: title,
-      type: type,
-      image: imageURL.href,
-      url: canonicalURL.href,
-    },
-    optional: {
-      description: description,
-      siteName: 'Andrew Ginns',
-    },
-    article:
-      type === 'article'
-        ? {
-            publishedTime: publishDate?.toISOString(),
-            authors: [author],
-          }
-        : undefined,
-  }}
-/>
-
-<Schema
-  item={{
-    '@context': 'https://schema.org',
-    '@type': type === 'article' ? 'BlogPosting' : 'WebSite',
-    name: title,
-    headline: title,
-    description: description,
-    url: canonicalURL.href,
-    image: imageURL.href,
-    author: {
-      '@type': 'Person',
-      name: author,
-      url: 'https://andrew.ginns.uk',
-    },
-  }}
-/>
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex" />}
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={imageURL} />
+<meta property="og:site_name" content={profile.name} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageURL} />
+{type === 'article' && publishDate && (
+  <meta property="article:published_time" content={publishDate.toISOString()} />
+)}
+{schema && (
+  <script
+    is:inline
+    type="application/ld+json"
+    set:html={JSON.stringify(schema).replace(/</g, '\\u003c')}
+  />
+)}

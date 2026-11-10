@@ -11,32 +11,57 @@ const { chartId, title, height = 500 } = Astro.props;
 <section class="chart-section">
   <div class="chart-header">
     <h2>{title}</h2>
-    {
-      chartId === 'pareto-chart' && (
-        <div class="metric-selector" id="metric-selector">
-          <button class="metric-btn active" data-metric="cost">
-            Cost
-          </button>
-          <button class="metric-btn" data-metric="time">
-            Time
-          </button>
-          <button class="metric-btn" data-metric="tokens">
-            Tokens
-          </button>
-        </div>
-      )
-    }
+    {chartId === 'pareto-chart' && (
+      <div
+        class="metric-selector"
+        id="metric-selector"
+        role="group"
+        aria-label="Compare performance by"
+      >
+        <button
+          type="button"
+          class="metric-btn active"
+          data-metric="cost"
+          aria-pressed="true"
+        >
+          Cost
+        </button>
+        <button
+          type="button"
+          class="metric-btn"
+          data-metric="time"
+          aria-pressed="false"
+        >
+          Time
+        </button>
+        <button
+          type="button"
+          class="metric-btn"
+          data-metric="tokens"
+          aria-pressed="false"
+        >
+          Tokens
+        </button>
+      </div>
+    )}
   </div>
-  <div class="chart-loading" id={`chart-loading-${chartId}`}>
+  <div role="status" class="chart-loading" id={`chart-loading-${chartId}`}>
     <div class="spinner"></div>
     <p>Loading chart data...</p>
   </div>
   <div id={chartId} class="chart-container" style={`height: ${height}px`}></div>
   <noscript>
+    <style is:inline>
+      .chart-section .chart-loading,
+      .chart-section .chart-container,
+      .chart-section .metric-selector {
+        display: none;
+      }
+    </style>
     <div class="chart-fallback">
       <p>
-        Interactive charts require JavaScript. Please enable JavaScript to view the full
-        visualization.
+        Interactive charts require JavaScript. Please enable JavaScript to view
+        the full visualization.
       </p>
     </div>
   </noscript>
@@ -93,7 +118,7 @@ const { chartId, title, height = 500 } = Astro.props;
 
   .metric-btn.active {
     background: var(--accent-primary);
-    color: white;
+    color: var(--bg-primary);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
@@ -193,63 +218,3 @@ const { chartId, title, height = 500 } = Astro.props;
     }
   }
 </style>
-
-<script>
-  // Metric selector functionality for Pareto chart
-  document.addEventListener('DOMContentLoaded', () => {
-    // Only run for pareto chart
-    if (document.getElementById('pareto-chart') === null) return;
-
-    const metricSelector = document.getElementById('metric-selector');
-    if (!metricSelector) return;
-
-    let currentMetric = 'cost';
-
-    // Handle metric button clicks
-    metricSelector.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (!target || !target.classList.contains('metric-btn')) return;
-
-      const selectedMetric = target.dataset.metric as 'cost' | 'time' | 'tokens';
-      if (!selectedMetric || selectedMetric === currentMetric) return;
-
-      // Update button states
-      metricSelector.querySelectorAll('.metric-btn').forEach((btn) => {
-        btn.classList.remove('active');
-      });
-      target.classList.add('active');
-
-      currentMetric = selectedMetric;
-
-      // Update the chart with the new metric
-      if (typeof window.merbenchCharts !== 'undefined' && window.merbenchCharts) {
-        // Get current filtered data
-        const currentData = window.currentFilteredData || window.merbenchData;
-        if (currentData) {
-          // Compute pareto data from leaderboard data
-          let paretoData;
-          if (currentData.paretoData) {
-            // Use already computed pareto data (from filtered data)
-            paretoData = currentData.paretoData;
-          } else if (currentData.leaderboard) {
-            // Compute pareto data from leaderboard (from original data)
-            paretoData = currentData.leaderboard.map((entry: any) => ({
-              Model: entry.Model,
-              Success_Rate: entry.Success_Rate,
-              Duration: entry.Avg_Duration,
-              total_tokens: entry.Avg_Tokens,
-              cost: (entry.Avg_Tokens / 1000) * 0.001, // Calculate cost
-            }));
-          }
-
-          if (paretoData) {
-            window.merbenchCharts.updateParetoChart(paretoData, selectedMetric);
-          }
-        }
-      }
-    });
-
-    // Make metric state available globally for filter updates
-    window.getCurrentParetoMetric = () => currentMetric as 'cost' | 'time' | 'tokens';
-  });
-</script>

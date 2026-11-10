@@ -1,125 +1,86 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import LastUpdated from '../components/LastUpdated.astro';
-import { getCachedGitHubCompany } from '../lib/github.ts';
-
-// Fetch current company from GitHub profile
-// Force rebuild: 2025-06-20
-const currentCompany = await getCachedGitHubCompany('andrewginns');
+import { profile } from '../data/profile';
 ---
 
-<BaseLayout title="Contact - Andrew Ginns">
-  <div class="contact-content">
-    <h1>Get in Touch</h1>
-    
-    <p class="intro">
-      I'm always interested in discussing new opportunities, collaborations, 
-      or just connecting with fellow ML enthusiasts. Feel free to reach out 
-      through any of the channels below.
-    </p>
-    
-    <div class="contact-methods">
-      <div class="contact-item">
-        <h2>Professional Networks</h2>
-        <ul>
-          <li>
-            <strong>LinkedIn:</strong> 
-            <a href="https://linkedin.com/in/andrewginns" target="_blank" rel="noopener noreferrer">
-              linkedin.com/in/andrewginns
-            </a>
-          </li>
-          <li>
-            <strong>GitHub:</strong> 
-            <a href="https://github.com/andrewginns" target="_blank" rel="noopener noreferrer">
-              github.com/andrewginns
-            </a>
-          </li>
-        </ul>
-      </div>
-      
-      <div class="contact-item">
-        <h2>Email</h2>
-        <p>
-          For professional inquiries, please reach out via LinkedIn or through 
-          my current company channels at {currentCompany}.
-        </p>
-      </div>
-      
-      <div class="contact-item">
-        <h2>Open Source & Collaboration</h2>
-        <p>
-          If you're interested in collaborating on open source projects or have 
-          questions about any of my public repositories, feel free to open an 
-          issue or pull request on GitHub. I'm particularly interested in projects 
-          related to:
-        </p>
-        <ul>
-          <li>MLOps and infrastructure automation</li>
-          <li>Generative AI applications</li>
-          <li>Data science tooling and best practices</li>
-          <li>Educational resources for ML practitioners</li>
-        </ul>
-      </div>
-    </div>
-    
-    <section class="availability">
-      <h2>Current Status</h2>
-      <p>
-        I'm currently fully engaged in my role at {currentCompany} but am always open to 
-        interesting conversations about the future of ML and AI. If you have an 
-        exciting project or opportunity, I'd be happy to chat.
-      </p>
-    </section>
-    
-    <LastUpdated />
+<BaseLayout
+  title="Contact — Andrew Ginns"
+  description="Connect with Andrew Ginns on LinkedIn or GitHub to discuss practical AI, open source, and engineering."
+>
+  <h1>Get in touch</h1>
+  <p class="page-intro">
+    Good conversations often lead to interesting things. Whether it's practical
+    AI, an open-source idea, or a shared curiosity, I'd be glad to hear from
+    you.
+  </p>
+  <div class="contact-methods">
+    <a class="contact-card" href={profile.linkedin}>
+      <span class="eyebrow">Let's talk</span>
+      <h2>
+        LinkedIn <span aria-hidden="true">↗</span>
+      </h2>
+      <p>The best place for professional conversations and connecting.</p>
+      <span class="contact-address">linkedin.com/in/andrewginns</span>
+    </a>
+    <a class="contact-card" href={profile.github}>
+      <span class="eyebrow">Let's build</span>
+      <h2>
+        GitHub <span aria-hidden="true">↗</span>
+      </h2>
+      <p>Explore my code, raise an issue, or contribute to a project.</p>
+      <span class="contact-address">github.com/andrewginns</span>
+    </a>
   </div>
+  <section class="availability">
+    <h2>Currently at {profile.company}</h2>
+    <p>
+      I'm focused on my role as a {profile.role}, and always open to exchanging
+      ideas about AI, developer tools, and the craft of building useful systems.
+    </p>
+  </section>
 </BaseLayout>
-
 <style>
-  .contact-content {
-    max-width: 600px;
-  }
-  
-  .intro {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    margin-bottom: 3rem;
-  }
-  
   .contact-methods {
-    margin-bottom: 3rem;
+    display: grid;
+    gap: 1.25rem;
   }
-  
-  .contact-item {
-    margin-bottom: 2.5rem;
+  .contact-card {
+    display: block;
+    border: 1px solid var(--border-color);
+    padding: 1.6rem;
+    border-radius: 12px;
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      transform 0.2s;
   }
-  
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
+  .contact-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
   }
-  
-  ul {
-    list-style-position: outside;
-    margin-left: 1.5rem;
+  .contact-card h2 {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem 0 1rem;
   }
-  
-  li {
+  .contact-card h2 span {
+    color: var(--accent-primary);
+  }
+  .contact-card p {
+    color: var(--text-secondary);
     margin-bottom: 0.75rem;
   }
-  
-  a {
-    color: var(--accent);
-    text-decoration: none;
+  .contact-address {
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
   }
-  
-  a:hover {
-    text-decoration: underline;
-  }
-  
   .availability {
-    padding: 2rem;
-    background: var(--bg-secondary);
-    border-radius: 8px;
+    margin-top: 2.5rem;
+  }
+  .availability h2 {
+    font-size: 1.2rem;
+  }
+  .availability p {
+    color: var(--text-secondary);
   }
 </style>

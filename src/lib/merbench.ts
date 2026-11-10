@@ -8,48 +8,18 @@ import type {
   LeaderboardEntry,
 } from './merbench-types';
 
-// Calculate cost per run (simplified pricing model) - DEPRECATED
-// Use actual costs from the data instead
-export const calculateCost = (tokens: number): number => {
-  // Simplified pricing: $0.001 per 1000 tokens
-  return (tokens / 1000) * 0.001;
-};
-
-// Convert markdown-style formatting to HTML
-export const renderMarkdownToHTML = (text: string): string => {
-  // Split into paragraphs
-  const paragraphs = text.split('\n\n').filter((p) => p.trim());
-
-  return paragraphs
-    .map((paragraph) => {
-      // Convert bold (**text** or __text__)
-      let html = paragraph.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
-
-      // Convert italics (*text* or _text_)
-      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      html = html.replace(/_(.+?)_/g, '<em>$1</em>');
-
-      return `<p>${html}</p>`;
-    })
-    .join('\n      ');
-};
-
 // Filter data based on selected difficulties and providers
 export const getFilteredData = (
   selectedDifficulties: string[],
   originalRawData: RawData[],
   originalTestGroupsData: TestGroupData[],
-  selectedProviders?: string[]
+  selectedProviders?: string[],
 ): FilteredData => {
   // Filter raw data with AND logic
   const filteredRawData = originalRawData.filter((d) => {
-    const difficultyMatch =
-      selectedDifficulties.length === 0 || selectedDifficulties.includes(d.test_group);
+    const difficultyMatch = selectedDifficulties.includes(d.test_group);
     const providerMatch =
-      !selectedProviders ||
-      selectedProviders.length === 0 ||
-      selectedProviders.includes(d.provider);
+      !selectedProviders || selectedProviders.includes(d.provider);
     return difficultyMatch && providerMatch;
   });
 
@@ -58,8 +28,7 @@ export const getFilteredData = (
 
   // Filter test groups data by difficulty AND by models that remain after provider filtering
   const filteredTestGroupsData = originalTestGroupsData.filter((d) => {
-    const difficultyMatch =
-      selectedDifficulties.length === 0 || selectedDifficulties.includes(d.test_group);
+    const difficultyMatch = selectedDifficulties.includes(d.test_group);
     const modelMatch = filteredModels.has(d.Model);
     return difficultyMatch && modelMatch;
   });
@@ -84,9 +53,18 @@ export const getFilteredData = (
     modelStats[d.Model].totalRuns++;
     modelStats[d.Model].totalDuration += d.Duration;
     modelStats[d.Model].totalTokens += d.total_tokens;
-    modelStats[d.Model].totalCost += d.total_cost;
-    modelStats[d.Model].totalInputCost += d.input_cost;
-    modelStats[d.Model].totalOutputCost += d.output_cost;
+    modelStats[d.Model].totalCost = addRecordedCost(
+      modelStats[d.Model].totalCost,
+      d.total_cost,
+    );
+    modelStats[d.Model].totalInputCost = addRecordedCost(
+      modelStats[d.Model].totalInputCost,
+      d.input_cost,
+    );
+    modelStats[d.Model].totalOutputCost = addRecordedCost(
+      modelStats[d.Model].totalOutputCost,
+      d.output_cost,
+    );
 
     if (d.Score_MermaidDiagramValid === 1) {
       modelStats[d.Model].successCount++;
@@ -95,18 +73,31 @@ export const getFilteredData = (
 
   const filteredLeaderboard = Object.values(modelStats)
     .map((stats) => {
-      const successRate = stats.totalRuns > 0 ? (stats.successCount / stats.totalRuns) * 100 : 0;
-      const avgCost = stats.totalRuns > 0 ? stats.totalCost / stats.totalRuns : 0;
-      const pricePerSuccess = successRate > 0 ? avgCost / (successRate / 100) : undefined;
+      const successRate =
+        stats.totalRuns > 0 ? (stats.successCount / stats.totalRuns) * 100 : 0;
+      const avgCost =
+        stats.totalCost == null ? undefined : stats.totalCost / stats.totalRuns;
+      const pricePerSuccess =
+        successRate > 0 && avgCost != null
+          ? avgCost / (successRate / 100)
+          : undefined;
 
       return {
         Model: stats.Model,
         Success_Rate: successRate,
-        Avg_Duration: stats.totalRuns > 0 ? stats.totalDuration / stats.totalRuns : 0,
-        Avg_Tokens: stats.totalRuns > 0 ? stats.totalTokens / stats.totalRuns : 0,
+        Avg_Duration:
+          stats.totalRuns > 0 ? stats.totalDuration / stats.totalRuns : 0,
+        Avg_Tokens:
+          stats.totalRuns > 0 ? stats.totalTokens / stats.totalRuns : 0,
         Avg_Cost: avgCost,
-        Avg_Input_Cost: stats.totalRuns > 0 ? stats.totalInputCost / stats.totalRuns : 0,
-        Avg_Output_Cost: stats.totalRuns > 0 ? stats.totalOutputCost / stats.totalRuns : 0,
+        Avg_Input_Cost:
+          stats.totalInputCost == null
+            ? undefined
+            : stats.totalInputCost / stats.totalRuns,
+        Avg_Output_Cost:
+          stats.totalOutputCost == null
+            ? undefined
+            : stats.totalOutputCost / stats.totalRuns,
         Price_per_Success: pricePerSuccess,
         Runs: stats.totalRuns,
         Provider: stats.Provider,
@@ -117,8 +108,8 @@ export const getFilteredData = (
       if (successDiff !== 0) return successDiff;
 
       // Tie-break: lower Avg Cost/Run first
-      const aCost = a.Avg_Cost ?? calculateCost(a.Avg_Tokens);
-      const bCost = b.Avg_Cost ?? calculateCost(b.Avg_Tokens);
+      const aCost = a.Avg_Cost ?? Infinity;
+      const bCost = b.Avg_Cost ?? Infinity;
       return aCost - bCost;
     });
 
@@ -160,7 +151,9 @@ export const getFilteredData = (
     }
   });
 
-  const filteredFailureAnalysisArray = Object.values(filteredFailureAnalysisData);
+  const filteredFailureAnalysisArray = Object.values(
+    filteredFailureAnalysisData,
+  );
 
   return {
     leaderboard: filteredLeaderboard,
@@ -176,12 +169,11 @@ export const processChartData = {
   pareto: (data: ParetoData[]) => {
     const dataWithCost = data.map((d) => ({
       ...d,
-      cost: d.cost || d.total_cost || calculateCost(d.total_tokens),
+      cost: d.cost ?? d.total_cost ?? Number.NaN,
     }));
 
     return {
       dataWithCost,
-      paretoPoints: calculateParetoFrontier(dataWithCost),
     };
   },
 
@@ -203,7 +195,12 @@ export const processChartData = {
         y: successRates,
         type: 'bar',
         marker: {
-          color: group === 'easy' ? '#27ae60' : group === 'medium' ? '#f39c12' : '#e74c3c',
+          color:
+            group === 'easy'
+              ? '#27ae60'
+              : group === 'medium'
+                ? '#f39c12'
+                : '#e74c3c',
         },
       };
     });
@@ -213,7 +210,10 @@ export const processChartData = {
 
   tokens: (data: RawData[]) => {
     // Average token usage by model
-    const modelTokens: Record<string, { request: number[]; response: number[] }> = {};
+    const modelTokens: Record<
+      string,
+      { request: number[]; response: number[] }
+    > = {};
     data.forEach((d) => {
       if (!modelTokens[d.Model]) {
         modelTokens[d.Model] = { request: [], response: [] };
@@ -224,18 +224,28 @@ export const processChartData = {
 
     const models = Object.keys(modelTokens);
     const avgRequestTokens = models.map((model) => {
-      const tokens = modelTokens[model].request.filter((t) => t > 0);
-      return tokens.length > 0 ? tokens.reduce((a, b) => a + b) / tokens.length : 0;
+      const tokens = modelTokens[model].request.filter(
+        (t) => Number.isFinite(t) && t >= 0,
+      );
+      return tokens.length > 0
+        ? tokens.reduce((a, b) => a + b) / tokens.length
+        : 0;
     });
     const avgResponseTokens = models.map((model) => {
-      const tokens = modelTokens[model].response.filter((t) => t > 0);
-      return tokens.length > 0 ? tokens.reduce((a, b) => a + b) / tokens.length : 0;
+      const tokens = modelTokens[model].response.filter(
+        (t) => Number.isFinite(t) && t >= 0,
+      );
+      return tokens.length > 0
+        ? tokens.reduce((a, b) => a + b) / tokens.length
+        : 0;
     });
 
     // Sort by total tokens
-    const totalTokens = models.map((_, i) => avgRequestTokens[i] + avgResponseTokens[i]);
+    const totalTokens = models.map(
+      (_, i) => avgRequestTokens[i] + avgResponseTokens[i],
+    );
     const sortedIndices = [...Array(models.length).keys()].sort(
-      (a, b) => totalTokens[b] - totalTokens[a]
+      (a, b) => totalTokens[b] - totalTokens[a],
     );
 
     return {
@@ -253,7 +263,11 @@ export const processChartData = {
 
     // Extract models and failure types
     const models = data.map((d) => d.Model);
-    const failureTypes = ['Invalid Diagram', 'MCP Tool Failure', 'Usage Limit Exceeded'];
+    const failureTypes = [
+      'Invalid Diagram',
+      'MCP Tool Failure',
+      'Usage Limit Exceeded',
+    ];
     const colors = ['#e74c3c', '#f39c12', '#9b59b6'];
 
     // Create traces for each failure type
@@ -269,55 +283,26 @@ export const processChartData = {
   },
 };
 
-// Calculate Pareto frontier points
-const calculateParetoFrontier = (data: Array<{ cost: number; Success_Rate: number }>) => {
-  const sortedByEfficiency = [...data].sort((a, b) => a.cost - b.cost);
-  const paretoPoints = [];
-  let maxSuccessRate = -Infinity;
-
-  for (const point of sortedByEfficiency) {
-    if (point.Success_Rate > maxSuccessRate) {
-      paretoPoints.push(point);
-      maxSuccessRate = point.Success_Rate;
-    }
-  }
-
-  return paretoPoints;
-};
-
-// Sorting utilities
-let currentSortKey = 'Success_Rate';
-let currentSortDirection: 'asc' | 'desc' = 'desc';
-
 export const sortLeaderboard = (
   data: LeaderboardEntry[],
   sortKey: string,
-  direction: 'asc' | 'desc'
+  direction: 'asc' | 'desc',
 ): LeaderboardEntry[] => {
   const sorted = [...data].sort((a, b) => {
-    let aVal: LeaderboardEntry[keyof LeaderboardEntry];
-    let bVal: LeaderboardEntry[keyof LeaderboardEntry];
-
-    // Handle special cases for cost calculation
-    if (sortKey === 'Avg_Cost') {
-      aVal = a.Avg_Cost || calculateCost(a.Avg_Tokens);
-      bVal = b.Avg_Cost || calculateCost(b.Avg_Tokens);
-    } else {
-      aVal = a[sortKey as keyof LeaderboardEntry];
-      bVal = b[sortKey as keyof LeaderboardEntry];
-    }
+    const aVal = a[sortKey as keyof LeaderboardEntry];
+    const bVal = b[sortKey as keyof LeaderboardEntry];
 
     // Handle null/undefined values
     if (aVal == null && bVal == null) return 0;
-    if (aVal == null) return direction === 'asc' ? -1 : 1;
-    if (bVal == null) return direction === 'asc' ? 1 : -1;
+    if (aVal == null) return 1;
+    if (bVal == null) return -1;
 
     // Numeric comparison
     if (typeof aVal === 'number' && typeof bVal === 'number') {
       // Special-case: Success Rate ties are broken by lower Avg Cost/Run (ascending)
       if (sortKey === 'Success_Rate' && aVal === bVal) {
-        const aCost = a.Avg_Cost ?? calculateCost(a.Avg_Tokens);
-        const bCost = b.Avg_Cost ?? calculateCost(b.Avg_Tokens);
+        const aCost = a.Avg_Cost ?? Infinity;
+        const bCost = b.Avg_Cost ?? Infinity;
         if (aCost !== bCost) return aCost - bCost;
         return 0;
       }
@@ -337,101 +322,14 @@ export const sortLeaderboard = (
   return sorted;
 };
 
-export const setSortState = (sortKey: string, direction: 'asc' | 'desc'): void => {
-  currentSortKey = sortKey;
-  currentSortDirection = direction;
-};
+// Missing recorded costs remain unavailable; zero is a valid recorded value.
+const addRecordedCost = (
+  total: number | undefined,
+  value: number | undefined,
+) =>
+  total == null || value == null || !Number.isFinite(value)
+    ? undefined
+    : total + value;
 
-export const getSortState = () => ({
-  key: currentSortKey,
-  direction: currentSortDirection,
-});
-
-// DOM manipulation utilities
-export const updateSummaryStats = (filteredData: FilteredData): void => {
-  const totalRuns = filteredData.rawData.length;
-  const models = [...new Set(filteredData.rawData.map((d) => d.Model))];
-
-  // Calculate unique test cases (difficulty levels) in filtered data
-  const testCases = [...new Set(filteredData.rawData.map((d) => d.test_group))];
-
-  const statCards = document.querySelectorAll('.stat-card');
-
-  // Update Total Evaluation Runs (first card)
-  if (statCards[0]) {
-    const valueElement = statCards[0].querySelector('.stat-value');
-    if (valueElement) valueElement.textContent = totalRuns.toString();
-  }
-
-  // Update Models Evaluated (second card)
-  if (statCards[1]) {
-    const valueElement = statCards[1].querySelector('.stat-value');
-    if (valueElement) valueElement.textContent = models.length.toString();
-  }
-
-  // Update Test Cases (third card) with actual unique difficulty levels in filtered data
-  if (statCards[2]) {
-    const valueElement = statCards[2].querySelector('.stat-value');
-    if (valueElement) valueElement.textContent = testCases.length.toString();
-  }
-};
-
-// Update leaderboard table
-export const updateLeaderboard = (filteredData: FilteredData): void => {
-  const tbody = document.querySelector('.leaderboard-table tbody');
-  if (!tbody) return;
-
-  // Calculate cost range for progress bar normalization
-  const costs = filteredData.leaderboard.map(
-    (entry) => entry.Avg_Cost || calculateCost(entry.Avg_Tokens)
-  );
-  const minCost = Math.min(...costs);
-  const maxCost = Math.max(...costs);
-  const costRange = maxCost - minCost;
-
-  tbody.innerHTML = filteredData.leaderboard
-    .map((entry, index) => {
-      const currentCost = entry.Avg_Cost || calculateCost(entry.Avg_Tokens);
-      const costWidth = costRange > 0 ? (currentCost / maxCost) * 100 : 0;
-
-      const successRateClass =
-        entry.Success_Rate >= 30
-          ? 'progress-fill--high'
-          : entry.Success_Rate >= 15
-            ? 'progress-fill--medium'
-            : 'progress-fill--low';
-
-      return `
-    <tr>
-      <td class="rank">${index + 1}</td>
-      <td class="model-name">${entry.Model}</td>
-      <td class="success-rate">
-        <div class="progress-bar">
-          <div class="progress-fill ${successRateClass}" style="width: ${entry.Success_Rate}%; background-color: ${entry.Success_Rate >= 30 ? 'var(--progress-high)' : entry.Success_Rate >= 15 ? 'var(--progress-medium)' : 'var(--progress-low)'};"></div>
-          <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">${entry.Success_Rate.toFixed(1)}%</span>
-        </div>
-      </td>
-      <td class="cost">
-        <div class="progress-bar">
-          <div class="progress-fill progress-fill--cost" style="width: ${costWidth}%; background-color: #9ca3af;"></div>
-          <span class="progress-text" style="color: var(--progress-text-color); text-shadow: var(--progress-text-shadow);">$${currentCost.toFixed(4)}</span>
-        </div>
-      </td>
-      <td class="duration">${entry.Avg_Duration.toFixed(2)}s</td>
-      <td class="tokens">${entry.Avg_Tokens.toLocaleString()}</td>
-      <td class="runs">${entry.Runs}</td>
-      <td class="provider">${entry.Provider}</td>
-    </tr>
-  `;
-    })
-    .join('');
-};
-
-// Utility to show empty state message
-export const showEmptyState = (): void => {
-  const tbody = document.querySelector('.leaderboard-table tbody');
-  if (tbody) {
-    tbody.innerHTML =
-      '<tr><td colspan="8" style="text-align: center; padding: 2rem;">Please select at least one filter to view results</td></tr>';
-  }
-};
+export const formatCost = (value: number | undefined): string =>
+  value == null || !Number.isFinite(value) ? 'N/A' : `$${value.toFixed(4)}`;
