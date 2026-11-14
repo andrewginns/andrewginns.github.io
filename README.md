@@ -50,11 +50,13 @@ Before running browser tests for the first time, run `npx playwright install chr
 
 ## Deployment
 
-The production workflow builds and tests the site, then deploys to GitHub Pages at `https://andrewginns.github.io/`. It runs on pushes to `main`, weekly for external content refreshes, and manual dispatch. Set the repository’s **Settings → Pages → Source** to **GitHub Actions**. Deployment uses the built-in GitHub token and the `github-pages` environment; no hosting API secrets are needed. The canonical URL remains `https://andrew.ginns.uk`.
+The production workflow builds and tests the site once, then deploys the same artifact to GitHub Pages at `https://andrewginns.github.io/` and the existing Cloudflare Pages project `andrewginns` serving the canonical URL `https://andrew.ginns.uk`. It runs on pushes to `main`, weekly for external content refreshes, and manual dispatch.
+
+GitHub Pages uses **Settings → Pages → Source: GitHub Actions**, the built-in GitHub token, and the `github-pages` environment. Canonical deployment runs only from `main`, preserves the `production` environment's protection rules, and uses the existing `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` repository secrets. Before uploading, it verifies that the Cloudflare project still uses the `main` production branch and includes `andrew.ginns.uk`. No DNS or domain configuration changes are made by the workflow.
 
 Pull requests build and test the site and upload `dist/` as a downloadable Actions artifact. They do not deploy over a shared GitHub Pages URL. For a local preview, download the artifact and serve it with any static HTTP server.
 
-`public/_headers` is Cloudflare Pages configuration; GitHub Pages does not apply those response rules. Security headers and long-lived asset caching need configuration on the chosen host or edge. The canonical hostname must also be connected to that host in its domain settings and DNS; setting `site` in Astro only sets generated URLs. Verify the actual public hostname and HTTP headers after a separately authorized hosting change.
+Cloudflare Pages applies `public/_headers` to the canonical site's responses, including security headers and immutable caching for hashed `/_astro/` assets. GitHub Pages does not apply those response rules. Keep the canonical hostname connected to Cloudflare Pages in its domain settings and DNS; setting `site` in Astro only sets generated URLs. Verify the actual public hostname, content, and HTTP headers after each release.
 
 Merbench keeps the full leaderboard and chart data tables in static HTML. Its hashed snapshot asset is fetched only when filters or nearby charts need it; Plotly and each chart are loaded as the chart approaches the viewport. The archive's source data and calculation methods are unchanged.
 

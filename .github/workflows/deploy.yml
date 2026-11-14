@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy personal website
 
 on:
   push:
@@ -50,3 +50,52 @@ jobs:
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v5
+
+  deploy-canonical:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: production
+      url: https://andrew.ginns.uk
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/download-artifact@v7
+        with:
+          name: github-pages
+          path: artifact
+      - name: Unpack the tested site
+        run: |
+          mkdir -p dist
+          tar -xf artifact/artifact.tar -C dist
+      - name: Verify the existing canonical project
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          curl --fail --silent --show-error \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/andrewginns" \
+            | jq --exit-status '.success == true and .result.production_branch == "main" and (.result.domains | index("andrew.ginns.uk") != null)' > /dev/null
+      - name: Deploy the canonical site
+        id: canonical
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=andrewginns --branch=main --commit-hash=${{ github.sha }}
+      - name: Confirm production deployment
+        env:
+          PAGES_ENVIRONMENT: ${{ steps.canonical.outputs.pages-environment }}
+          DEPLOYMENT_URL: ${{ steps.canonical.outputs.deployment-url }}
+        run: |
+          if [ "$PAGES_ENVIRONMENT" != "production" ]; then
+            echo "::error::Cloudflare did not report a production deployment."
+            exit 1
+          fi
+          echo "Cloudflare production deployment: $DEPLOYMENT_URL"
