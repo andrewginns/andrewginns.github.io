@@ -54,6 +54,10 @@ The production workflow builds and tests the site, then deploys to GitHub Pages 
 
 Pull requests build and test the site and upload `dist/` as a downloadable Actions artifact. They do not deploy over a shared GitHub Pages URL. For a local preview, download the artifact and serve it with any static HTTP server.
 
+`public/_headers` is Cloudflare Pages configuration; GitHub Pages does not apply those response rules. Security headers and long-lived asset caching need configuration on the chosen host or edge. The canonical hostname must also be connected to that host in its domain settings and DNS; setting `site` in Astro only sets generated URLs. Verify the actual public hostname and HTTP headers after a separately authorized hosting change.
+
+Merbench keeps the full leaderboard and chart data tables in static HTML. Its hashed snapshot asset is fetched only when filters or nearby charts need it; Plotly and each chart are loaded as the chart approaches the viewport. The archive's source data and calculation methods are unchanged.
+
 ## Maintenance
 
 Use `npm outdated` and `npm audit` when updating dependencies. Commit `package-lock.json` with package changes. Keep the runtime declared in `.nvmrc` and `package.json` compatible with Astro. Check the site at desktop and mobile widths, in both themes, and with reduced motion enabled before publishing design changes.

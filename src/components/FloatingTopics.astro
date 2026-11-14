@@ -3,7 +3,6 @@ import { profile } from '../data/profile';
 ---
 
 <aside class="floating-topics" aria-label="Explore my interests on GitHub">
-  <div class="topic-orbit" aria-hidden="true"></div>
   {profile.topics.map(({ label, topic }, index) => (
     <a
       class="floating-topic"
@@ -58,16 +57,6 @@ import { profile } from '../data/profile';
       width: 190px;
       height: 640px;
       max-height: calc(100dvh - 110px);
-    }
-    .topic-orbit {
-      position: absolute;
-      inset: 30px 24px 40px;
-      border: 1px solid var(--border-color);
-      border-left-color: transparent;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      transform: rotate(-15deg);
-      opacity: 0.65;
     }
     .floating-topic {
       position: absolute;

@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
   --text-primary: #293c4d;
   --text-secondary: #586977;
   --text-light: #657786;
@@ -25,6 +25,9 @@
   --shadow-strong: rgb(30 50 70 / 16%);
   --sidebar-width: 232px;
 }
+:root[data-theme='light'] {
+  color-scheme: light;
+}
 :root[data-theme='dark'] {
   color-scheme: dark;
   --text-primary: #edf2f7;
@@ -47,6 +50,32 @@
   --shadow-light: rgb(0 0 0 / 15%);
   --shadow-medium: rgb(0 0 0 / 22%);
   --shadow-strong: rgb(0 0 0 / 30%);
+}
+/* Match the same dark palette before, or without, JavaScript. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --text-primary: #edf2f7;
+    --text-secondary: #a7b5c4;
+    --text-light: #93a5b8;
+    --bg-primary: #0d131c;
+    --bg-secondary: #161e29;
+    --bg-tertiary: #202b39;
+    --accent-primary: #ff8d80;
+    --accent-secondary: #79baff;
+    --accent-tertiary: #edc16e;
+    --border-color: #2c3949;
+    --success-color: #74d49b;
+    --progress-high: #277549;
+    --progress-medium: #816318;
+    --progress-low: #a03a34;
+    --duration-color: #bea0e6;
+    --tokens-color: #f0a080;
+    --badge-color: #ff8d80;
+    --shadow-light: rgb(0 0 0 / 15%);
+    --shadow-medium: rgb(0 0 0 / 22%);
+    --shadow-strong: rgb(0 0 0 / 30%);
+  }
 }
 * {
   box-sizing: border-box;

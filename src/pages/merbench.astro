@@ -7,7 +7,8 @@ import ChartContainer from '../components/merbench/ChartContainer.astro';
 import { getFilteredData } from '../lib/merbench';
 import type { MerbenchData } from '../lib/merbench-types';
 import merbenchData from '../data/merbench_data.json';
-import plotlyUrl from 'plotly.js-basic-dist-min/plotly-basic.min.js?url';
+import merbenchDataUrl from '../data/merbench_data.json?url';
+import { getChartTables } from '../lib/merbench-tables';
 
 const data = merbenchData as MerbenchData;
 const { stats } = data;
@@ -18,11 +19,12 @@ const initial = getFilteredData(
   data.test_groups_data,
   stats.providers,
 );
-// Embed only the inputs the filters need, escaping HTML parser boundaries.
-const chartData = JSON.stringify({
-  raw_data: data.raw_data,
-  test_groups_data: data.test_groups_data,
-}).replace(/</g, '\\u003c');
+const chartTables = getChartTables(initial);
+// Initial sorting needs only the small leaderboard, not the full run snapshot.
+const leaderboardData = JSON.stringify(initial.leaderboard).replace(
+  /</g,
+  '\\u003c',
+);
 ---
 
 <BaseLayout
@@ -98,20 +100,36 @@ const chartData = JSON.stringify({
       </dl>
     </details>
     <LeaderboardTable leaderboard={initial.leaderboard} />
-    <ChartContainer chartId="pareto-chart" title="Performance & efficiency" />
+    <ChartContainer
+      chartId="pareto-chart"
+      title="Performance & efficiency"
+      description="Each point represents a model. The leaderboard lists success rate, cost, duration, and total tokens for the selected runs."
+    />
     <ChartContainer
       chartId="test-group-chart"
       title="Performance by difficulty"
+      description="Compare model success rates across the selected difficulty levels. Exact percentages are available in the data table."
+      table={chartTables['test-group-chart']}
     />
-    <ChartContainer chartId="token-chart" title="Token usage" />
-    <ChartContainer chartId="failure-analysis-chart" title="Failure analysis" />
+    <ChartContainer
+      chartId="token-chart"
+      title="Token usage"
+      description="Average request and response tokens per model, shown separately in the data table."
+      table={chartTables['token-chart']}
+    />
+    <ChartContainer
+      chartId="failure-analysis-chart"
+      title="Failure analysis"
+      description="Recorded failure counts by model and reason. Reasons use the archive's priority: usage limit, then MCP tool failure, then invalid diagram."
+      table={chartTables['failure-analysis-chart']}
+    />
   </div>
-  <script is:inline src={plotlyUrl} defer></script>
   <script
     is:inline
     type="application/json"
     id="merbench-data"
-    set:html={chartData}
+    data-source={merbenchDataUrl}
+    set:html={leaderboardData}
   />
 </BaseLayout>
 <script>

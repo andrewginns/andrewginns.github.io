@@ -1,4 +1,5 @@
 import { processChartData } from '../lib/merbench';
+import plotlyUrl from 'plotly.js-basic-dist-min/plotly-basic.min.js?url';
 import type {
   FilteredData,
   ParetoData,
@@ -26,6 +27,7 @@ declare global {
 
 export class MerbenchCharts {
   private plotlyLoaded = false;
+  private plotlyLoad?: Promise<void>;
   private charts = new Set<string>();
 
   private isDarkMode(): boolean {
@@ -66,20 +68,25 @@ export class MerbenchCharts {
       return;
     }
 
-    return new Promise((resolve, reject) => {
-      const deadline = Date.now() + 10000;
-      const checkPlotly = () => {
-        if (typeof window.Plotly !== 'undefined') {
-          this.plotlyLoaded = true;
-          resolve();
-        } else if (Date.now() > deadline) {
-          reject(new Error('Chart library did not load'));
-        } else {
-          setTimeout(checkPlotly, 100);
-        }
+    this.plotlyLoad ??= new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      const timeout = setTimeout(() => {
+        script.remove();
+        reject(new Error('Chart library did not load'));
+      }, 10000);
+      script.src = plotlyUrl;
+      script.onload = () => {
+        clearTimeout(timeout);
+        this.plotlyLoaded = true;
+        resolve();
       };
-      checkPlotly();
+      script.onerror = () => {
+        clearTimeout(timeout);
+        reject(new Error('Chart library did not load'));
+      };
+      document.head.append(script);
     });
+    return this.plotlyLoad;
   }
 
   private hideLoading(containerId: string): void {
@@ -632,47 +639,42 @@ export class MerbenchCharts {
     }
   }
 
-  async updateAllCharts(
+  async updateCharts(
     data: FilteredData,
-    metric: 'cost' | 'time' | 'tokens' = 'cost',
+    metric: 'cost' | 'time' | 'tokens',
+    ids: string[],
   ): Promise<void> {
     if (!this.plotlyLoaded) return;
-    if (!data.rawData.length) {
-      this.purgeCharts();
-      for (const id of [
-        'pareto-chart',
-        'test-group-chart',
-        'token-chart',
-        'failure-analysis-chart',
-      ]) {
+    for (const id of ids) {
+      if (!data.rawData.length) {
+        if (this.charts.has(id)) window.Plotly.purge(id);
+        this.charts.delete(id);
         this.hideLoading(id);
         const container = document.getElementById(id);
         if (container)
           container.textContent = 'No matching runs. Adjust the filters above.';
+      } else {
+        switch (id) {
+          case 'pareto-chart':
+            await this.initParetoChart(data.paretoData, id, metric);
+            break;
+          case 'test-group-chart':
+            await this.initTestGroupChart(data.testGroupsData, id);
+            break;
+          case 'token-chart':
+            await this.initTokenChart(data.rawData, id);
+            break;
+          case 'failure-analysis-chart':
+            await this.initFailureAnalysisChart(data.failureAnalysisData, id);
+            break;
+        }
       }
-      return;
-    }
-    await Promise.all([
-      this.initParetoChart(data.paretoData, 'pareto-chart', metric),
-      this.initTestGroupChart(data.testGroupsData, 'test-group-chart'),
-      this.initTokenChart(data.rawData, 'token-chart'),
-      this.initFailureAnalysisChart(
-        data.failureAnalysisData,
-        'failure-analysis-chart',
-      ),
-    ]);
-  }
-
-  updateParetoChart(
-    data: ParetoData[],
-    metric: 'cost' | 'time' | 'tokens',
-  ): void {
-    if (!this.plotlyLoaded) return;
-
-    try {
-      this.initParetoChart(data, 'pareto-chart', metric);
-    } catch (error) {
-      console.error('Failed to update Pareto chart:', error);
+      // Keep separate charts in separate browser tasks so input can be processed.
+      const scheduler = (
+        window as Window & { scheduler?: { yield: () => Promise<void> } }
+      ).scheduler;
+      if (scheduler?.yield) await scheduler.yield();
+      else await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
   }
 
@@ -681,21 +683,6 @@ export class MerbenchCharts {
     void Promise.all(
       [...this.charts].map((id) => window.Plotly.Plots.resize(id)),
     ).catch((error) => console.error('Failed to resize charts:', error));
-  }
-
-  purgeCharts(): void {
-    if (!this.plotlyLoaded || typeof window.Plotly === 'undefined') return;
-
-    try {
-      window.Plotly.purge('pareto-chart');
-      window.Plotly.purge('test-group-chart');
-      window.Plotly.purge('token-chart');
-      window.Plotly.purge('failure-analysis-chart');
-
-      this.charts.clear();
-    } catch (error) {
-      console.error('Failed to purge charts:', error);
-    }
   }
 
   // Listen for theme changes and update all charts

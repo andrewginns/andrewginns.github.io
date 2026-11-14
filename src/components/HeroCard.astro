@@ -3,36 +3,6 @@ import { profile } from '../data/profile';
 ---
 
 <div class="hero-card">
-  <svg
-    class="hero-lines"
-    viewBox="0 0 800 330"
-    preserveAspectRatio="none"
-    fill="none"
-    aria-hidden="true"
-  >
-    <path
-      d="M-30 90 C60 -20 160 100 240 35 S340 55 390 -20"
-      stroke="var(--accent-primary)"
-    />
-    <path
-      d="M460 350 C550 200 610 340 700 270 S770 260 840 190"
-      stroke="var(--accent-secondary)"
-    />
-    <circle
-      cx="132"
-      cy="44"
-      r="5"
-      fill="var(--bg-primary)"
-      stroke="var(--accent-primary)"
-    />
-    <circle
-      cx="697"
-      cy="272"
-      r="5"
-      fill="var(--bg-primary)"
-      stroke="var(--accent-secondary)"
-    />
-  </svg>
   <img
     src="/andrew-headshot.jpeg"
     alt="Andrew Ginns"
@@ -73,26 +43,6 @@ import { profile } from '../data/profile';
     border: 1px solid var(--border-color);
     border-radius: 16px;
     box-shadow: 0 6px 18px var(--shadow-light);
-  }
-  .hero-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    opacity: 0.3;
-    background-image:
-      linear-gradient(var(--border-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
-    background-size: 24px 24px;
-    mask-image: linear-gradient(130deg, #000, transparent 65%);
-  }
-  .hero-lines {
-    position: absolute;
-    inset: 0;
-    height: 100%;
-    width: 100%;
-    z-index: -1;
-    opacity: 0.35;
   }
   .hero-image {
     flex: 0 0 auto;

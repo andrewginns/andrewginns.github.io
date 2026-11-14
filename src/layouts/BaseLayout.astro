@@ -44,6 +44,7 @@ const isActive = (href: string) =>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <script is:inline>
@@ -60,6 +61,9 @@ const isActive = (href: string) =>
             : matchMedia('(prefers-color-scheme: dark)').matches
               ? 'dark'
               : 'light';
+        if (theme === 'light' || theme === 'dark') {
+          document.querySelector('meta[name="color-scheme"]').content = theme;
+        }
       })();
     </script>
     <SEO

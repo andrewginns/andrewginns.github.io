@@ -87,6 +87,53 @@ test('reduced motion does not run decorative animations', async ({ page }) => {
   expect(movingAnimations).toBe(0);
 });
 
+test('theme returns to the system while explicit overrides survive OS changes', async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  const toggle = page.getByRole('switch', { name: 'Dark mode', exact: true });
+  await toggle.click();
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('theme')))
+    .toBe('dark');
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  await toggle.click();
+  expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull();
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  await toggle.click();
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(255, 255, 255)',
+  );
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('theme')))
+    .toBe('light');
+});
+
+test('system dark theme works without JavaScript', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    colorScheme: 'dark',
+    baseURL,
+  });
+  const page = await context.newPage();
+  await page.goto('/');
+  await expect(page.locator('body')).toHaveCSS(
+    'background-color',
+    'rgb(13, 19, 28)',
+  );
+  await expect(page.getByRole('switch')).not.toBeVisible();
+  await context.close();
+});
+
 test('profile and navigation remain useful without JavaScript', async ({
   browser,
 }) => {

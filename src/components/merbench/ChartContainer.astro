@@ -1,16 +1,19 @@
 ---
+import type { ChartTable } from '../../lib/merbench-tables';
 export interface Props {
   chartId: string;
   title: string;
   height?: number;
+  description: string;
+  table?: ChartTable;
 }
 
-const { chartId, title, height = 500 } = Astro.props;
+const { chartId, title, description, table, height = 500 } = Astro.props;
 ---
 
-<section class="chart-section">
+<section class="chart-section" data-chart-id={chartId}>
   <div class="chart-header">
-    <h2>{title}</h2>
+    <h2 id={`${chartId}-title`}>{title}</h2>
     {chartId === 'pareto-chart' && (
       <div
         class="metric-selector"
@@ -45,11 +48,63 @@ const { chartId, title, height = 500 } = Astro.props;
       </div>
     )}
   </div>
-  <div role="status" class="chart-loading" id={`chart-loading-${chartId}`}>
-    <div class="spinner"></div>
-    <p>Loading chart data...</p>
+  <p class="chart-description" id={`${chartId}-description`}>
+    {description}
+  </p>
+  <div class="chart-frame">
+    <div class="chart-loading" id={`chart-loading-${chartId}`}>
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Chart loads as you approach. Table alternatives remain available.</p>
+    </div>
+    <div
+      id={chartId}
+      class="chart-container"
+      role="img"
+      aria-labelledby={`${chartId}-title`}
+      aria-describedby={`${chartId}-description`}
+      style={`--chart-height: ${height}px`}
+    ></div>
   </div>
-  <div id={chartId} class="chart-container" style={`height: ${height}px`}></div>
+  {table ? (
+    <details class="chart-data">
+      <summary>View {title.toLowerCase()} data table</summary>
+      <div
+        class="chart-table-scroll"
+        role="region"
+        aria-labelledby={`${chartId}-caption`}
+        tabindex="0"
+      >
+        <table id={`${chartId}-data`}>
+          <caption id={`${chartId}-caption`}>
+            {title} — selected historical runs
+          </caption>
+          <thead>
+            <tr>
+              {table.headings.map((heading) => (
+                <th scope="col">{heading}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((values) => (
+              <tr>
+                {values.map((value, index) =>
+                  index === 0 ? <th scope="row">{value}</th> : <td>{value}</td>,
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  ) : (
+    <p class="chart-table-link">
+      <a href="#leaderboard-heading">
+        View these values in the model leaderboard
+      </a>
+      .
+    </p>
+  )}
   <noscript>
     <style is:inline>
       .chart-section .chart-loading,
@@ -60,8 +115,8 @@ const { chartId, title, height = 500 } = Astro.props;
     </style>
     <div class="chart-fallback">
       <p>
-        Interactive charts require JavaScript. Please enable JavaScript to view
-        the full visualization.
+        Interactive charts require JavaScript. The recorded values remain
+        available in the data tables.
       </p>
     </div>
   </noscript>
@@ -131,14 +186,52 @@ const { chartId, title, height = 500 } = Astro.props;
     position: relative;
     min-height: 400px;
     overflow: hidden;
+    height: var(--chart-height);
+  }
+
+  .chart-description,
+  .chart-table-link {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  .chart-frame {
+    position: relative;
+  }
+  .chart-data summary {
+    cursor: pointer;
+    min-height: 44px;
+    padding-block: 0.75rem;
+    font-size: 0.85rem;
+  }
+  .chart-table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  caption {
+    text-align: left;
+    padding-block: 0.75rem;
+  }
+  :global(.chart-data th),
+  :global(.chart-data td) {
+    text-align: left;
+    padding: 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
   }
 
   .chart-loading {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 300px;
+    background: var(--bg-secondary);
+    z-index: 1;
     color: var(--text-secondary);
   }
 

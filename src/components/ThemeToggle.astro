@@ -17,37 +17,47 @@
 <script>
   const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
   const system = window.matchMedia('(prefers-color-scheme: dark)');
-  let hasPreference = false;
+  let preference: 'light' | 'dark' | null = null;
   try {
-    hasPreference = ['light', 'dark'].includes(
-      localStorage.getItem('theme') ?? '',
-    );
+    const stored = localStorage.getItem('theme');
+    if (stored === 'light' || stored === 'dark') preference = stored;
   } catch {
     /* Storage may be disabled. */
   }
-  function applyTheme(theme: string) {
+  function applyTheme() {
+    const theme = preference ?? (system.matches ? 'dark' : 'light');
     document.documentElement.dataset.theme = theme;
+    const meta = document.querySelector<HTMLMetaElement>(
+      'meta[name="color-scheme"]',
+    );
+    if (meta) meta.content = preference ?? 'light dark';
     toggle?.setAttribute('aria-checked', String(theme === 'dark'));
     window.dispatchEvent(new CustomEvent('theme-changed'));
   }
-  applyTheme(
-    document.documentElement.dataset.theme ??
-      (system.matches ? 'dark' : 'light'),
-  );
+  applyTheme();
   if (toggle) toggle.hidden = false;
   toggle?.addEventListener('click', () => {
     const theme =
       document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    applyTheme(theme);
-    hasPreference = true;
+    preference = theme === (system.matches ? 'dark' : 'light') ? null : theme;
+    applyTheme();
     try {
-      localStorage.setItem('theme', theme);
+      if (preference) localStorage.setItem('theme', preference);
+      else localStorage.removeItem('theme');
     } catch {
       /* Theme still works without persistence. */
     }
   });
-  system.addEventListener('change', (event) => {
-    if (!hasPreference) applyTheme(event.matches ? 'dark' : 'light');
+  system.addEventListener('change', () => {
+    if (!preference) applyTheme();
+  });
+  window.addEventListener('storage', (event) => {
+    if (event.key !== 'theme' && event.key !== null) return;
+    preference =
+      event.newValue === 'light' || event.newValue === 'dark'
+        ? event.newValue
+        : null;
+    applyTheme();
   });
 </script>
 <style>
