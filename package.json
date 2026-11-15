@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "1.0.0",
-  "description": "Andrew Ginns \u2014 Deployment Engineer, AI and practical systems",
+  "description": "Andrew Ginns \u2014 Applied AI Engineer, AI and practical systems",
   "engines": {
     "node": "^22.23.4 || ^24.16.0 || >=26.3.0",
     "npm": ">=9.6.5"

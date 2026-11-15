@@ -1,10 +1,10 @@
 // Professional identity is editorial content, not inferred from a remote bio.
 export const profile = {
   name: 'Andrew Ginns',
-  role: 'Deployment Engineer',
+  role: 'Applied AI Engineer',
   company: 'OpenAI',
   description:
-    'Deployment Engineer at OpenAI. Building useful AI applications, reliable ML systems, and the teams behind them.',
+    'Applied AI Engineer at OpenAI. Building useful AI applications, reliable ML systems, and the teams behind them.',
   github: 'https://github.com/andrewginns',
   linkedin: 'https://www.linkedin.com/in/andrewginns/',
   x: 'https://x.com/andrewginns',
