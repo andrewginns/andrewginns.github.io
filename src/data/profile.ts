@@ -7,6 +7,7 @@ export const profile = {
     'Deployment Engineer at OpenAI. Building useful AI applications, reliable ML systems, and the teams behind them.',
   github: 'https://github.com/andrewginns',
   linkedin: 'https://www.linkedin.com/in/andrewginns/',
+  x: 'https://x.com/andrewginns',
   medium: 'https://medium.com/@andrewginns',
   topics: [
     { label: 'Python', topic: 'python' },
