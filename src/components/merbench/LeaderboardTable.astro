@@ -19,97 +19,274 @@ const columns = [
 
 <section class="leaderboard-section" aria-labelledby="leaderboard-heading">
   <h2 id="leaderboard-heading">Model leaderboard</h2>
-  <p class="table-help">
-    Select a column heading to sort. Scroll the table horizontally to see all
-    metrics.
-  </p>
-  <div
-    class="leaderboard-table"
-    role="region"
-    aria-label="Model leaderboard, scroll to see all columns"
-    tabindex="0"
-  >
-    <table id="leaderboard-table">
-      <caption class="sr-only">
-        Historical Merbench results. Costs are recorded US dollars per run.
-      </caption>
-      <thead>
-        <tr>
-          <th scope="col">Rank</th>
-          {columns.map(([key, label]) => (
-            <th
-              scope="col"
-              aria-sort={key === 'Success_Rate' ? 'descending' : undefined}
-            >
-              <button type="button" class="sortable" data-sort-key={key}>
-                {label}{' '}
-                <span class="sort-indicator" aria-hidden="true">
-                  {key === 'Success_Rate' ? '↓' : ''}
-                </span>
-              </button>
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {leaderboard.map((entry, index) => (
+  <div class="table-meta">
+    <p class="table-help">Select a column heading to sort.</p>
+    <p class="table-overflow-indicator" data-overflow-indicator hidden>
+      Scroll right for more metrics →
+    </p>
+  </div>
+  <noscript>
+    <style is:inline>
+      .leaderboard-section .table-meta {
+        display: none;
+      }
+      @media (max-width: 960px) {
+        #leaderboard-table th:nth-child(2),
+        #leaderboard-table td.model-name {
+          border-right-color: var(--border-color);
+        }
+      }
+    </style>
+    <p class="table-help table-help-noscript">
+      Scroll the table horizontally to see all metrics. Column sorting requires
+      JavaScript.
+    </p>
+  </noscript>
+  <div class="leaderboard-table-wrap" data-scroll-wrap>
+    <div
+      class="leaderboard-table"
+      role="region"
+      aria-label="Model leaderboard, scroll to see all columns"
+      tabindex="0"
+    >
+      <table id="leaderboard-table">
+        <caption class="sr-only">
+          Historical Merbench results. Costs are recorded US dollars per run.
+        </caption>
+        <thead>
           <tr>
-            <td>{index + 1}</td>
-            <td class="model-name">{entry.Model}</td>
-            <td>{entry.Success_Rate.toFixed(1)}%</td>
-            <td>{formatCost(entry.Avg_Cost)}</td>
-            <td>{formatCost(entry.Price_per_Success)}</td>
-            <td>{entry.Avg_Duration.toFixed(2)}s</td>
-            <td>{Math.ceil(entry.Avg_Tokens).toLocaleString('en-GB')}</td>
-            <td>{entry.Runs}</td>
-            <td>{entry.Provider}</td>
+            <th scope="col">Rank</th>
+            {columns.map(([key, label]) => (
+              <th
+                scope="col"
+                aria-sort={key === 'Success_Rate' ? 'descending' : undefined}
+              >
+                <button type="button" class="sortable" data-sort-key={key}>
+                  <span class="sort-label">{label}</span>
+                  <span class="sort-indicator" aria-hidden="true">
+                    {key === 'Success_Rate' ? '↓' : ''}
+                  </span>
+                </button>
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {leaderboard.map((entry, index) => (
+            <tr>
+              <td>{index + 1}</td>
+              <td class="model-name">{entry.Model}</td>
+              <td>{entry.Success_Rate.toFixed(1)}%</td>
+              <td>{formatCost(entry.Avg_Cost)}</td>
+              <td>{formatCost(entry.Price_per_Success)}</td>
+              <td>{entry.Avg_Duration.toFixed(2)}s</td>
+              <td>{Math.ceil(entry.Avg_Tokens).toLocaleString('en-GB')}</td>
+              <td>{entry.Runs}</td>
+              <td>{entry.Provider}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
+<script>
+  function initLeaderboardScroll() {
+    const wrap = document.querySelector<HTMLElement>(
+      '.leaderboard-section [data-scroll-wrap]',
+    );
+    const scroller = wrap?.querySelector<HTMLElement>('.leaderboard-table');
+    const table = document.getElementById('leaderboard-table');
+    const indicator = document.querySelector<HTMLElement>(
+      '.leaderboard-section [data-overflow-indicator]',
+    );
+    if (!wrap || !scroller || !table || !indicator) return;
+
+    let rafId = 0;
+
+    const updateOverflowState = () => {
+      rafId = 0;
+      const maxScroll = Math.max(
+        0,
+        scroller.scrollWidth - scroller.clientWidth,
+      );
+      const scrollable = maxScroll > 1;
+      const canScrollLeft = scrollable && scroller.scrollLeft > 1;
+      const canScrollRight = scrollable && scroller.scrollLeft < maxScroll - 1;
+
+      wrap.dataset.canScrollLeft = String(canScrollLeft);
+      wrap.dataset.canScrollRight = String(canScrollRight);
+
+      indicator.hidden = !scrollable;
+      if (scrollable) {
+        indicator.textContent =
+          canScrollLeft && canScrollRight
+            ? '← Scroll sideways for more metrics →'
+            : canScrollLeft
+              ? '← Scroll left for earlier metrics'
+              : 'Scroll right for more metrics →';
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(updateOverflowState);
+    };
+
+    updateOverflowState();
+
+    scroller.addEventListener('scroll', scheduleUpdate, { passive: true });
+    scroller.addEventListener('focusin', (event) => {
+      const button = event.target;
+      if (
+        button instanceof HTMLButtonElement &&
+        button.matches(
+          '[data-sort-key]:not([data-sort-key="Model"]):focus-visible',
+        )
+      ) {
+        requestAnimationFrame(() => {
+          if (document.activeElement === button) {
+            button.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          }
+        });
+      }
+    });
+    if (typeof ResizeObserver !== 'undefined') {
+      const resizeObserver = new ResizeObserver(scheduleUpdate);
+      resizeObserver.observe(scroller);
+      resizeObserver.observe(table);
+    } else {
+      window.addEventListener('resize', scheduleUpdate, { passive: true });
+    }
+  }
+
+  initLeaderboardScroll();
+</script>
 <style is:global>
   .leaderboard-section {
     margin-block: 2rem;
     min-width: 0;
   }
-  .table-help {
+  .leaderboard-section .table-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.35rem 1rem;
+    margin-bottom: 0.75rem;
+  }
+  .leaderboard-section .table-help {
+    margin: 0;
     font-size: 0.85rem;
     color: var(--text-secondary);
+  }
+  .leaderboard-section .table-help-noscript {
+    margin-bottom: 0.75rem;
+  }
+  .leaderboard-section .table-overflow-indicator {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .leaderboard-table-wrap {
+    position: relative;
+    max-width: 100%;
+    min-width: 0;
+    isolation: isolate;
+  }
+  .leaderboard-table-wrap::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    width: 1.5rem;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(
+      to right,
+      transparent,
+      color-mix(in srgb, var(--bg-primary) 90%, transparent)
+    );
+    transition: opacity 0.15s ease;
+    z-index: 3;
+  }
+  .leaderboard-table-wrap[data-can-scroll-right='true']::after {
+    opacity: 1;
   }
   .leaderboard-table {
     overflow-x: auto;
     max-width: 100%;
     border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    scroll-padding-inline-start: 14rem;
+    -webkit-overflow-scrolling: touch;
   }
   #leaderboard-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 0.85rem;
     font-variant-numeric: tabular-nums;
   }
   #leaderboard-table th,
   #leaderboard-table td {
-    padding: 0.85rem 0.75rem;
+    padding: 0.75rem 0.65rem;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
     white-space: nowrap;
+    vertical-align: middle;
   }
   #leaderboard-table th {
     background: var(--bg-secondary);
     font-size: 0.75rem;
   }
-  #leaderboard-table tbody tr:hover {
+  #leaderboard-table td {
+    background: var(--bg-primary);
+  }
+  #leaderboard-table tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  #leaderboard-table tbody tr:hover td {
     background: var(--bg-secondary);
   }
-  #leaderboard-table .model-name {
+  #leaderboard-table th:nth-child(2),
+  #leaderboard-table td.model-name {
+    position: sticky;
+    left: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.35;
+    width: 15rem;
+    min-width: 11rem;
+    max-width: 16rem;
+    border-right: 1px solid transparent;
+  }
+  #leaderboard-table th:nth-child(2) {
+    z-index: 2;
+  }
+  #leaderboard-table td.model-name {
     font-weight: 600;
+    z-index: 1;
+  }
+  .leaderboard-table-wrap[data-can-scroll-left='true']
+    #leaderboard-table
+    th:nth-child(2),
+  .leaderboard-table-wrap[data-can-scroll-left='true']
+    #leaderboard-table
+    td.model-name {
+    border-right-color: var(--border-color);
+    box-shadow: 6px 0 12px -6px var(--shadow-medium);
+  }
+  #leaderboard-table td[colspan] {
+    white-space: normal;
   }
   #leaderboard-table button {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
     min-height: 44px;
     background: none;
     border: 0;
@@ -117,18 +294,54 @@ const columns = [
     color: inherit;
     font: inherit;
     font-weight: 600;
+    text-align: left;
     cursor: pointer;
+  }
+  #leaderboard-table button:focus-visible {
+    outline-offset: 2px;
   }
   #leaderboard-table .sort-indicator {
     color: var(--accent-primary);
     min-width: 0.5rem;
+    flex-shrink: 0;
   }
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+  @media (max-width: 640px) {
+    .leaderboard-table {
+      scroll-padding-inline-start: clamp(8.25rem, 42vw, 13.5rem);
+    }
+    #leaderboard-table {
+      font-size: 0.8125rem;
+    }
+    #leaderboard-table th,
+    #leaderboard-table td {
+      padding: 0.55rem 0.45rem;
+    }
+    #leaderboard-table th {
+      font-size: 0.72rem;
+      line-height: 1.25;
+      white-space: normal;
+    }
+    #leaderboard-table button {
+      gap: 0.25rem;
+    }
+    #leaderboard-table th:nth-child(1),
+    #leaderboard-table td:nth-child(1):not([colspan]) {
+      width: 2.65rem;
+      min-width: 2.65rem;
+      padding-inline: 0.35rem;
+      white-space: nowrap;
+    }
+    #leaderboard-table th:nth-child(2),
+    #leaderboard-table td.model-name {
+      width: clamp(8.25rem, 42vw, 13.5rem);
+      min-width: clamp(8.25rem, 42vw, 13.5rem);
+      max-width: clamp(8.25rem, 42vw, 13.5rem);
+      padding-inline: 0.45rem;
+    }
+    #leaderboard-table th:nth-child(3),
+    #leaderboard-table td:nth-child(3) {
+      min-width: 4.85rem;
+      padding-inline: 0.4rem;
+    }
   }
 </style>

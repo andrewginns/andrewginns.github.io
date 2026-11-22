@@ -41,9 +41,14 @@ const { difficulties, providers } = Astro.props;
       Clear all
     </button>
   </div>
-  <p id="filter-status" role="status" aria-live="polite">
-    Showing all recorded runs.
-  </p>
+  <div class="filter-feedback">
+    <p id="filter-status" role="status" aria-live="polite" tabindex="-1">
+      Showing all recorded runs.
+    </p>
+    <button type="button" id="retry-filters" hidden>
+      Retry
+    </button>
+  </div>
 </form>
 
 <style>
@@ -104,8 +109,17 @@ const { difficulties, providers } = Astro.props;
   button:hover {
     border-color: var(--accent-primary);
   }
-  #filter-status {
+  button[hidden] {
+    display: none;
+  }
+  .filter-feedback {
     flex-basis: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+  #filter-status {
     margin: 0;
     font-size: 0.85rem;
     color: var(--text-secondary);

@@ -10,7 +10,7 @@ const routes = [
   '/contact_me/',
 ];
 
-for (const width of [375, 1440]) {
+for (const width of [320, 375, 1440]) {
   test(`pages render and fit the viewport at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     const errors: string[] = [];
@@ -40,19 +40,170 @@ for (const width of [375, 1440]) {
   });
 }
 
-test('mobile navigation works with the keyboard', async ({ page }) => {
+test('mobile navigation works with the keyboard, sticky bar, active context, and Escape return', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto('/');
-  const menu = page.locator('summary').filter({ hasText: 'Menu' });
+
+  const header = page.locator('header.sidebar');
+  const brand = header.locator('.site-title');
+  const menu = header.locator('summary').filter({ hasText: 'Menu' });
+  const themeSelect = page.getByRole('combobox', {
+    name: 'Color theme',
+    exact: true,
+  });
+
+  await expect(header).toHaveCSS('position', 'sticky');
+  const [headerBox, brandBox, menuBox, themeBox] = await Promise.all([
+    header.boundingBox(),
+    brand.boundingBox(),
+    menu.boundingBox(),
+    themeSelect.boundingBox(),
+  ]);
+  expect(headerBox).not.toBeNull();
+  expect(brandBox).not.toBeNull();
+  expect(menuBox).not.toBeNull();
+  expect(themeBox).not.toBeNull();
+  // Compact single row: header is concise and all three controls share one row.
+  expect(headerBox!.height).toBeLessThanOrEqual(72);
+  expect(
+    Math.abs(
+      brandBox!.y + brandBox!.height / 2 - (menuBox!.y + menuBox!.height / 2),
+    ),
+  ).toBeLessThanOrEqual(8);
+  expect(
+    Math.abs(
+      themeBox!.y + themeBox!.height / 2 - (menuBox!.y + menuBox!.height / 2),
+    ),
+  ).toBeLessThanOrEqual(8);
+
+  await expect(menu).toContainText('Home');
+  await expect(page.locator('details.navigation')).not.toHaveAttribute(
+    'open',
+    '',
+  );
+
   await menu.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('details[open]')).toBeVisible();
+  await expect(page.locator('details[open] a[aria-current="page"]')).toHaveText(
+    'Home',
+  );
+
   const about = page
     .locator('details[open]')
     .getByRole('link', { name: 'About', exact: true });
   await expect(about).toBeVisible();
+  await about.focus();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('details.navigation')).not.toHaveAttribute(
+    'open',
+    '',
+  );
+  await expect(menu).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(about).toBeVisible();
   await about.click();
   await expect(page).toHaveURL(/\/about_me\/?$/);
+  await expect(menu).toContainText('About');
+});
+
+test('navigation switches at the 1024px breakpoint and keeps tablet hero horizontal', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1023, height: 800 });
+  await page.goto('/');
+
+  const summary = page.locator('header.sidebar summary');
+  const details = page.locator('details.navigation');
+  await expect(summary).toBeVisible();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(page.locator('header.sidebar')).toHaveCSS('position', 'sticky');
+
+  // Tablet hero stays horizontal when there is room.
+  const imageBox = await page.locator('.hero-image').boundingBox();
+  const copyBox = await page.locator('.hero-copy').boundingBox();
+  expect(imageBox).not.toBeNull();
+  expect(copyBox).not.toBeNull();
+  expect(copyBox!.x).toBeGreaterThan(imageBox!.x + imageBox!.width - 4);
+
+  // Selected work sits immediately below the hero, before "What I do".
+  const sectionIds = await page
+    .locator('main > section')
+    .evaluateAll((sections) =>
+      sections.map((section) => section.getAttribute('aria-labelledby')),
+    );
+  expect(sectionIds.slice(0, 2)).toEqual(['selected-work', 'what-i-do']);
+
+  // At 1024px desktop navigation takes over.
+  await page.setViewportSize({ width: 1024, height: 800 });
+  await expect(summary).toBeHidden();
+  await expect(details).toHaveAttribute('open', '');
+  await expect(page.locator('header.sidebar')).toHaveCSS('position', 'fixed');
+});
+
+test('short screens constrain open menu and phones keep hero compact with scroll offset', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 420 });
+  await page.goto('/');
+
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+
+  const menu = page.locator('summary').filter({ hasText: 'Menu' });
+  await menu.click();
+  const nav = page.locator('details[open] > nav');
+  await expect(nav).toBeVisible();
+  const navBox = await nav.boundingBox();
+  expect(navBox).not.toBeNull();
+  expect(navBox!.y + navBox!.height).toBeLessThanOrEqual(421);
+  await expect(nav).toHaveCSS('overflow-y', 'auto');
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeFocused();
+
+  // Compact phone portrait and CSS scroll offset for sticky navigation & anchors.
+  const heroImageBox = await page.locator('.hero-image').boundingBox();
+  expect(heroImageBox).not.toBeNull();
+  expect(heroImageBox!.height).toBeLessThanOrEqual(120);
+
+  const offsets = await page.evaluate(() => {
+    const htmlStyle = getComputedStyle(document.documentElement);
+    const headerHeight =
+      document.querySelector('header.sidebar')?.getBoundingClientRect()
+        .height ?? 0;
+    return {
+      scrollPaddingTop: parseFloat(htmlStyle.scrollPaddingTop),
+      headerHeight,
+    };
+  });
+  expect(offsets.scrollPaddingTop).toBeGreaterThanOrEqual(offsets.headerHeight);
+  await page.evaluate(() => {
+    location.hash = 'selected-work';
+  });
+  const selectedWorkTop = await page
+    .locator('#selected-work')
+    .evaluate((element) => element.getBoundingClientRect().top);
+  expect(selectedWorkTop).toBeGreaterThanOrEqual(offsets.headerHeight);
+  expect(selectedWorkTop).toBeLessThanOrEqual(offsets.scrollPaddingTop + 1);
+
+  // Skip-link focus remains reachable and focuses main content.
+  const skipLink = page.locator('.skip-link');
+  await skipLink.focus();
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main-content')).toBeFocused();
 });
 
 test('theme preference persists across navigation and reload', async ({
@@ -60,16 +211,51 @@ test('theme preference persists across navigation and reload', async ({
 }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/');
-  const toggle = page.getByRole('switch', { name: 'Dark mode', exact: true });
-  await expect(toggle).toHaveAttribute('aria-checked', 'false');
-  await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  const select = page.getByRole('combobox', {
+    name: 'Color theme',
+    exact: true,
+  });
+  await expect(select).toBeVisible();
+  await expect(select.locator('option')).toHaveText([
+    'System',
+    'Light',
+    'Dark',
+  ]);
+  await expect(select).toHaveValue('system');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+
+  await select.selectOption('dark');
+  await expect(select).toHaveValue('dark');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute(
+    'content',
+    'dark',
+  );
   await page.goto('/about_me/');
-  await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  await expect(select).toHaveValue('dark');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();
-  await expect(toggle).toHaveAttribute('aria-checked', 'true');
-  await toggle.click();
-  await expect(toggle).toHaveAttribute('aria-checked', 'false');
+  await expect(select).toHaveValue('dark');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await select.selectOption('light');
+  await expect(select).toHaveValue('light');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute(
+    'content',
+    'light',
+  );
+  expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe(
+    'light',
+  );
+
+  await select.selectOption('system');
+  await expect(select).toHaveValue('system');
+  await expect(page.locator('meta[name="color-scheme"]')).toHaveAttribute(
+    'content',
+    'light dark',
+  );
+  expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull();
 });
 
 test('reduced motion does not run decorative animations', async ({ page }) => {
@@ -92,19 +278,28 @@ test('theme returns to the system while explicit overrides survive OS changes', 
 }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto('/');
-  const toggle = page.getByRole('switch', { name: 'Dark mode', exact: true });
-  await toggle.click();
+  const select = page.getByRole('combobox', {
+    name: 'Color theme',
+    exact: true,
+  });
+
+  await select.selectOption('dark');
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('theme')))
     .toBe('dark');
   await page.emulateMedia({ colorScheme: 'light' });
-  await expect(toggle).toHaveAttribute('aria-checked', 'true');
-  await toggle.click();
+  await expect(select).toHaveValue('dark');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await select.selectOption('system');
   expect(await page.evaluate(() => localStorage.getItem('theme'))).toBeNull();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.emulateMedia({ colorScheme: 'dark' });
-  await expect(toggle).toHaveAttribute('aria-checked', 'true');
-  await toggle.click();
+  await expect(select).toHaveValue('system');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+
+  await select.selectOption('light');
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
     'rgb(255, 255, 255)',
@@ -113,6 +308,55 @@ test('theme returns to the system while explicit overrides survive OS changes', 
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('theme')))
     .toBe('light');
+});
+
+test('theme changes dispatch theme-changed and sync across tabs via storage events', async ({
+  context,
+}) => {
+  const pageA = await context.newPage();
+  const pageB = await context.newPage();
+  await pageA.emulateMedia({ colorScheme: 'light' });
+  await pageB.emulateMedia({ colorScheme: 'light' });
+  await pageA.goto('/');
+  await pageB.goto('/about_me/');
+
+  await pageB.evaluate(() => {
+    const win = window as Window & { __themeEvents?: number };
+    win.__themeEvents = 0;
+    window.addEventListener('theme-changed', () => {
+      win.__themeEvents = (win.__themeEvents ?? 0) + 1;
+    });
+  });
+
+  const selectA = pageA.getByRole('combobox', {
+    name: 'Color theme',
+    exact: true,
+  });
+  const selectB = pageB.getByRole('combobox', {
+    name: 'Color theme',
+    exact: true,
+  });
+
+  await selectA.selectOption('dark');
+  await expect(selectB).toHaveValue('dark');
+  await expect(pageB.locator('html')).toHaveAttribute('data-theme', 'dark');
+  expect(
+    await pageB.evaluate(
+      () => (window as Window & { __themeEvents?: number }).__themeEvents,
+    ),
+  ).toBeGreaterThanOrEqual(1);
+
+  await selectA.selectOption('system');
+  await expect(selectB).toHaveValue('system');
+  await expect(pageB.locator('html')).toHaveAttribute('data-theme', 'light');
+  expect(
+    await pageB.evaluate(
+      () => (window as Window & { __themeEvents?: number }).__themeEvents,
+    ),
+  ).toBeGreaterThanOrEqual(2);
+
+  await pageA.close();
+  await pageB.close();
 });
 
 test('system dark theme works without JavaScript', async ({
@@ -130,7 +374,9 @@ test('system dark theme works without JavaScript', async ({
     'background-color',
     'rgb(13, 19, 28)',
   );
-  await expect(page.getByRole('switch')).not.toBeVisible();
+  await expect(
+    page.getByRole('combobox', { name: 'Color theme' }),
+  ).not.toBeVisible();
   await context.close();
 });
 
@@ -154,7 +400,7 @@ test('profile and navigation remain useful without JavaScript', async ({
   await context.close();
 });
 
-test('floating interest links respond to hover and scrolling', async ({
+test('floating interest links stay stationary on scroll while responding to hover', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 800 });
@@ -163,26 +409,25 @@ test('floating interest links respond to hover and scrolling', async ({
   const topic = page.locator('.floating-topic').first();
   await expect(topic).toBeVisible();
   await expect(topic).toHaveAttribute('href', /^https:\/\/github\.com\//);
-  const initialPosition = await topic.evaluate(
+  const initialTransform = await topic.evaluate(
     (element) => getComputedStyle(element).transform,
   );
-  await page.evaluate(() => scrollTo(0, 400));
-  await expect
-    .poll(() =>
-      topic.evaluate((element) => getComputedStyle(element).transform),
-    )
-    .not.toBe(initialPosition);
-  const label = topic.locator('span');
-  const initialLabel = await label.evaluate(
-    (element) => getComputedStyle(element).transform,
-  );
+  const initialBox = await topic.boundingBox();
+  expect(initialBox).not.toBeNull();
+  await page.evaluate(async () => {
+    scrollTo(0, 400);
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(resolve)),
+    );
+  });
+  await expect(topic).toHaveCSS('transform', initialTransform);
+  const scrolledBox = await topic.boundingBox();
+  expect(scrolledBox).not.toBeNull();
+  expect(Math.abs(scrolledBox!.y - initialBox!.y)).toBeLessThanOrEqual(1);
+
   await topic.hover();
-  await expect
-    .poll(() =>
-      label.evaluate((element) => getComputedStyle(element).transform),
-    )
-    .not.toBe(initialLabel);
+  await expect(topic).not.toHaveCSS('transform', initialTransform);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(topic).toHaveCSS('transform', 'none');
-  await expect(label).toHaveCSS('transform', 'none');
+  await expect(topic.locator('.topic-arrow')).toHaveCSS('transform', 'none');
 });

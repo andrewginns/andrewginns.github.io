@@ -2,140 +2,121 @@
 import { profile } from '../data/profile';
 ---
 
-<aside class="floating-topics" aria-label="Explore my interests on GitHub">
-  {profile.topics.map(({ label, topic }, index) => (
-    <a
-      class="floating-topic"
-      style={`--i:${index}; --depth:${index % 2 === 0 ? 1 : -0.7}`}
-      href={
-        topic
-          ? `https://github.com/search?q=owner%3Aandrewginns+topic%3A${encodeURIComponent(topic)}&type=repositories`
-          : profile.github
-      }
-      aria-label={`Explore ${label} on GitHub`}
-    >
-      <span>{label}</span>
-    </a>
-  ))}
+<aside class="floating-topics" aria-labelledby="topics-rail-heading">
+  <p id="topics-rail-heading" class="rail-heading">
+    Explore on GitHub
+  </p>
+  <ul class="topic-list">
+    {profile.topics.map(({ label, topic }) => (
+      <li>
+        <a
+          class="floating-topic"
+          href={
+            topic
+              ? `https://github.com/search?q=owner%3Aandrewginns+topic%3A${encodeURIComponent(topic)}&type=repositories`
+              : profile.github
+          }
+          aria-label={`Explore ${label} on GitHub`}
+        >
+          <span class="topic-label">{label}</span>
+          <span class="topic-arrow" aria-hidden="true">
+            ↗
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
 </aside>
-<script>
-  const rail = document.querySelector<HTMLElement>('.floating-topics');
-  const enabled = window.matchMedia(
-    '(min-width: 1280px) and (min-height: 560px) and (prefers-reduced-motion: no-preference)',
-  );
-  let frame = 0;
-  function update() {
-    frame = 0;
-    // Bounded movement keeps the links inside their own margin on long pages.
-    rail?.style.setProperty(
-      '--scroll-shift',
-      enabled.matches ? `${Math.sin(window.scrollY / 650) * 22}px` : '0px',
-    );
-  }
-  window.addEventListener(
-    'scroll',
-    () => {
-      if (enabled.matches && !frame) frame = requestAnimationFrame(update);
-    },
-    { passive: true },
-  );
-  enabled.addEventListener('change', update);
-  update();
-</script>
 <style>
   .floating-topics {
     display: none;
   }
   @media (min-width: 1280px) and (min-height: 560px) {
     .floating-topics {
-      --scroll-shift: 0px;
-      --motion-scale: 1;
       display: block;
       position: fixed;
-      top: 70px;
+      top: 3rem;
       right: max(20px, calc((100vw - 1550px) / 2));
       width: 190px;
-      height: 640px;
-      max-height: calc(100dvh - 110px);
+      max-height: calc(100dvh - 5rem);
+      overflow-y: auto;
+      padding: 0.4rem 0.45rem 0.45rem 1rem;
+      border-left: 1px solid var(--border-color);
+    }
+    .rail-heading {
+      margin: 0 0 0.75rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+    .topic-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .topic-list li {
+      margin: 0;
     }
     .floating-topic {
-      position: absolute;
-      top: calc(var(--i) * 13.5%);
-      left: 18px;
-      transform: translateY(
-        calc(var(--scroll-shift) * var(--depth) * var(--motion-scale))
-      );
-      text-decoration: none;
-    }
-    .floating-topic:nth-of-type(1) {
-      left: 36px;
-    }
-    .floating-topic:nth-of-type(2) {
-      left: 85px;
-    }
-    .floating-topic:nth-of-type(3) {
-      left: 0;
-      top: 28%;
-    }
-    .floating-topic:nth-of-type(4) {
-      left: 92px;
-      top: 43%;
-    }
-    .floating-topic:nth-of-type(5) {
-      left: 24px;
-      top: 57%;
-    }
-    .floating-topic:nth-of-type(6) {
-      left: 0;
-      top: 72%;
-    }
-    .floating-topic:nth-of-type(7) {
-      left: 62px;
-      top: 87%;
-    }
-    .floating-topic span {
-      display: block;
-      padding: 0.7rem 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.45rem;
       min-height: 44px;
+      padding: 0.5rem 0.7rem;
       border: 1px solid var(--border-color);
-      border-radius: 10px;
+      border-radius: 8px;
       background: var(--bg-secondary);
-      box-shadow: 0 3px 10px var(--shadow-light);
-      color: var(--text-secondary);
-      font:
-        500 0.76rem ui-monospace,
-        SFMono-Regular,
-        Consolas,
-        monospace;
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      font-weight: 500;
+      line-height: 1.3;
+      text-decoration: none;
       transition:
-        transform 0.25s ease,
-        border-color 0.25s,
-        box-shadow 0.25s;
+        border-color 0.2s,
+        background-color 0.2s,
+        color 0.2s,
+        transform 0.2s;
     }
-    .floating-topic:nth-of-type(2n) span {
-      color: var(--accent-primary);
-      transform: rotate(3deg);
+    .topic-arrow {
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      transition:
+        color 0.2s,
+        transform 0.2s;
     }
-    .floating-topic:nth-of-type(3n) span {
-      transform: rotate(-3deg);
-    }
-    .floating-topic:hover span,
-    .floating-topic:focus-visible span {
-      transform: translateY(-5px) rotate(-2deg) scale(1.05);
+    .floating-topic:hover,
+    .floating-topic:focus-visible {
       border-color: var(--accent-primary);
-      box-shadow: 0 7px 20px var(--shadow-medium);
+      background: var(--bg-primary);
+      color: var(--accent-primary);
+      transform: translateY(-2px);
     }
-  }
-  @media (max-height: 759px) {
-    .floating-topics {
-      --motion-scale: 0.25;
+    .floating-topic:hover .topic-arrow,
+    .floating-topic:focus-visible .topic-arrow {
+      color: var(--accent-primary);
+      transform: translate(1px, -1px);
+    }
+    .floating-topic:focus-visible {
+      outline-offset: 2px;
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .floating-topic,
-    .floating-topic span {
-      transform: none !important;
+    .topic-arrow {
       transition: none;
+    }
+    .floating-topic:hover,
+    .floating-topic:focus-visible,
+    .floating-topic:hover .topic-arrow,
+    .floating-topic:focus-visible .topic-arrow {
+      transform: none;
     }
   }
 </style>

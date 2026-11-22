@@ -59,6 +59,18 @@ const leaderboardData = JSON.stringify(initial.leaderboard).replace(
       is free to run. Missing costs are shown as N/A.
     </p>
 
+    <nav class="section-jumps" aria-label="Jump to section">
+      <a href="#merbench-filters" class="jump-link jump-link-filters">
+        Filters
+      </a>
+      <a href="#leaderboard-heading" class="jump-link">
+        Leaderboard
+      </a>
+      <a href="#benchmark-charts" class="jump-link">
+        Charts
+      </a>
+    </nav>
+
     <SummaryStats
       stats={stats}
       sourceUrl="https://github.com/andrewginns/agents-mcp-usage/tree/main/agents_mcp_usage/evaluations/mermaid_evals"
@@ -66,7 +78,8 @@ const leaderboardData = JSON.stringify(initial.leaderboard).replace(
     <CombinedFilters difficulties={difficulties} providers={stats.providers} />
     <noscript>
       <style is:inline>
-        #merbench-filters {
+        #merbench-filters,
+        .section-jumps .jump-link.jump-link-filters {
           display: none;
         }
       </style>
@@ -100,29 +113,31 @@ const leaderboardData = JSON.stringify(initial.leaderboard).replace(
       </dl>
     </details>
     <LeaderboardTable leaderboard={initial.leaderboard} />
-    <ChartContainer
-      chartId="pareto-chart"
-      title="Performance & efficiency"
-      description="Each point represents a model. The leaderboard lists success rate, cost, duration, and total tokens for the selected runs."
-    />
-    <ChartContainer
-      chartId="test-group-chart"
-      title="Performance by difficulty"
-      description="Compare model success rates across the selected difficulty levels. Exact percentages are available in the data table."
-      table={chartTables['test-group-chart']}
-    />
-    <ChartContainer
-      chartId="token-chart"
-      title="Token usage"
-      description="Average request and response tokens per model, shown separately in the data table."
-      table={chartTables['token-chart']}
-    />
-    <ChartContainer
-      chartId="failure-analysis-chart"
-      title="Failure analysis"
-      description="Recorded failure counts by model and reason. Reasons use the archive's priority: usage limit, then MCP tool failure, then invalid diagram."
-      table={chartTables['failure-analysis-chart']}
-    />
+    <div id="benchmark-charts" class="benchmark-charts">
+      <ChartContainer
+        chartId="pareto-chart"
+        title="Performance & efficiency"
+        description="Each point represents a model. The leaderboard lists success rate, cost, duration, and total tokens for the selected runs."
+      />
+      <ChartContainer
+        chartId="test-group-chart"
+        title="Performance by difficulty"
+        description="Compare model success rates across the selected difficulty levels. Exact percentages are available in the data table."
+        table={chartTables['test-group-chart']}
+      />
+      <ChartContainer
+        chartId="token-chart"
+        title="Token usage"
+        description="Average request and response tokens per model, shown separately in the data table."
+        table={chartTables['token-chart']}
+      />
+      <ChartContainer
+        chartId="failure-analysis-chart"
+        title="Failure analysis"
+        description="Recorded failure counts by model and reason. Reasons use the archive's priority: usage limit, then MCP tool failure, then invalid diagram."
+        table={chartTables['failure-analysis-chart']}
+      />
+    </div>
   </div>
   <script
     is:inline
@@ -166,7 +181,39 @@ const leaderboardData = JSON.stringify(initial.leaderboard).replace(
     color: var(--text-secondary);
     font-size: 0.9rem;
     max-width: 60rem;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
+  }
+  .section-jumps {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
+  }
+  .jump-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.45rem 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.2;
+    transition:
+      border-color 0.15s ease,
+      color 0.15s ease;
+  }
+  .jump-link:hover {
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+    text-decoration: none;
+  }
+  .benchmark-charts {
+    min-width: 0;
   }
   .metrics-glossary {
     border-bottom: 1px solid var(--border-color);
