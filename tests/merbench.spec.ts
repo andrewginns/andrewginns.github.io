@@ -7,6 +7,7 @@ import {
   processChartData,
   sortLeaderboard,
 } from '../src/lib/merbench';
+import { buildMerbenchUrl, parseMerbenchUrl } from '../src/lib/merbench-url';
 import type { RawData, LeaderboardEntry } from '../src/lib/merbench-types';
 import snapshot from '../src/data/merbench_data.json' with { type: 'json' };
 
@@ -154,7 +155,9 @@ test('archive supports local charts, keyboard sorting and filter reset', async (
   await expect(
     page.getByRole('button', { name: 'Cost', exact: true }),
   ).toHaveAttribute('aria-pressed', 'false');
-  await page.getByRole('switch', { name: 'Dark mode' }).click();
+  await page
+    .getByRole('combobox', { name: 'Color theme' })
+    .selectOption('dark');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   const chartText = await page.evaluate(() =>
     getComputedStyle(document.documentElement)
@@ -417,4 +420,306 @@ test('filters remain responsive while Plotly loads and charts use the latest cho
       axis: 'Average Duration (seconds)',
       models: expected.leaderboard.map((entry) => entry.Model).sort(),
     });
+});
+
+test('URL state validates enums, preserves unknown params/hashes, and separates empty from default', () => {
+  const options = {
+    difficulties: ['easy', 'medium', 'hard'],
+    providers: snapshot.stats.providers,
+  };
+  expect(parseMerbenchUrl('/merbench/', options)).toEqual({
+    difficulties: ['easy', 'medium', 'hard'],
+    providers: snapshot.stats.providers,
+    sort: 'Success_Rate',
+    dir: 'desc',
+    metric: 'cost',
+  });
+  expect(
+    parseMerbenchUrl(
+      '/merbench/?difficulty=none&provider=&sort=Avg_Cost&metric=tokens',
+      options,
+    ),
+  ).toEqual({
+    difficulties: [],
+    providers: [],
+    sort: 'Avg_Cost',
+    dir: 'asc',
+    metric: 'tokens',
+  });
+  expect(
+    parseMerbenchUrl(
+      '/merbench/?difficulty=bogus&provider=nope&sort=fake&dir=sideways&metric=fps',
+      options,
+    ),
+  ).toEqual({
+    difficulties: ['easy', 'medium', 'hard'],
+    providers: snapshot.stats.providers,
+    sort: 'Success_Rate',
+    dir: 'desc',
+    metric: 'cost',
+  });
+  expect(
+    parseMerbenchUrl(
+      '/merbench/?difficulty=hard,easy,bogus&provider=OpenAI&provider=unknown',
+      options,
+    ),
+  ).toEqual({
+    difficulties: ['easy', 'hard'],
+    providers: ['OpenAI'],
+    sort: 'Success_Rate',
+    dir: 'desc',
+    metric: 'cost',
+  });
+  expect(
+    buildMerbenchUrl(
+      '/merbench/?utm_source=hn&tag=a&tag=b&difficulty=hard#pareto-chart',
+      {
+        difficulties: [],
+        providers: ['OpenAI'],
+        sort: 'Avg_Duration',
+        dir: 'asc',
+        metric: 'time',
+      },
+      options,
+    ),
+  ).toBe(
+    '/merbench/?utm_source=hn&tag=a&tag=b&difficulty=none&provider=OpenAI&sort=Avg_Duration&dir=asc&metric=time#pareto-chart',
+  );
+  expect(
+    buildMerbenchUrl(
+      '/merbench/?utm_source=hn&difficulty=none&sort=Avg_Cost&dir=asc&metric=time#top',
+      {
+        difficulties: ['easy', 'medium', 'hard'],
+        providers: snapshot.stats.providers,
+        sort: 'Success_Rate',
+        dir: 'desc',
+        metric: 'cost',
+      },
+      options,
+    ),
+  ).toBe('/merbench/?utm_source=hn#top');
+});
+
+test('failed fetch after Clear all preserves stale rows and recovers via keyboard Retry', async ({
+  page,
+}) => {
+  let failData = true;
+  await page.route(/merbench_data.*\.json/, async (route) => {
+    if (failData) {
+      await route.abort();
+      return;
+    }
+    await route.continue();
+  });
+
+  await page.goto('/merbench/');
+  await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+  await expect(page.locator('#leaderboard-table tbody tr')).toHaveCount(
+    snapshot.stats.models_evaluated,
+  );
+  await expect(page.locator('#leaderboard-table tbody')).not.toContainText(
+    'No matching runs',
+  );
+  await expect(page.locator('#filter-status')).toContainText(/stale/i);
+  const retryButton = page.getByRole('button', { name: 'Retry', exact: true });
+  await expect(retryButton).toBeVisible();
+
+  failData = false;
+  await retryButton.focus();
+  await page.keyboard.press('Enter');
+
+  await expect(page.locator('#filter-status')).toHaveText(
+    '0 runs across 0 models match your filters.',
+  );
+  await expect(page.locator('#leaderboard-table tbody')).toContainText(
+    'No matching runs',
+  );
+  await expect(page.locator('#token-chart-data tbody')).toContainText(
+    'No matching runs',
+  );
+  await expect(retryButton).toBeHidden();
+  await expect(page.locator('#filter-status')).toBeFocused();
+});
+
+test('Retry applies the latest filter selection changed during recovery', async ({
+  page,
+}) => {
+  let mode: 'fail' | 'gate' | 'ok' = 'fail';
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let started!: () => void;
+  const retryStarted = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  await page.route(/merbench_data.*\.json/, async (route) => {
+    if (mode === 'fail') {
+      await route.abort();
+      return;
+    }
+    if (mode === 'gate') {
+      started();
+      await gate;
+    }
+    await route.continue();
+  });
+
+  await page.goto('/merbench/');
+  await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+  const retryButton = page.getByRole('button', { name: 'Retry', exact: true });
+  await expect(retryButton).toBeVisible();
+
+  mode = 'gate';
+  await retryButton.click();
+  await retryStarted;
+  await page.getByLabel('Easy', { exact: true }).check();
+  await page.getByLabel('Amazon', { exact: true }).check();
+  mode = 'ok';
+  release();
+
+  const expected = getFilteredData(
+    ['easy'],
+    snapshot.raw_data,
+    snapshot.test_groups_data,
+    ['Amazon'],
+  );
+  await expect(page.locator('#leaderboard-table tbody tr')).toHaveCount(
+    expected.leaderboard.length,
+  );
+  await expect(page.locator('#filter-status')).toHaveText(
+    `${expected.rawData.length.toLocaleString('en-GB')} runs across ${expected.leaderboard.length} models match your filters.`,
+  );
+  await expect(retryButton).toBeHidden();
+});
+
+test('shared URL, reload, and Back/Forward restore controls, sort, metric, and aria', async ({
+  page,
+}) => {
+  const metrics = page.getByRole('group', { name: 'Compare performance by' });
+  const cost = metrics.getByRole('button', { name: 'Cost', exact: true });
+  const time = metrics.getByRole('button', { name: 'Time', exact: true });
+  const tokens = metrics.getByRole('button', { name: 'Tokens', exact: true });
+  const requests: string[] = [];
+  page.on('request', (request) => {
+    if (/plotly-basic|merbench_data.*\.json/.test(request.url()))
+      requests.push(request.url());
+  });
+
+  // Non-default sort/metric with invalid filter falls back to lazy default data without fetching.
+  await page.goto(
+    '/merbench/?utm_source=test&difficulty=invalid&sort=Avg_Cost&dir=asc&metric=time#top',
+  );
+  await expect(
+    page.getByRole('button', { name: 'Cost / run', exact: true }).locator('..'),
+  ).toHaveAttribute('aria-sort', 'ascending');
+  await expect(time).toHaveAttribute('aria-pressed', 'true');
+  await expect(cost).toHaveAttribute('aria-pressed', 'false');
+  expect(requests).toEqual([]);
+  await expect(page).toHaveURL(
+    /\/merbench\/\?utm_source=test&sort=Avg_Cost&dir=asc&metric=time#top$/,
+  );
+
+  // Shared filtered URL restores controls, rows, sort, metric, unknown params, and hash on load & reload.
+  const sharedUrl =
+    '/merbench/?utm_source=share&difficulty=easy&provider=OpenAI&sort=Avg_Duration&dir=asc&metric=tokens#sec';
+  const expectedOpenAi = getFilteredData(
+    ['easy'],
+    snapshot.raw_data,
+    snapshot.test_groups_data,
+    ['OpenAI'],
+  );
+  const expectedDurationOrder = sortLeaderboard(
+    expectedOpenAi.leaderboard,
+    'Avg_Duration',
+    'asc',
+  ).map((entry) => entry.Model);
+
+  await page.goto(sharedUrl);
+  for (const step of ['initial', 'reload'] as const) {
+    if (step === 'reload') await page.reload();
+    await expect(page.getByLabel('Easy', { exact: true })).toBeChecked();
+    await expect(page.getByLabel('Medium', { exact: true })).not.toBeChecked();
+    await expect(page.getByLabel('Hard', { exact: true })).not.toBeChecked();
+    await expect(page.getByLabel('OpenAI', { exact: true })).toBeChecked();
+    await expect(page.getByLabel('Amazon', { exact: true })).not.toBeChecked();
+    await expect(page.locator('#leaderboard-table tbody tr')).toHaveCount(
+      expectedOpenAi.leaderboard.length,
+    );
+    await expect(
+      page.locator('#leaderboard-table tbody td.model-name'),
+    ).toHaveText(expectedDurationOrder);
+    await expect(
+      page.getByRole('button', { name: 'Duration', exact: true }).locator('..'),
+    ).toHaveAttribute('aria-sort', 'ascending');
+    await expect(tokens).toHaveAttribute('aria-pressed', 'true');
+    await expect(page).toHaveURL(
+      /\/merbench\/\?utm_source=share&difficulty=easy&provider=OpenAI&sort=Avg_Duration&dir=asc&metric=tokens#sec$/,
+    );
+  }
+
+  // Intentional empty persists across reload, and Back/Forward restores every dimension cleanly.
+  await page.getByRole('button', { name: 'Clear all', exact: true }).click();
+  await expect(page.locator('#leaderboard-table tbody')).toContainText(
+    'No matching runs',
+  );
+  await expect(page).toHaveURL(
+    /utm_source=share&difficulty=none&provider=none&sort=Avg_Duration&dir=asc&metric=tokens#sec$/,
+  );
+  await page.reload();
+  await expect(page.locator('#leaderboard-table tbody')).toContainText(
+    'No matching runs',
+  );
+  await expect(page.getByLabel('Easy', { exact: true })).not.toBeChecked();
+
+  await page.getByLabel('Easy', { exact: true }).check();
+  await page.getByLabel('Amazon', { exact: true }).check();
+  const expectedAmazon = getFilteredData(
+    ['easy'],
+    snapshot.raw_data,
+    snapshot.test_groups_data,
+    ['Amazon'],
+  );
+  await expect(page.locator('#leaderboard-table tbody tr')).toHaveCount(
+    expectedAmazon.leaderboard.length,
+  );
+  await page.getByRole('button', { name: 'Cost / run', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Cost / run', exact: true }).locator('..'),
+  ).toHaveAttribute('aria-sort', 'ascending');
+  await time.click();
+  await expect(time).toHaveAttribute('aria-pressed', 'true');
+
+  await page.goBack();
+  await expect(tokens).toHaveAttribute('aria-pressed', 'true');
+  await expect(time).toHaveAttribute('aria-pressed', 'false');
+
+  await page.goBack();
+  await expect(
+    page.getByRole('button', { name: 'Duration', exact: true }).locator('..'),
+  ).toHaveAttribute('aria-sort', 'ascending');
+  await expect(
+    page.getByRole('button', { name: 'Cost / run', exact: true }).locator('..'),
+  ).not.toHaveAttribute('aria-sort');
+
+  await page.goBack();
+  await expect(page.getByLabel('Amazon', { exact: true })).not.toBeChecked();
+  await expect(page.locator('#leaderboard-table tbody')).toContainText(
+    'No matching runs',
+  );
+
+  await page.goForward();
+  await expect(page.getByLabel('Amazon', { exact: true })).toBeChecked();
+  await expect(page.locator('#leaderboard-table tbody tr')).toHaveCount(
+    expectedAmazon.leaderboard.length,
+  );
+
+  await page.goForward();
+  await expect(
+    page.getByRole('button', { name: 'Cost / run', exact: true }).locator('..'),
+  ).toHaveAttribute('aria-sort', 'ascending');
+
+  await page.goForward();
+  await expect(time).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/utm_source=share.*#sec$/);
 });

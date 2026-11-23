@@ -15,8 +15,12 @@ const projects = await getFeaturedProjects();
     open-source work in AI, machine learning, and beyond.
   </p>
   <div class="projects-grid">
-    {projects.map((project) => (
-      <article class="project-card">
+    {projects.map((project, index) => (
+      <a
+        class="project-card"
+        href={project.html_url}
+        aria-labelledby={`project-title-${index}`}
+      >
         <div class="project-meta">
           <span>{project.language || 'Open source'}</span>
           {project.stargazers_count !== undefined && (
@@ -25,19 +29,21 @@ const projects = await getFeaturedProjects();
             </span>
           )}
         </div>
-        <h2>
-          <a href={project.html_url}>
-            {project.name}
-            <span aria-hidden="true"> ↗</span>
-          </a>
+        <h2 id={`project-title-${index}`}>
+          <span>{project.name}</span>
+          <span class="card-arrow" aria-hidden="true">
+            ↗
+          </span>
         </h2>
         <p>{project.description}</p>
-        <div class="tags">
-          {project.topics.slice(0, 5).map((topic) => (
-            <span class="tag">{topic}</span>
-          ))}
-        </div>
-      </article>
+        {project.topics.length > 0 && (
+          <div class="tags">
+            {project.topics.slice(0, 5).map((topic) => (
+              <span class="tag">{topic}</span>
+            ))}
+          </div>
+        )}
+      </a>
     ))}
   </div>
   <section class="benchmark-archive">
@@ -70,10 +76,16 @@ const projects = await getFeaturedProjects();
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    transition: border-color 0.2s;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition:
+      border-color 0.2s,
+      transform 0.2s;
   }
-  .project-card:hover {
+  .project-card:hover,
+  .project-card:focus-visible {
     border-color: var(--accent-primary);
+    transform: translateY(-3px);
   }
   .project-meta {
     display: flex;
@@ -82,23 +94,58 @@ const projects = await getFeaturedProjects();
     font-size: 0.75rem;
   }
   .project-card h2 {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.6rem;
     margin: 1rem 0 0.75rem;
     font-size: 1.1rem;
-    overflow-wrap: anywhere;
-  }
-  .project-card h2 a {
     color: var(--text-primary);
-    text-decoration: none;
+    overflow-wrap: anywhere;
+    transition: color 0.2s;
   }
-  .project-card h2 a:hover {
+  .project-card:hover h2,
+  .project-card:focus-visible h2 {
     color: var(--accent-primary);
+  }
+  .card-arrow {
+    flex-shrink: 0;
+    color: var(--accent-primary);
+    transition: transform 0.2s;
+  }
+  .project-card:hover .card-arrow,
+  .project-card:focus-visible .card-arrow {
+    transform: translate(2px, -2px);
   }
   .project-card p {
     font-size: 0.88rem;
     color: var(--text-secondary);
   }
-  .tags {
+  .project-card .tags {
     margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+    gap: 0.3rem 0.65rem;
+  }
+  .project-card .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-light);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+  .project-card .tag:not(:last-child)::after {
+    content: '';
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-light);
+    opacity: 0.55;
   }
   .benchmark-archive {
     margin: 2rem 0;
@@ -122,6 +169,19 @@ const projects = await getFeaturedProjects();
   @media (max-width: 650px) {
     .projects-grid {
       grid-template-columns: 1fr;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .project-card,
+    .project-card h2,
+    .card-arrow {
+      transition: none;
+    }
+    .project-card:hover,
+    .project-card:focus-visible,
+    .project-card:hover .card-arrow,
+    .project-card:focus-visible .card-arrow {
+      transform: none;
     }
   }
 </style>

@@ -1,23 +1,40 @@
-<button
-  id="theme-toggle"
-  type="button"
-  role="switch"
-  aria-checked="false"
-  aria-label="Dark mode"
-  hidden
->
-  <span class="theme-icon" aria-hidden="true">
-    ◐
-  </span>
-  <span>Dark mode</span>
-  <span class="toggle-track" aria-hidden="true">
-    <span></span>
-  </span>
-</button>
+<div class="theme-control" hidden>
+  <label class="theme-label" for="theme-select">
+    Color theme
+  </label>
+  <div class="theme-select-wrap">
+    <span class="theme-icon" aria-hidden="true">
+      ◐
+    </span>
+    <select id="theme-select" name="theme">
+      <option value="system">System</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+  <button
+    type="button"
+    class="theme-toggle"
+    role="switch"
+    aria-label="Dark mode"
+    aria-checked="false"
+  >
+    <span class="theme-sun" aria-hidden="true">
+      ☀︎
+    </span>
+    <span class="theme-moon" aria-hidden="true">
+      ☾
+    </span>
+  </button>
+</div>
 <script>
-  const toggle = document.querySelector<HTMLButtonElement>('#theme-toggle');
+  type Theme = 'light' | 'dark';
+
+  const control = document.querySelector<HTMLElement>('.theme-control');
+  const select = document.querySelector<HTMLSelectElement>('#theme-select');
+  const toggle = document.querySelector<HTMLButtonElement>('.theme-toggle');
   const system = window.matchMedia('(prefers-color-scheme: dark)');
-  let preference: 'light' | 'dark' | null = null;
+  let preference: Theme | null = null;
   try {
     const stored = localStorage.getItem('theme');
     if (stored === 'light' || stored === 'dark') preference = stored;
@@ -31,15 +48,13 @@
       'meta[name="color-scheme"]',
     );
     if (meta) meta.content = preference ?? 'light dark';
+    if (select) select.value = preference ?? 'system';
     toggle?.setAttribute('aria-checked', String(theme === 'dark'));
     window.dispatchEvent(new CustomEvent('theme-changed'));
   }
-  applyTheme();
-  if (toggle) toggle.hidden = false;
-  toggle?.addEventListener('click', () => {
-    const theme =
-      document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-    preference = theme === (system.matches ? 'dark' : 'light') ? null : theme;
+
+  function savePreference(theme: Theme | null) {
+    preference = theme;
     applyTheme();
     try {
       if (preference) localStorage.setItem('theme', preference);
@@ -47,6 +62,18 @@
     } catch {
       /* Theme still works without persistence. */
     }
+  }
+
+  applyTheme();
+  if (control) control.hidden = false;
+  select?.addEventListener('change', () => {
+    const value = select.value;
+    savePreference(value === 'light' || value === 'dark' ? value : null);
+  });
+  toggle?.addEventListener('click', () => {
+    savePreference(
+      document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark',
+    );
   });
   system.addEventListener('change', () => {
     if (!preference) applyTheme();
@@ -61,48 +88,76 @@
   });
 </script>
 <style>
-  button {
+  .theme-control {
+    width: 100%;
+  }
+  .theme-control[hidden] {
+    display: none;
+  }
+  .theme-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.35rem;
+  }
+  .theme-select-wrap {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    width: 100%;
+  }
+  .theme-icon {
+    position: absolute;
+    left: 0.7rem;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+  select,
+  .theme-toggle {
     min-height: 44px;
-    padding: 0.65rem 0.75rem;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background: var(--bg-primary);
     color: var(--text-secondary);
     font: inherit;
-    font-size: 0.8rem;
     cursor: pointer;
   }
-  button[hidden] {
+  select {
+    width: 100%;
+    padding: 0.55rem 0.75rem 0.55rem 2.15rem;
+    font-size: 0.8rem;
+  }
+  .theme-toggle {
+    display: none;
+    width: 44px;
+    padding: 0;
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+  select:hover,
+  .theme-toggle:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+  }
+  .theme-moon,
+  .theme-toggle[aria-checked='true'] .theme-sun {
     display: none;
   }
-  button:hover {
-    border-color: var(--accent-primary);
-  }
-  .theme-icon {
-    font-size: 1.25rem;
-  }
-  .toggle-track {
-    margin-left: auto;
-    width: 30px;
-    height: 18px;
-    border-radius: 20px;
-    background: var(--border-color);
-    padding: 3px;
-  }
-  .toggle-track span {
+  .theme-toggle[aria-checked='true'] .theme-moon {
     display: block;
-    height: 12px;
-    width: 12px;
-    border-radius: 50%;
-    background: var(--text-secondary);
-    transition: transform 0.2s;
   }
-  [aria-checked='true'] .toggle-track span {
-    transform: translateX(12px);
-    background: var(--accent-primary);
+  @media (max-width: 1023px) {
+    .theme-control {
+      width: auto;
+    }
+    .theme-label,
+    .theme-select-wrap {
+      display: none;
+    }
+    .theme-toggle {
+      display: grid;
+      place-items: center;
+    }
   }
 </style>

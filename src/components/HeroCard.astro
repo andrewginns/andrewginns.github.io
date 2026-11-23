@@ -46,8 +46,8 @@ import { profile } from '../data/profile';
   }
   .hero-image {
     flex: 0 0 auto;
-    width: clamp(140px, 15vw, 200px);
-    height: clamp(140px, 15vw, 200px);
+    width: clamp(120px, 16vw, 200px);
+    height: clamp(120px, 16vw, 200px);
     object-fit: cover;
     border-radius: 12px;
     box-shadow: 0 8px 20px var(--shadow-medium);
@@ -80,25 +80,34 @@ import { profile } from '../data/profile';
     gap: 0.65rem;
     flex-wrap: wrap;
   }
-  @media (max-width: 1000px) and (min-width: 768px) {
-    .hero-card {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  }
   @media (max-width: 600px) {
     .hero-card {
       flex-direction: column;
       text-align: center;
-      padding: 2rem 1.25rem;
-      gap: 1.5rem;
+      padding: 1.35rem 1.1rem;
+      gap: 1rem;
+      margin-bottom: 2rem;
     }
     .hero-image {
-      width: 150px;
-      height: 150px;
+      width: 104px;
+      height: 104px;
+    }
+    h1 {
+      font-size: 1.65rem;
+      margin-bottom: 0.4rem;
+    }
+    .hero-role {
+      font-size: 0.95rem;
+      margin-bottom: 0.55rem;
+    }
+    .hero-description {
+      font-size: 0.94rem;
+      line-height: 1.55;
+      margin-bottom: 1rem;
     }
     .hero-links {
       justify-content: center;
+      gap: 0.5rem;
     }
   }
 </style>

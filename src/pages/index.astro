@@ -7,25 +7,6 @@ import { featuredProjects } from '../data/projects';
 
 <BaseLayout title={`Andrew Ginns — ${profile.role} at ${profile.company}`}>
   <HeroCard />
-  <section class="home-section" aria-labelledby="what-i-do">
-    <h2 id="what-i-do">What I do</h2>
-    <p>
-      I'm a {profile.role} at {profile.company}, helping customers design and
-      build AI applications that meet real business needs. My background spans
-      hands-on machine learning engineering, MLOps, and leading data science
-      teams.
-    </p>
-    <a class="text-link" href="/experience">
-      Explore my experience <span aria-hidden="true">→</span>
-    </a>
-  </section>
-  <section class="home-section" aria-labelledby="recent-focus">
-    <h2 id="recent-focus">Recent focus</h2>
-    <p>
-      Large language models, agentic systems, and the engineering that makes
-      them useful: tools, evaluations, and reliable production workflows.
-    </p>
-  </section>
   <section class="home-section" aria-labelledby="selected-work">
     <div class="section-heading">
       <h2 id="selected-work">Selected work</h2>
@@ -46,6 +27,25 @@ import { featuredProjects } from '../data/projects';
       Merbench <span class="badge">Legacy · Saturated</span>
       <span>Explore the archived agent benchmark →</span>
     </a>
+  </section>
+  <section class="home-section" aria-labelledby="what-i-do">
+    <h2 id="what-i-do">What I do</h2>
+    <p>
+      I'm a {profile.role} at {profile.company}, helping customers design and
+      build AI applications that meet real business needs. My background spans
+      hands-on machine learning engineering, MLOps, and leading data science
+      teams.
+    </p>
+    <a class="text-link" href="/experience">
+      Explore my experience <span aria-hidden="true">→</span>
+    </a>
+  </section>
+  <section class="home-section" aria-labelledby="recent-focus">
+    <h2 id="recent-focus">Recent focus</h2>
+    <p>
+      Large language models, agentic systems, and the engineering that makes
+      them useful: tools, evaluations, and reliable production workflows.
+    </p>
   </section>
   <section class="home-section connect-section" aria-labelledby="connect">
     <h2 id="connect">Let's connect</h2>

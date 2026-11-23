@@ -37,6 +37,7 @@ const navigation = [
 const isActive = (href: string) =>
   currentPath === href ||
   (href === '/writing' && currentPath.startsWith('/writing/'));
+const activeLabel = navigation.find(([href]) => isActive(href))?.[1];
 ---
 
 <!doctype html>
@@ -93,7 +94,16 @@ const isActive = (href: string) =>
       </div>
       <details class="navigation" open>
         <summary>
-          Menu <span aria-hidden="true">+</span>
+          <span class="menu-label">Menu</span>
+          {activeLabel && (
+            <span class="menu-current">
+              <span class="sr-only">, current page: </span>
+              {activeLabel}
+            </span>
+          )}
+          <span class="menu-icon" aria-hidden="true">
+            +
+          </span>
         </summary>
         <nav aria-label="Main navigation">
           <ul class="nav-links">
@@ -134,16 +144,26 @@ const isActive = (href: string) =>
     {currentPath !== '/merbench' && <FloatingTopics />}
     <script>
       const menu = document.querySelector<HTMLDetailsElement>('.navigation');
-      const mobile = window.matchMedia('(max-width: 767px)');
+      const compact = window.matchMedia('(max-width: 1023px)');
       function setMenuMode() {
-        if (menu) menu.open = !mobile.matches;
+        if (menu) menu.open = !compact.matches;
       }
       setMenuMode();
-      mobile.addEventListener('change', setMenuMode);
+      compact.addEventListener('change', setMenuMode);
       menu?.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && mobile.matches) {
+        if (event.key === 'Escape' && compact.matches && menu.open) {
           menu.open = false;
           menu.querySelector('summary')?.focus();
+        }
+      });
+      document.addEventListener('click', (event) => {
+        if (
+          compact.matches &&
+          menu?.open &&
+          event.target instanceof Node &&
+          !menu.contains(event.target)
+        ) {
+          menu.open = false;
         }
       });
     </script>
