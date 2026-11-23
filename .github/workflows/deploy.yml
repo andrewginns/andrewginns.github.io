@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: github-pages
+  group: cloudflare-production
   cancel-in-progress: false
 
 jobs:
@@ -20,7 +20,6 @@ jobs:
     runs-on: ${{ fromJSON(github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && '["self-hosted", "linux", "x64", "homelab-personal-build"]' || '["ubuntu-latest"]') }}
     permissions:
       contents: read
-      pages: read
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,7 +28,6 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - uses: actions/configure-pages@v6
       - run: npm ci
       - run: npm run build
         env:
@@ -41,23 +39,10 @@ jobs:
         if: runner.environment == 'github-hosted'
         run: npx playwright install --with-deps chromium
       - run: npm test
-      - uses: actions/upload-pages-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
+          name: production-site
           path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy site
-        id: deployment
-        uses: actions/deploy-pages@v5
 
   deploy-canonical:
     needs: build
@@ -75,12 +60,8 @@ jobs:
           node-version-file: .nvmrc
       - uses: actions/download-artifact@v7
         with:
-          name: github-pages
-          path: artifact
-      - name: Unpack the tested site
-        run: |
-          mkdir -p dist
-          tar -xf artifact/artifact.tar -C dist
+          name: production-site
+          path: dist
       - name: Verify the existing canonical project
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

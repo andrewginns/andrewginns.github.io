@@ -50,11 +50,11 @@ Before running browser tests for the first time, run `npx playwright install chr
 
 ## Deployment
 
-The production workflow builds and tests the site once, then deploys the same artifact to GitHub Pages at `https://andrewginns.github.io/` and the existing Cloudflare Pages project `andrewginns` serving the canonical URL `https://andrew.ginns.uk`. It runs on pushes to `main`, weekly for external content refreshes, and manual dispatch.
+The production workflow builds and tests the site, then uploads the tested build to the Cloudflare Pages project serving [andrew.ginns.uk](https://andrew.ginns.uk/). It runs on pushes to main, weekly for external content refreshes, and manual dispatch. The Cloudflare publish job requires main and uses the production environment. Before uploading, it checks the Cloudflare project's production branch and domain.
 
-GitHub Pages uses **Settings → Pages → Source: GitHub Actions**, the built-in GitHub token, and the `github-pages` environment. Canonical deployment runs only from `main`, preserves the `production` environment's protection rules, and uses the existing `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` repository secrets. Before uploading, it verifies that the Cloudflare project still uses the `main` production branch and includes `andrew.ginns.uk`. No DNS or domain configuration changes are made by the workflow.
+[The GitHub Pages dev site](https://andrewginns.github.io/) serves the full tested build of the single open same-repository PR targeting main. Draft PRs count. Pull requests run validation and upload a downloadable build. **Publish website dev site** publishes that artifact after successful validation for the current PR revision. It keeps the last published build during validation failures or when multiple eligible PRs are open. When the last eligible PR closes, it publishes a dev status page.
 
-Pull requests build and test the site and upload `dist/` as a downloadable Actions artifact. They do not deploy over a shared GitHub Pages URL. For a local preview, download the artifact and serve it with any static HTTP server.
+Use **Publish website dev site** in Actions with the main branch to refresh manually. If the validation artifact has expired, rerun the PR validation to generate a new one. The Pages publisher uses the existing main-only github-pages environment.
 
 Cloudflare Pages applies `public/_headers` to the canonical site's responses, including security headers and immutable caching for hashed `/_astro/` assets. GitHub Pages does not apply those response rules. Keep the canonical hostname connected to Cloudflare Pages in its domain settings and DNS; setting `site` in Astro only sets generated URLs. Verify the actual public hostname, content, and HTTP headers after each release.
 

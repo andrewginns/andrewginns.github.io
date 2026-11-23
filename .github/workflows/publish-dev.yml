@@ -1,0 +1,132 @@
+name: Publish website dev site
+
+on:
+  workflow_run:
+    workflows: [Validate pull request]
+    types: [completed]
+  workflow_dispatch:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+permissions: {}
+
+concurrency:
+  group: github-pages-dev
+  queue: max
+
+jobs:
+  prepare:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name != 'workflow_run' ||
+        (github.event.workflow_run.event == 'pull_request' &&
+         github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    outputs:
+      mode: ${{ steps.select.outputs.mode }}
+      number: ${{ steps.select.outputs.number }}
+      sha: ${{ steps.select.outputs.sha }}
+      run_id: ${{ steps.select.outputs.run_id }}
+      run_attempt: ${{ steps.select.outputs.run_attempt }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Resolve the current passing PR
+        id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash .github/scripts/dev-pages.sh select
+      - uses: actions/download-artifact@v7
+        if: steps.select.outputs.mode == 'preview'
+        with:
+          artifact-ids: ${{ steps.select.outputs.artifact_id }}
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.select.outputs.run_id }}
+          merge-multiple: true
+          path: dev-site
+      - name: Prepare the static Pages artifact
+        if: steps.select.outputs.mode != ''
+        env:
+          PREVIEW_MODE: ${{ steps.select.outputs.mode }}
+          PREVIEW_NUMBER: ${{ steps.select.outputs.number }}
+          PREVIEW_SHA: ${{ steps.select.outputs.sha }}
+          PREVIEW_RUN_ID: ${{ steps.select.outputs.run_id }}
+        run: |
+          if [[ "$PREVIEW_MODE" == idle ]]; then
+            mkdir dev-site
+            cat >dev-site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <meta name="robots" content="noindex">
+              <title>Website development preview</title>
+            </head>
+            <body>
+              <main>
+                <h1>Website development preview</h1>
+                <p>The next passing website PR will appear here.</p>
+                <p><a href="https://andrew.ginns.uk/">Visit the live site</a></p>
+              </main>
+            </body>
+          </html>
+          HTML
+          fi
+          if [[ ! -f dev-site/index.html || -L dev-site ]]; then
+            echo '::error::The Pages artifact needs a static index.html.'
+            exit 1
+          fi
+          if [[ -n $(find dev-site ! -type d \( ! -type f -o -links +1 \) -print -quit) ]]; then
+            echo '::error::The Pages artifact contains a link or special file.'
+            exit 1
+          fi
+          if [[ "$PREVIEW_MODE" == preview ]]; then
+            jq -n --argjson pr "$PREVIEW_NUMBER" --arg sha "$PREVIEW_SHA" --argjson run "$PREVIEW_RUN_ID"               '{pr: $pr, head_sha: $sha, validation_run: $run}' >dev-site/dev-preview.json
+          fi
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.select.outputs.mode != ''
+        with:
+          path: dev-site
+
+  deploy:
+    if: needs.prepare.outputs.mode != ''
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      pages: write
+      pull-requests: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Confirm the PR is still current
+        id: confirm
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PREVIEW_MODE: ${{ needs.prepare.outputs.mode }}
+          PREVIEW_NUMBER: ${{ needs.prepare.outputs.number }}
+          PREVIEW_SHA: ${{ needs.prepare.outputs.sha }}
+          PREVIEW_RUN_ID: ${{ needs.prepare.outputs.run_id }}
+          PREVIEW_RUN_ATTEMPT: ${{ needs.prepare.outputs.run_attempt }}
+        run: bash .github/scripts/dev-pages.sh confirm
+      - uses: actions/deploy-pages@v5
+        if: steps.confirm.outputs.publish == 'true'
+        id: deployment
