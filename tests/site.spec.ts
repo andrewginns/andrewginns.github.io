@@ -49,17 +49,14 @@ test('mobile navigation works with the keyboard, sticky bar, active context, and
   const header = page.locator('header.sidebar');
   const brand = header.locator('.site-title');
   const menu = header.locator('summary').filter({ hasText: 'Menu' });
-  const themeSelect = page.getByRole('combobox', {
-    name: 'Color theme',
-    exact: true,
-  });
+  const themeToggle = page.getByRole('switch', { name: 'Dark mode' });
 
   await expect(header).toHaveCSS('position', 'sticky');
   const [headerBox, brandBox, menuBox, themeBox] = await Promise.all([
     header.boundingBox(),
     brand.boundingBox(),
     menu.boundingBox(),
-    themeSelect.boundingBox(),
+    themeToggle.boundingBox(),
   ]);
   expect(headerBox).not.toBeNull();
   expect(brandBox).not.toBeNull();
@@ -204,6 +201,40 @@ test('short screens constrain open menu and phones keep hero compact with scroll
   await expect(skipLink).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(page.locator('#main-content')).toBeFocused();
+});
+
+test('mobile theme button toggles the icon and shares its preference with desktop', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+
+  const toggle = page.getByRole('switch', { name: 'Dark mode' });
+  const select = page.getByRole('combobox', { name: 'Color theme' });
+  const sun = toggle.locator('.theme-sun');
+  const moon = toggle.locator('.theme-moon');
+  await expect(select).toBeHidden();
+  await expect(toggle).not.toBeChecked();
+  await expect(sun).toBeVisible();
+  await expect(moon).toBeHidden();
+
+  await toggle.click();
+  await expect(toggle).toBeChecked();
+  await expect(moon).toBeVisible();
+  await expect(sun).toBeHidden();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.goto('/about_me/');
+  await expect(toggle).toBeChecked();
+
+  await toggle.press('Space');
+  await expect(toggle).not.toBeChecked();
+  await expect(sun).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+
+  await page.setViewportSize({ width: 1024, height: 844 });
+  await expect(toggle).toBeHidden();
+  await expect(select).toHaveValue('light');
 });
 
 test('theme preference persists across navigation and reload', async ({
